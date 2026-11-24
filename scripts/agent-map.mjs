@@ -27,10 +27,13 @@ function front(file) {
   return out;
 }
 
+// Redaction: URLs -> scheme+host+path (no userinfo/query), commands -> executable basename only.
+const safeUrl = (u) => { try { const x = new URL(u); return x.origin + x.pathname; } catch { return ''; } };
+const safeCmd = (c) => path.basename(String(c || '').trim().replace(/^["']/, '').split(/s+/)[0] || '');
 const hookEvents = (h) => Object.entries(h || {}).map(([ev, arr]) => ({
-  name: ev, desc: (Array.isArray(arr) ? arr : []).flatMap(x => x.hooks || []).map(x => x.command || x.type).filter(Boolean).join(' | ').slice(0, 200),
+  name: ev, desc: (Array.isArray(arr) ? arr : []).flatMap(x => x.hooks || []).map(x => x.command ? safeCmd(x.command) : x.type).filter(Boolean).join(' | ').slice(0, 200),
 }));
-const mcpList = (s) => Object.entries(s || {}).map(([n, c]) => ({ name: n, desc: c.url || c.command || '', type: c.type || (c.url ? 'http' : 'stdio') }));
+const mcpList = (s) => Object.entries(s || {}).map(([n, c]) => ({ name: n, desc: c.url ? safeUrl(c.url) : safeCmd(c.command), type: c.type || (c.url ? 'http' : 'stdio') }));
 
 function scanDir(root) {
   const skills = ls(path.join(root, 'skills')).filter(d => d.isDirectory() || d.isSymbolicLink())
@@ -73,8 +76,10 @@ const data = { generatedAt: new Date().toISOString(), totals, groups };
 
 const html = fs.readFileSync(new URL('./template.html', import.meta.url), 'utf8')
   .replace('/*DATA*/null', () => JSON.stringify(data).replace(/</g, '\u003c'));
-const out = path.join(os.tmpdir(), 'agent-map.html');
-fs.writeFileSync(out, html);
+const outDir = path.join(CLAUDE, 'agent-map'); // user-private dir instead of shared tmp
+fs.mkdirSync(outDir, { recursive: true });
+const out = path.join(outDir, 'agent-map.html');
+fs.writeFileSync(out, html, { mode: 0o600 });
 
 const [cmd, args] = process.platform === 'win32' ? ['cmd', ['/c', 'start', '', out]] : process.platform === 'darwin' ? ['open', [out]] : ['xdg-open', [out]];
 if (!process.argv.includes('--no-open')) { try { spawn(cmd, args, { stdio: 'ignore', detached: true }).on('error', () => {}).unref(); } catch {} }
