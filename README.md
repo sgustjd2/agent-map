@@ -15,3 +15,6 @@
 - 그룹: 사용자(~/.claude) / 현재 프로젝트(.claude, .mcp.json) / 설치된 플러그인(비활성 표시)
 - 상단 필터·검색, 칩 클릭 시 설명 표시
 - 보안: MCP/훅은 이름, URL(쿼리·계정정보 제거), 실행파일명만 표시하고 args/env/헤더는 읽지 않는다. HTML은 ~/.claude/agent-map/ 에 저장. 외부 전송 없음.
+
+## 크레딧
+화면 디자인 패스는 Damir Sokolovsky ([@heydamir](https://x.com/heydamir))의 [unslop](https://github.com/heydamir/unslop) 스킬(CC BY 4.0)의 지침을 따라 적용했다.
