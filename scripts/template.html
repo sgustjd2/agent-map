@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><title>Agent Map</title>
+<style>
+:root{--bg:#0b0c0e;--panel:#121317;--line:#262830;--fg:#d8dae0;--mut:#8a8f9c;
+--skills:#6ea8fe;--agents:#f0a35e;--commands:#7ed39a;--hooks:#c58af9;--mcp:#f27c8d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:13px/1.45 system-ui,"Malgun Gothic",sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:12px 20px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+h1{font-size:15px;margin:0 8px 0 0}
+input{background:var(--panel);border:1px solid var(--line);color:var(--fg);border-radius:8px;padding:6px 10px;width:240px}
+.f{border:1px solid var(--line);background:var(--panel);color:var(--mut);border-radius:8px;padding:5px 10px;cursor:pointer}
+.f.on{color:var(--fg);border-color:var(--c,#555)}.f i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c);margin-right:6px}
+.meta{margin-left:auto;color:var(--mut);font-size:12px}
+main{padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:14px;align-items:start}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px}
+.box.user{border-color:#3b4a6b}.box.project{border-color:#4d6b3b}.box.off{opacity:.5}
+.bh{display:flex;gap:8px;align-items:baseline;margin-bottom:8px}.bh b{font-size:13px}.bh span{color:var(--mut);font-size:11px}
+.tag{font-size:10px;border:1px solid var(--line);border-radius:5px;padding:0 5px;color:var(--mut)}
+.sec{margin-top:8px}.sec>div:first-child{font-size:11px;color:var(--c);margin-bottom:4px}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chip{background:#0b0c0e;border:1px solid var(--line);border-left:3px solid var(--c);border-radius:6px;padding:2px 7px;font-size:12px;cursor:pointer}
+.chip:hover,.chip.sel{background:#1b1d24}.hide{display:none!important}
+#d{position:fixed;left:0;right:0;bottom:0;background:#15171c;border-top:1px solid var(--line);padding:10px 20px;min-height:44px;color:var(--mut)}
+#d b{color:var(--fg)}body{padding-bottom:70px}
+</style></head><body>
+<header><h1>🗺 Agent Map</h1><input id="q" placeholder="검색 (이름·설명)">
+<span id="fs"></span><span class="meta" id="meta"></span></header>
+<main id="m"></main><div id="d">칩을 클릭하면 설명이 여기에 표시됩니다.</div>
+<script>
+const D=/*DATA*/null;
+const K={skills:['스킬','--skills'],agents:['에이전트','--agents'],commands:['커맨드','--commands'],hooks:['훅','--hooks'],mcp:['MCP','--mcp']};
+const on=new Set(Object.keys(K));let q='';
+const $=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+const col=k=>`var(${K[k][1]})`;
+function fs(){const w=document.getElementById('fs');w.textContent='';for(const k in K){const b=$('button','f'+(on.has(k)?' on':''));b.style.setProperty('--c',col(k));b.append($('i'),document.createTextNode(`${K[k][0]} ${D.totals[k]}`));b.onclick=()=>{on.has(k)?on.delete(k):on.add(k);fs();draw()};w.append(b)}}
+function draw(){const m=document.getElementById('m');m.textContent='';
+for(const g of D.groups){const box=$('div','box '+g.kind+(g.enabled===false?' off':''));
+const h=$('div','bh');h.append($('b',0,g.name));if(g.version)h.append($('span',0,'v'+String(g.version).slice(0,8)));if(g.source)h.append($('span',0,g.source));h.append($('span','tag',{user:'user',project:'project',plugin:g.enabled===false?'disabled':'plugin'}[g.kind]));box.append(h);
+let n=0;
+for(const k in K){if(!on.has(k))continue;const it=g[k].filter(x=>!q||(x.name+' '+x.desc).toLowerCase().includes(q));if(!it.length)continue;n+=it.length;
+const s=$('div','sec');s.style.setProperty('--c',col(k));s.append($('div',0,`${K[k][0]} ${it.length}`));const c=$('div','chips');
+for(const x of it){const ch=$('span','chip',x.name);ch.onclick=()=>{document.querySelectorAll('.sel').forEach(e=>e.classList.remove('sel'));ch.classList.add('sel');const d=document.getElementById('d');d.textContent='';d.append($('b',0,`${K[k][0]} · ${x.name}`),document.createTextNode('  '+(x.desc||'(설명 없음)')+(x.extra?'  [model: '+x.extra+']':'')))};c.append(ch)}
+s.append(c);box.append(s)}
+if(n||!q)m.append(box)}}
+document.getElementById('q').oninput=e=>{q=e.target.value.toLowerCase();draw()};
+document.getElementById('meta').textContent=D.groups.length+'개 그룹 · '+new Date(D.generatedAt).toLocaleString();
+fs();draw();
+</script></body></html>

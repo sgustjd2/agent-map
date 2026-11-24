@@ -1,0 +1,7 @@
+{
+  "name": "agent-map",
+  "owner": { "name": "team" },
+  "plugins": [
+    { "name": "agent-map", "source": "./", "description": "로컬 Claude Code 구성(에이전트/스킬/플러그인/MCP/훅) 지도" }
+  ]
+}
