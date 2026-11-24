@@ -29,11 +29,21 @@ function front(file) {
 
 // Redaction: URLs -> scheme+host+path (no userinfo/query), commands -> executable basename only.
 const safeUrl = (u) => { try { const x = new URL(u); return x.origin + x.pathname; } catch { return ''; } };
-const safeCmd = (c) => path.basename(String(c || '').trim().replace(/^["']/, '').split(/s+/)[0] || '');
-const hookEvents = (h) => Object.entries(h || {}).map(([ev, arr]) => ({
-  name: ev, desc: (Array.isArray(arr) ? arr : []).flatMap(x => x.hooks || []).map(x => x.command ? safeCmd(x.command) : x.type).filter(Boolean).join(' | ').slice(0, 200),
-}));
-const mcpList = (s) => Object.entries(s || {}).map(([n, c]) => ({ name: n, desc: c.url ? safeUrl(c.url) : safeCmd(c.command), type: c.type || (c.url ? 'http' : 'stdio') }));
+const safeCmd = (c) => path.basename(String(c || '').trim().replace(/^["']/, '').split(/\s+/)[0] || '');
+// Hook shown as "Event [matcher]" + script file name only (args are never shown).
+const hookFile = (c) => {
+  const m = String(c || '').match(/[\w.-]+\.(?:js|mjs|cjs|sh|cmd|ps1|py|bat|exe)\b/); // script name inside inline `node -e` too
+  if (m) return m[0];
+  const t = (String(c || '').match(/"[^"]*"|'[^']*'|\S+/g) || []).map(x => x.replace(/^["']|["']$/g, '')).filter(x => !x.startsWith('-'));
+  const pick = t.find(x => /[\\/]/.test(x)) || t[0] || '';
+  return path.basename(pick.replace(/\\/g, '/').split('?')[0]);
+};
+const hookEvents = (h) => Object.entries(h || {}).flatMap(([ev, arr]) => (Array.isArray(arr) ? arr : []).flatMap(g =>
+  (g.hooks || []).map(x => ({
+    name: ev + (g.matcher ? ' [' + String(g.matcher).slice(0, 40) + ']' : ''),
+    desc: x.command ? '실행: ' + hookFile(x.command) : '종류: ' + (x.type || 'hook'),
+  }))));
+const mcpList = (s) => Object.entries(s || {}).filter(([, c]) => c && typeof c === 'object' && (c.command || c.url)).map(([n, c]) => ({ name: n, desc: c.url ? safeUrl(c.url) : safeCmd(c.command), type: c.type || (c.url ? 'http' : 'stdio') }));
 
 function scanDir(root) {
   const skills = ls(path.join(root, 'skills')).filter(d => d.isDirectory() || d.isSymbolicLink())
@@ -45,8 +55,11 @@ function scanDir(root) {
     return { name: fm.name || f.name.replace(/\.md$/, ''), desc: fm.description || '', extra: fm.model || '' };
   });
   const pj = readJson(path.join(root, '.claude-plugin', 'plugin.json')) || {};
-  const hooks = hookEvents((readJson(path.join(root, 'hooks', 'hooks.json')) || pj).hooks);
-  const mcp = mcpList((readJson(path.join(root, '.mcp.json')) || {}).mcpServers || pj.mcpServers);
+  // plugin.json may hold hooks/mcpServers inline (object) or as a relative file path (string).
+  const ref = (v) => typeof v === 'string' ? (readJson(path.join(root, v)) || {}) : { hooks: v, mcpServers: v };
+  const hooks = hookEvents((readJson(path.join(root, 'hooks', 'hooks.json')) || (typeof pj.hooks === 'string' ? ref(pj.hooks) : pj)).hooks);
+  const mj = readJson(path.join(root, '.mcp.json')); // either { mcpServers: {...} } or servers at top level
+  const mcp = mcpList(mj ? (mj.mcpServers || mj) : (typeof pj.mcpServers === 'string' ? ref(pj.mcpServers) : pj).mcpServers);
   return { skills, agents: md('agents'), commands: md('commands'), hooks, mcp, description: pj.description || '' };
 }
 
