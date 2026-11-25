@@ -53,7 +53,11 @@ await shot('flow-trace', 2800);
 await click('.pgt', 0); await sleep(600);
 await click('.pgi', 1); await until(`!!document.querySelector('.phd')`); await sleep(500);
 await shot('project', 2800);
-// 5. back to a working session, in the dark theme
+// 5. the live flow map: project clusters, session nodes, subagent nodes
+await click('#tabMap'); await until(`!!document.querySelector('.mbox')`); await sleep(600);
+await shot('map', 3200);
+await click('#tabLive'); await until(`!!document.querySelector('.sri.running')`); await sleep(400);
+// 6. back to a working session, in the dark theme
 await click('.sri.running .sim'); await until(`document.querySelectorAll('.tr').length>3`); await sleep(500);
 await js(`document.getElementById('th').click()`); await sleep(700);
 await shot('dark', 2600);

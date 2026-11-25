@@ -102,6 +102,7 @@ session('shop-web', 'a1', 'Fix checkout total rounding bug', 4, [
   [128, 'A', 'One test still fails: the fixture expects the old rounding. I will update the fixture.'],
   [134, 'T', 'Edit', F('src/cart/__fixtures__/carts.json'), 3],
   [141, 'T', 'Bash', B('npm test -- cart', 'Run the cart test suite again'), 24],
+  [150, 'T', 'Agent', { subagent_type: 'code-reviewer', description: 'Review the rounding change' }, 18],
   [172, 'T', 'Bash', B('npm run lint', 'Lint the changed files'), 11],
   [190, 'P', 'Great. Also run the full checkout flow tests before you finish.'],
   [196, 'T', 'Bash', B('npm test -- checkout', 'Run the full checkout test suite'), 0, 'pending'],
@@ -110,6 +111,7 @@ session('shop-web', 'a2', 'Add dark mode toggle to settings', 52, [
   [0, 'P', 'Add a dark mode toggle to the settings page and remember the choice.'],
   [8, 'T', 'Read', F('src/settings/Settings.tsx'), 1], [14, 'T', 'Write', F('src/theme/useTheme.ts'), 5], [30, 'T', 'Edit', F('src/settings/Settings.tsx'), 4],
   [44, 'T', 'Bash', B('npm run build', 'Type-check and build'), 38],
+  [88, 'T', 'Agent', { subagent_type: 'explorer', description: 'Find other theme usages' }, 6],
   [96, 'A', 'The toggle is in place and the preference is stored in localStorage. The build passes.'],
 ], { mtimeAgoMin: 7, branch: 'feat/dark-mode', ctx: 38000 });
 session('shop-web', 'a3', 'Upgrade React Router to v7', 60 * 6, [

@@ -4,14 +4,14 @@
 /* Three screens: soft (default, low glare), light, dark. Large type, one accent, 4px grid, radius 4 / 8 / 12.
    Design pass after the unslop skill by Damir Sokolovsky (@heydamir), CC BY 4.0. */
 :root{--side:#e6e9ed;--bg:#e6e9ed;--card:#f4f5f7;--raised:#eaedf0;--line:#bcc5cf;
---fg:#1f2733;--sub:#3d4859;--mut:#535f72;--accent:#0a5bc4;--onaccent:#fff;--sel:#d3e4fb;--shadow:none;
+--fg:#171d23;--sub:#36404b;--mut:#52606d;--accent:#0a5bc4;--onaccent:#fff;--sel:#d3e4fb;--shadow:none;
 --ease:cubic-bezier(.22,1,.36,1);
 --sans:"Pretendard","Geist",system-ui,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;
 --mono:"Geist Mono","JetBrains Mono","Cascadia Mono",ui-monospace,Consolas,monospace}
 html[data-theme="light"]{--side:#f6f8fa;--bg:#ffffff;--card:#ffffff;--raised:#f6f8fa;--line:#d1d9e0;
---fg:#111827;--sub:#434d5e;--mut:#5f6a7d;--accent:#0969da;--sel:#ddf4ff;--shadow:none}
+--fg:#1f2328;--sub:#3d444d;--mut:#59636e;--accent:#0969da;--sel:#ddf4ff;--shadow:none}
 html[data-theme="dark"]{--side:#0d1117;--bg:#0d1117;--card:#151b23;--raised:#1b222c;--line:#30363d;
---fg:#e6e9f0;--sub:#b7bdca;--mut:#8d95a8;--accent:#4493f8;--onaccent:#0d1117;--sel:#14304f;--shadow:none}
+--fg:#e6edf3;--sub:#b6c0cb;--mut:#8b95a1;--accent:#4493f8;--onaccent:#0d1117;--sel:#14304f;--shadow:none}
 *{box-sizing:border-box}html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--fg);font:400 16px/24px var(--sans);font-variant-numeric:tabular-nums;display:grid;grid-template-rows:auto auto minmax(0,1fr);overflow:hidden}
 button{font:inherit;color:inherit}
@@ -214,7 +214,7 @@ addEventListener('resize',draw);
 { /* same tabs as the live dashboard; the live tab only works when served by the live server */
  const nav=document.getElementById('tabs'),live=/^https?:$/.test(location.protocol),off=tt('실시간 서버에서만 열 수 있습니다 (/agent-map:live)');
  const mk=(label,href,cur,tip)=>{const link=href&&live&&!cur,a=$(link?'a':'span','tab',label);if(link)a.href=href;else if(cur)a.setAttribute('aria-current','page');else{a.setAttribute('aria-disabled','true');a.title=tip}return a};
- nav.append(mk(tt('실시간'),'/',false,off),mk(tt('구성 지도'),'',true))}
+ nav.append(mk(tt('실시간'),'/',false,off),mk(tt('실시간 흐름'),'/#m',false,off),mk(tt('구성 지도'),'',true))}
 function localize(){document.documentElement.lang='en';const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);for(let n;n=w.nextNode();){const t=n.nodeValue.trim();if(t&&EN[t])n.nodeValue=n.nodeValue.replace(t,EN[t])}for(const e of document.querySelectorAll('[title],[aria-label],[placeholder]'))for(const a of ['title','aria-label','placeholder']){const v=e.getAttribute(a);if(v&&EN[v])e.setAttribute(a,EN[v])}}
 document.getElementById('lg').textContent=LANG==='en'?'한국어':'English';document.getElementById('lg').onclick=()=>{store.set('agent-map-lang',LANG==='en'?'ko':'en');location.reload()};
 if(LANG==='en')localize();

@@ -47,6 +47,8 @@ Update with `/plugin marketplace update agent-map` and `/plugin update agent-map
 
 ## Screens
 
+<img src="docs/images/flow-map.png" alt="Live flow tab: a box per project with session cards and subagent nodes connected below them" width="900">
+
 | Flow of one session | Config map |
 |---|---|
 | <img src="docs/images/live-flow.png" alt="Session flow with durations, an error row and a running subagent"> | <img src="docs/images/config-map.png" alt="Map of skills, agents, commands, hooks and MCP servers"> |
@@ -60,6 +62,7 @@ Dark theme:
 **Live dashboard (`/agent-map:live`)**
 - A sidebar like the Claude desktop app: collapsible project groups with their folder path (so equal names are never confused), sessions nested below. Each session is working, waiting for input, or dormant (no activity for 30 minutes). Click one and its flow opens on the right. Status is shown by icon shape and text, not color alone
 - Error count per session, last tool used, branch, time since last activity
+- **Live flow tab**: a map of what is running right now. One rounded box per project (with its folder), a card per working or waiting session, and the subagents it started hanging below it on connector lines; the running one is highlighted. Filter by working or waiting, include dormant sessions with a switch, click a node to open that session
 - Flow view: one row per step with a duration bar, grouped repeats (`x3`), a "now" banner, KPI strip (span, turns, tool calls, errors, subagents, context tokens), most-edited files, slowest steps, commands, MCP servers
 - Search, 1 to 30 day window, a bar with the share of working, waiting and dormant sessions; the info button of a project opens its folder, tool usage and cleanup
 - English and Korean UI. It follows your browser language; switch with the button in the header

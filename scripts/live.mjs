@@ -159,6 +159,7 @@ function state(days) {
     const sessions = ss.map(({ sid, i, st }) => ({
       sid, title: i.title || sid.slice(0, 8), branch: i.branch, model: i.model, status: statusOf(i, st, now),
       lastTs: new Date(st.mtimeMs).toISOString(), nTools: i.nTools, agents: i.agents, last: i.last, top: i.top, skills: i.skills, size: st.size, errs: i.events.filter(e => e.s === 'err').length, stop: i.stop,
+      subs: i.events.filter(e => e.k === 'agent').slice(-6).map(e => ({ n: e.target, s: e.s })), // subagent type + state only: safe to show to read-only viewers
     }));
     const tools = new Map(), skills = new Set();
     for (const s of sessions) { for (const [n, c] of s.top) tools.set(n, (tools.get(n) || 0) + c); s.skills.forEach(x => skills.add(x)); }
