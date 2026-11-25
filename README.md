@@ -66,7 +66,8 @@ Dark theme:
 - Flow view: one row per step with a duration bar, grouped repeats (`x3`), a "now" banner, KPI strip (span, turns, tool calls, errors, subagents, context tokens), most-edited files, slowest steps, commands, MCP servers
 - Search, 1 to 30 day window, a bar with the share of working, waiting and dormant sessions; the info button of a project opens its folder, tool usage and cleanup
 - English and Korean UI. It follows your browser language; switch with the button in the header
-- Three themes, text zoom, keyboard shortcuts (`/` search, `Esc` back)
+- Search shows the match count and highlights the match; collapse or expand all projects with one click; a pinned status line keeps the current step and error count visible above the flow
+- Three themes, text zoom, keyboard: `/` search, `Up`/`Down` move through projects and sessions, `Enter` opens, `Left`/`Right` fold a project, `Esc` goes back
 
 **Config map (`/agent-map`)**
 - Skills, agents, commands, hooks and MCP servers from `~/.claude`, the current project and installed plugins (inactive ones marked)
