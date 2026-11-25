@@ -1,165 +1,120 @@
+<div align="center">
+
 # agent-map
 
-내 로컬 Claude Code를 한눈에 보는 플러그인입니다. 두 가지 화면이 있습니다.
+**A live dashboard for your Claude Code sessions. See which ones are working, which are waiting for you, and what each one just did.**
 
-- **구성 지도 (`/agent-map`)**: 사용자, 프로젝트, 플러그인에 설치된 스킬·에이전트·커맨드·훅·MCP 서버를 한 화면에 보여줍니다.
-- **실시간 대시보드 (`/agent-map:live`)**: 프로젝트별로 지금 어떤 작업이 돌아가는지, 세션의 작업 흐름이 어떻게 이어지는지 보여주고, 안 쓰는 세션을 정리할 수 있습니다.
+English · [한국어](README.ko.md)
 
-두 화면 모두 외부 서비스를 쓰지 않고, 이 컴퓨터의 파일만 읽습니다. 모델 토큰도 쓰지 않습니다.
+[![release](https://img.shields.io/github/v/release/sgustjd2/agetn-map)](https://github.com/sgustjd2/agetn-map/releases)
+[![license](https://img.shields.io/github/license/sgustjd2/agetn-map)](LICENSE)
+![node](https://img.shields.io/badge/node-%E2%89%A518-3c873a)
+![deps](https://img.shields.io/badge/dependencies-0-brightgreen)
 
----
+<img src="docs/images/live-projects.png" alt="agent-map dashboard: Claude Code sessions grouped by project and split into working, waiting and dormant" width="900">
 
-## 설치
+</div>
 
-팀원 각자 Claude Code에서 아래 두 줄을 실행합니다.
+Run several Claude Code sessions at once and you lose track: which terminal is still working, which one stopped to ask you something, which one failed ten minutes ago. agent-map reads the session logs Claude Code already writes on your machine and shows them in one page. Nothing leaves your computer and no model tokens are used.
+
+> The UI text is currently Korean. An English UI is on the wish list; the docs and code are in English and Korean.
+
+## Install
+
+In Claude Code:
 
 ```
 /plugin marketplace add sgustjd2/agetn-map
 /plugin install agent-map@agent-map
 ```
 
-업데이트는 마켓플레이스를 갱신한 뒤 다시 설치합니다.
+Restart Claude Code, then run:
 
 ```
-/plugin marketplace update agent-map
-/plugin update agent-map@agent-map
+/agent-map:live     # live dashboard
+/agent-map          # map of your skills, agents, commands, hooks and MCP servers
 ```
 
-설치 후 Claude Code를 재시작해야 새 명령이 보입니다. Node 18 이상이 필요합니다.
+Needs Node 18 or newer. No `npm install`: the plugin has zero dependencies.
 
-버전 목록과 변경 내용은 [릴리스 페이지](https://github.com/sgustjd2/agetn-map/releases)에서 볼 수 있습니다.
+Update with `/plugin marketplace update agent-map` and `/plugin update agent-map@agent-map`.
 
----
+## What it is for
 
-## 구성 지도 (`/agent-map`)
+- **Running many sessions.** Waiting sessions are tinted amber and working sessions green, so the ones that need you stand out even at a glance, in light, soft and dark themes.
+- **Watching a long task.** The flow view lists every tool call with its duration, flags errors, and says what the session is doing right now.
+- **Finding out what happened.** Which files were edited, which commands ran, which step was slow, where it failed.
+- **Cleaning up.** Old sessions pile up in `claude --resume`. Select dormant ones and move them to a recoverable trash folder.
+- **Knowing your setup.** One map of every skill, agent, command, hook and MCP server from user, project and plugins, with search and plain-language descriptions.
 
-`/agent-map`을 실행하면 로컬을 스캔해 HTML을 만들고 기본 브라우저로 엽니다. 터미널에는 그룹별 개수가 출력됩니다.
+## Screens
 
-- **그룹:** 사용자(`~/.claude`), 현재 프로젝트(`.claude`, `.mcp.json`), 설치된 플러그인(비활성 표시)
-- **종류 필터:** 전체, 스킬, 에이전트, 커맨드, 훅, MCP 서버. 칩에 항목 수가 붙습니다
-- **범위 필터:** 전체, 사용자, 프로젝트, 플러그인. "비활성 플러그인 포함" 스위치
-- **검색:** 이름과 설명으로 찾습니다. `/` 키로 바로 이동합니다
-- **상세 패널:** 카드를 누르면 설명, 호출 방법(`/review-pr`처럼 복사 가능), 인자, 허용 도구, 파일 위치가 나옵니다. 훅은 발동 시점과 대상 도구를 한국어로 풀어 보여줍니다
-- **화면 모드:** 소프트(기본), 라이트, 다크. 헤더 버튼으로 바꾸고 기억합니다. 글자 크기는 `A-` `A+`로 조절합니다
-- **구성 지도 탭:** 실시간 대시보드에서도 같은 화면으로 오갈 수 있습니다
+| Flow of one session | Config map |
+|---|---|
+| <img src="docs/images/live-flow.png" alt="Session flow with durations, an error row and a running subagent"> | <img src="docs/images/config-map.png" alt="Map of skills, agents, commands, hooks and MCP servers"> |
 
-보안: MCP와 훅은 이름, 주소(쿼리와 계정 정보 제거), 실행 파일 이름만 표시합니다. 인자, 환경변수, 헤더는 읽지 않습니다. HTML은 `~/.claude/agent-map/`에 저장되고 외부로 보내지 않습니다.
+Dark theme:
 
-스캔만 하려면: `node scripts/agent-map.mjs --no-open`
+<img src="docs/images/live-projects-dark.png" alt="Dashboard in the dark theme" width="900">
 
----
+## Features
 
-## 실시간 대시보드 (`/agent-map:live`)
+**Live dashboard (`/agent-map:live`)**
+- Sessions per project, grouped as working, waiting for input, or dormant (no activity for 30 minutes). Status is shown by icon shape and text, not color alone
+- Error count per session, last tool used, branch, time since last activity
+- Flow view: one row per step with a duration bar, grouped repeats (`x3`), a "now" banner, KPI strip (span, turns, tool calls, errors, subagents, context tokens), most-edited files, slowest steps, commands, MCP servers
+- Open a project folder, copy its path, search, filter, sort, 1 to 30 day window
+- Three themes, text zoom, keyboard shortcuts (`/` search, `Esc` back)
 
-`/agent-map:live`를 실행하면 이 컴퓨터에서만 열리는 작은 서버를 띄우고 브라우저로 엽니다. 2초마다 갱신하고, 서버는 30분 동안 접속이 없으면 자동으로 꺼집니다.
+**Config map (`/agent-map`)**
+- Skills, agents, commands, hooks and MCP servers from `~/.claude`, the current project and installed plugins (inactive ones marked)
+- Detail panel with how to invoke it, arguments, allowed tools and file location. Hooks are explained in words
 
-### 프로젝트 탭
-- 프로젝트 카드마다 상태(작업 중, 대기, 휴면), 마지막 활동 시각, 세션 수를 보여줍니다
-- 세션은 **작업 중 → 대기 → 휴면** 묶음으로 나뉘고, 작업 중은 초록 띠와 굵은 제목으로 강조합니다. 휴면은 2개만 보이고 나머지는 접힙니다
-- **많이 쓴 도구**는 이름, 막대, 호출 횟수로 보여주고, **사용한 스킬**은 따로 모읍니다
-- **폴더 열기:** 탐색기에서 프로젝트 폴더를 엽니다. 폴더가 삭제됐으면 `폴더가 삭제됨`으로 표시하고, 남아 있는 가장 가까운 상위 폴더를 엽니다
-- **경로 복사:** 프로젝트 경로를 클립보드에 넣습니다
-- 상단에서 검색, 상태 필터, 정렬(최근 활동순 또는 이름순), 기간(1·3·7·30일), 임시 작업 폴더 포함 여부를 고릅니다
+**Session cleanup**
+- Default is a move to `~/.claude/agent-map-trash`, which you can restore by hand. Permanent delete needs a switch and a second click
+- Sessions active in the last 30 minutes are never touched. Only files under `~/.claude/projects` are affected, never your project code
 
-### 실시간 흐름 탭
-세션을 누르면 작업 흐름이 시간순으로 보입니다. 한 줄이 한 단계이고, 막대 길이가 걸린 시간입니다.
+**View from another device (optional)**
+- `node scripts/live.mjs --lan` serves the page on your local network, read-only, same subnet only. Add `--token` for a secret link
 
-- **지금 상태:** `지금: Bash for 실행 중 (4분 36초째)`처럼 현재 하는 일을 한 줄로 보여줍니다. 응답이 오래 없으면 권한 승인을 기다리는 중일 수 있다고 알려줍니다
-- **요약 수치:** 기록 구간, 턴 수, 도구 호출 수(분당 평균), 오류 수, 서브에이전트 수, 컨텍스트 토큰 수
-- **시간 배분:** 명령 실행, MCP 도구, 읽기·검색, 수정·쓰기 등 도구 종류별 시간 비율
-- **정보 묶음:** 수정·작성한 파일, 읽은 파일, 오래 걸린 단계, 실행한 명령, 사용한 MCP 서버, 오류가 난 단계
-- **흐름:** 프롬프트와 응답은 구분선으로, 도구 호출은 한 줄씩 나옵니다. 같은 도구가 연속되면 `×3`처럼 묶습니다
-- **조작:** 일시정지, 도구 종류별 강조, 새 단계가 생기면 `새 단계 N개 · 최신으로` 버튼
-- **작업 내용 표시 (스위치, 기본 켜짐):** 무슨 요청으로 무슨 작업을 했는지 볼 수 있습니다.
-  - 요약에 `최근 요청`과 `마지막 응답`이 나오고, 프롬프트와 응답의 첫 줄이 인용 블록으로 흐름 사이에 들어갑니다
-  - 명령·서브에이전트 단계에는 모델이 붙인 한 줄 설명(예: `로그인 컴포넌트 테스트 실행`)이 막대 옆에 나옵니다
-  - 시스템이 끼워 넣는 문맥(`<system-reminder>` 등)은 걸러냅니다
-  - **이 컴퓨터에서 연 화면에만 보입니다.** 다른 기기(LAN)로 접속하면 이 내용은 서버가 보내지 않습니다
-  - 스위치를 끄면 서버에 내용을 요청하지도 않습니다. 화면을 공유할 때는 꺼 두세요
-- 명령어 인자, 도구 출력, 파일 내용은 읽지 않습니다
+## Privacy
 
-### 세션 삭제·정리
-안 쓰는 휴면 세션을 정리할 수 있습니다.
+| | |
+|---|---|
+| Reads | Tail of session logs in `~/.claude/projects`, plugin and settings files (names, URLs, executable names) |
+| Shown on this computer only | First line of prompts and replies, one-line step descriptions. Switchable. The server never sends them to other devices |
+| Never read | Command arguments, tool output, file contents, environment variables, headers |
+| Sent anywhere | Nothing. No telemetry, no model calls |
+| Network | `127.0.0.1` only by default. Write actions need a custom header and are refused for other devices |
 
-- **진입:** 휴면 묶음의 `정리` 버튼, 또는 세션 상세 화면의 `이 세션 삭제…`
-- **선택:** 체크박스로 고릅니다. `작은 세션 선택`은 내용이 거의 없는 세션을 한 번에 고릅니다
-- **기본 동작 (휴지통 이동):** 선택한 세션의 기록 파일과 하위 폴더를 `~/.claude/agent-map-trash/`로 옮깁니다. 이 폴더에서 되돌릴 수 있습니다
-- **영구 삭제:** 스위치를 켜면 휴지통을 거치지 않고 바로 지웁니다. 버튼을 두 번 눌러야 실행됩니다
-- **휴지통 비우기:** 휴지통에 항목이 있으면 도구줄에 링크가 나타납니다. 영구 삭제라서 한 번 더 확인합니다
-- **안전장치:**
-  - 최근 30분 안에 쓴 세션은 옮기거나 지우지 않습니다
-  - 프로젝트 폴더의 코드와 파일은 건드리지 않습니다. 세션 기록(`~/.claude/projects` 안)만 대상입니다
-  - 경로 탈출(`..`)과 잘못된 이름은 서버가 거부합니다
-  - 쓰기 요청은 커스텀 헤더가 있어야 하므로 다른 웹사이트가 몰래 호출할 수 없습니다
+Session titles can reveal what you work on. Turn the content switch off and mind your screen when sharing.
 
-**주의:** 정리한 세션은 `claude --resume` 목록에서 사라집니다. 휴지통으로 옮긴 세션은 폴더에서 되돌리면 다시 보입니다. 처음에는 휴지통 이동으로 시작하시길 권합니다.
+## How it works
 
-### 구성 지도 탭
-같은 서버의 `/map`에서 열립니다. 방문할 때마다 최신 상태로 새로 만듭니다.
+A small Node server (about one file, standard library only) reads the end of each `~/.claude/projects/*/<session>.jsonl`, derives status from file activity and pending tool calls, and serves a single HTML page that polls every 2 seconds. It shuts itself down after 30 minutes without visitors. Stop it with `node scripts/live.mjs --stop`.
 
-### 키보드
-`/` 검색, `Esc` 뒤로 또는 검색 지우기, 방향키로 탭 이동.
+Status rules: **working** means the log changed in the last 30 seconds or a tool call is still pending (under 10 minutes). **Waiting** means no activity for under 30 minutes. **Dormant** means 30 minutes or more.
 
----
+## FAQ
 
-## 같은 네트워크의 다른 기기에서 보기
+**Does it use my Claude tokens?** No. It only reads local files.
 
-기본은 이 컴퓨터(`127.0.0.1`)에서만 열립니다. 다른 기기에서도 보려면 `--lan`으로 실행합니다.
+**Does it work with the Claude desktop app?** The plugin installs and runs from Claude Code. It shows whatever session logs exist in `~/.claude/projects`. I have not verified every way of starting a session, so tell me if something is missing.
 
-```
-node scripts/live.mjs --lan
-```
+**Windows, macOS, Linux?** Developed and tested on Windows 11. The code uses only portable Node APIs; "open folder" uses the platform's default file manager.
 
-실행하면 접속 주소가 출력됩니다(예: `http://192.168.1.112:7788/`).
+**Why is the repo called agetn-map?** A typo that stuck. The plugin name is `agent-map`.
 
-- **같은 네트워크만:** 접속한 기기의 주소가 이 컴퓨터와 같은 사설 네트워크(서브넷)일 때만 허용합니다. 다른 네트워크와 인터넷은 403으로 거부합니다
-- **읽기 전용:** 다른 기기에서 접속하면 보기만 됩니다. 폴더 열기, 세션 정리, 휴지통 비우기, 서버 종료는 서버가 거부하고 화면에서도 숨겨집니다
-- **이 컴퓨터는 예외:** 이 PC의 브라우저가 자기 LAN 주소로 접속해도 이 컴퓨터로 취급해 전체 기능을 씁니다. 다른 기기는 이 PC의 주소를 흉내 낼 수 없습니다
-- **접근 토큰(선택):** `--lan --token`으로 실행하면 무작위 토큰이 포함된 주소로만 들어갑니다. 토큰은 HttpOnly 쿠키로 유지됩니다. 틀린 토큰을 10번 보내면 해당 기기를 5분간 차단합니다
+## Contributing
 
-**주의:**
-- 같은 네트워크에 있는 사람은 프로젝트 경로와 세션 제목을 볼 수 있습니다
-- HTTPS가 아니라서 내용이 네트워크에서 그대로 오갑니다. 공용 와이파이에서는 쓰지 마세요
-- Windows 방화벽이 처음에 node.exe 허용을 물으면 **사설 네트워크만** 허용하세요
-- 끝나면 `node scripts/live.mjs --stop`으로 끄세요
+Issues and pull requests are welcome. Keep it dependency-free. Run the scanner with `node scripts/agent-map.mjs --no-open` and the dashboard with `node scripts/live.mjs --serve`. To record screenshots from fake data instead of your own sessions, see `docs/demo/make-demo-home.mjs`.
 
----
+Releases are automatic: bump `version` in `.claude-plugin/plugin.json`, push to main, and the workflow tags and publishes it.
 
-## 개인정보와 보안 요약
+## License
 
-- 읽는 것: `~/.claude/projects`의 세션 기록 끝부분과 플러그인·설정 파일의 이름, 주소, 실행 파일 이름
-- 이 컴퓨터의 화면에만 보내는 것(스위치로 끌 수 있음): 프롬프트와 응답의 첫 줄, 명령·서브에이전트 단계의 한 줄 설명
-- 읽지 않는 것: 명령어 인자, 도구 출력, 파일 내용, 환경변수, 헤더
-- 외부 전송: 없음. 모델 호출도 없음
-- 서버: 기본은 `127.0.0.1` 전용. 다른 Host 헤더는 거부
-- 쓰기 동작: 커스텀 헤더 필요, 같은 네트워크의 다른 기기에서는 금지, 최근 30분 세션 보호
-- 세션 제목은 작업 주제가 드러날 수 있으니 화면을 공유할 때 주의하세요
+[MIT](LICENSE)
 
----
+UI accessibility patterns follow the `ui-styling` skill. The visual design pass followed the [unslop](https://github.com/heydamir/unslop) skill by Damir Sokolovsky ([@heydamir](https://x.com/heydamir)), CC BY 4.0.
 
-## 개발자용: 릴리스 관리
-
-릴리스는 **자동**으로 만들어집니다. `.github/workflows/release.yml`이 main에 올라온 변경에서 `.claude-plugin/plugin.json`의 버전을 읽고, 아직 없는 태그라면 다음을 자동으로 합니다.
-
-1. 태그 `v<버전>` 생성
-2. 그 시점의 파일을 묶은 `agent-map-<버전>.zip` 첨부
-3. 이전 릴리스 이후 커밋을 모은 릴리스 노트 자동 작성
-
-새 릴리스를 만들려면 **버전을 올리고 main에 푸시**하면 됩니다.
-
-```
-# .claude-plugin/plugin.json 의 "version" 을 올린다 (예: 0.7.0 -> 0.7.1)
-git commit -am "feat: ... (0.7.1)"
-git push
-```
-
-같은 버전으로 다시 푸시하면 릴리스를 만들지 않습니다. 실행 내역은 저장소의 Actions 탭에서 볼 수 있습니다. 필요하면 Actions 탭에서 `release`를 수동으로 실행할 수도 있습니다.
-
-**주의:** 설치된 사용자는 `/plugin update`를 해야 새 버전을 받습니다. 캐시가 같은 버전 이름으로 남아 있으면 업데이트되지 않으니, 코드를 고쳤을 때는 반드시 버전을 올리세요.
-
----
-
-## 크레딧
-
-- 접근성 패턴(탭, `aria-pressed`, 상태 알림, 포커스 유지)은 `ui-styling` 스킬의 지침을 따랐습니다.
-- 화면 디자인은 Damir Sokolovsky([@heydamir](https://x.com/heydamir))의 [unslop](https://github.com/heydamir/unslop) 스킬(CC BY 4.0) 지침을 따라 다듬었습니다.
+If agent-map saves you a few minutes a day, a star on the repo helps others find it.

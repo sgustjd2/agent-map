@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 
 const HOME = os.homedir();
 const PROJ = path.join(HOME, '.claude', 'projects');
-const BASE = 7788, PORTS = 10, TAIL = 512 * 1024, IDLE_EXIT = 30 * 60 * 1000, SIG = 'agent-map-live';
+const BASE = +process.env.AGENT_MAP_PORT || 7788, PORTS = 10, TAIL = 512 * 1024, IDLE_EXIT = 30 * 60 * 1000, SIG = 'agent-map-live';
 const TRASH = path.join(HOME, '.claude', 'agent-map-trash'); // cleanup moves sessions here (recoverable), never deletes directly
 const FRESH_MS = 30 * 60 * 1000;                              // sessions used within 30 minutes are never touched
 const SAFE_ID = /^(?!\.+$)[\w.-]+$/; // no "." or ".." (path traversal); used for every id that becomes part of a path
@@ -156,7 +156,7 @@ function state(days) {
     const cwd = (ss.find(s => s.i.cwd) || { i: {} }).i.cwd || '';
     const sessions = ss.map(({ sid, i, st }) => ({
       sid, title: i.title || sid.slice(0, 8), branch: i.branch, model: i.model, status: statusOf(i, st, now),
-      lastTs: new Date(st.mtimeMs).toISOString(), nTools: i.nTools, agents: i.agents, last: i.last, top: i.top, skills: i.skills, size: st.size,
+      lastTs: new Date(st.mtimeMs).toISOString(), nTools: i.nTools, agents: i.agents, last: i.last, top: i.top, skills: i.skills, size: st.size, errs: i.events.filter(e => e.s === 'err').length, stop: i.stop,
     }));
     const tools = new Map(), skills = new Set();
     for (const s of sessions) { for (const [n, c] of s.top) tools.set(n, (tools.get(n) || 0) + c); s.skills.forEach(x => skills.add(x)); }
