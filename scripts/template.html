@@ -34,6 +34,9 @@ header{grid-column:2/4;padding:16px 24px 0;background:var(--card);border-bottom:
 .btn{height:40px;padding:0 16px;background:var(--card);border:1px solid var(--line);border-radius:8px;color:var(--sub);cursor:pointer;font-size:15px;transition:background-color .15s var(--ease),color .15s var(--ease),border-color .15s var(--ease)}
 .btn:hover{background:var(--raised);color:var(--fg)}
 .btn.sm{height:36px;padding:0 12px;font-size:14px}
+a.btn{display:inline-flex;align-items:center;text-decoration:none}[hidden]{display:none!important}
+.cp{margin-left:8px;height:28px;padding:0 8px;font-size:13px;vertical-align:middle}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .frow{display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap}
 .lab{font:500 14px/20px var(--sans);color:var(--mut);width:40px;flex:none}
 .chips{display:flex;gap:8px;flex-wrap:wrap}
@@ -89,12 +92,12 @@ header{grid-column:2/4;padding:16px 24px 0;background:var(--card);border-bottom:
 <header>
  <div class="top"><input id="q" type="search" placeholder="이름이나 설명으로 검색 (/)" aria-label="검색"><button class="btn" id="clr" hidden>지우기</button>
   <span class="meta" id="meta"></span>
-  <div class="tools"><button class="btn sm" id="zo" aria-label="글자 작게" title="글자 작게">A-</button><button class="btn sm" id="zi" aria-label="글자 크게" title="글자 크게">A+</button><button class="btn sm" id="th" title="화면 모드 바꾸기"></button></div></div>
+  <div class="tools"><button class="btn sm" id="zo" aria-label="글자 작게" title="글자 작게">A-</button><button class="btn sm" id="zi" aria-label="글자 크게" title="글자 크게">A+</button><button class="btn sm" id="th" title="화면 모드 바꾸기"></button><a class="btn sm" id="lv" href="/" hidden>실시간 대시보드</a></div></div>
  <div class="frow"><span class="lab">종류</span><div class="chips" id="kf"></div></div>
  <div class="frow"><span class="lab">범위</span><div class="seg" id="sf"></div><label class="chk"><input type="checkbox" id="offb" checked>비활성 플러그인 포함</label><button class="lnk" id="rst" hidden>필터 초기화</button></div>
  <div id="bar"></div>
 </header>
-<main id="vp"><div id="w"></div></main>
+<main id="vp"><div id="w"></div></main><div class="sr" role="status" aria-live="polite" id="sr"></div>
 <div id="det"><div class="hintbox">카드를 클릭하면 이름, 설명, 호출 방법, 파일 위치 같은 자세한 정보가 여기에 표시됩니다</div></div>
 <script>
 const D=/*DATA*/null;
@@ -129,9 +132,12 @@ function detail(k,x,g){
   rows.push(['이벤트',x.event],['대상',matcherText(x)],['실행',x.script],['방식',x.htype],['제한 시간',x.timeout?x.timeout+'초':''])}
  if(k==='mcp'){body=`${x.name} MCP 서버입니다. Claude가 이 서버의 도구를 사용할 수 있습니다.`;rows.push(['연결 방식',x.type],['주소/명령',x.desc])}
  return {body,rows:rows.filter(r=>r[1])}}
+function copyBtn(text,what){const b=$('button','btn sm cp','복사');b.setAttribute('aria-label',what+' 복사');
+ b.onclick=async()=>{let ok=true;try{await navigator.clipboard.writeText(text)}catch{const t=document.createElement('textarea');t.value=text;document.body.append(t);t.select();try{ok=document.execCommand('copy')}catch{ok=false}t.remove()}
+  b.textContent=ok?'복사됨':'복사 실패';document.getElementById('sr').textContent=ok?what+'을 복사했습니다':'복사하지 못했습니다';setTimeout(()=>b.textContent='복사',1500)};return b}
 function showDet(k,x,g){const d=detail(k,x,g);det.textContent='';
  const t=$('div','top2');t.append($('span','tag',KL[k]));const cb=$('button','btn','닫기');cb.onclick=()=>det.classList.remove('open');t.append(cb);
- const dl=$('dl');for(const [a,b] of d.rows){dl.append($('dt',0,a));const dd=$('dd');if(['호출','파일','실행','주소/명령'].includes(a)){dd.append($('code',0,b))}else dd.textContent=b;dl.append(dd)}
+ const dl=$('dl');for(const [a,b] of d.rows){dl.append($('dt',0,a));const dd=$('dd');if(['호출','파일','실행','주소/명령'].includes(a)){dd.append($('code',0,b));if(a==='호출'||a==='파일')dd.append(copyBtn(b,a))}else dd.textContent=b;dl.append(dd)}
  det.append(t,$('h3',0,x.name),$('div','src',g.name),$('h4',0,'설명'),$('p',0,d.body),$('h4',0,'정보'),dl);det.classList.add('open');det.scrollTop=0}
 function toolbar(){const c=counts(),all=Object.values(c).reduce((a,b)=>a+b,0);
  const kf=document.getElementById('kf');kf.textContent='';
@@ -180,5 +186,6 @@ const setTheme=t=>{th=t;document.documentElement.dataset.theme=t;thb.textContent
 thb.onclick=()=>setTheme(TH[(TH.indexOf(th)+1)%TH.length]);
 addEventListener('resize',draw);
 document.getElementById('gen').textContent=new Date(D.generatedAt).toLocaleString();
+if(/^https?:$/.test(location.protocol))document.getElementById('lv').hidden=false; /* only when served by the live server */
 setTheme(th);setZoom(zoom);render();
 </script></body></html>

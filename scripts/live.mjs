@@ -9,7 +9,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-import { spawn } from 'node:child_process';
+import { spawn, execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const HOME = os.homedir();
@@ -174,7 +174,16 @@ function serve() {
     const json = (o, code = 200) => { res.writeHead(code, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }); res.end(JSON.stringify(o)); };
     if (req.method === 'POST' && u.pathname === '/api/stop' && req.headers['x-agent-map']) { json({ ok: true }); setTimeout(() => process.exit(0), 50); return; }
     if (req.method !== 'GET') { res.writeHead(405).end(); return; }
-    if (u.pathname === '/') { res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }); res.end(fs.readFileSync(page, 'utf8')); return; }
+    const htmlHead = { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store',
+      'content-security-policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'" };
+    if (u.pathname === '/') { res.writeHead(200, htmlHead); res.end(fs.readFileSync(page, 'utf8')); return; }
+    if (u.pathname === '/map') { // config map, regenerated on every visit so it is never stale
+      try {
+        execFileSync(process.execPath, [path.join(here, 'agent-map.mjs'), '--no-open'], { timeout: 15000, stdio: 'ignore' });
+        res.writeHead(200, htmlHead); res.end(fs.readFileSync(path.join(HOME, '.claude', 'agent-map', 'agent-map.html'), 'utf8'));
+      } catch { res.writeHead(500, { 'content-type': 'text/plain; charset=utf-8' }); res.end('구성 지도를 만들지 못했습니다'); }
+      return;
+    }
     if (u.pathname === '/api/ping') return json({ sig: SIG });
     if (u.pathname === '/api/state') return json(state(Math.min(30, Math.max(1, +u.searchParams.get('days') || 3))));
     if (u.pathname === '/api/flow') {
