@@ -11,7 +11,7 @@
 ![node](https://img.shields.io/badge/node-%E2%89%A518-3c873a)
 ![deps](https://img.shields.io/badge/dependencies-0-brightgreen)
 
-<img src="docs/images/live-projects-ko.png" alt="프로젝트별 세션이 작업 중, 대기, 휴면으로 나뉘어 보이는 agent-map 대시보드" width="900">
+<img src="docs/images/demo-ko.gif" alt="데모: 세션이 작업 중·대기·휴면으로 나뉘어 보이고, 세션을 열면 단계별 흐름과 오류 행, 실행 중인 서브에이전트가 보이며, 입력 대기 세션만 걸러 보고 다크 테마로 바꾸는 화면" width="900">
 
 </div>
 

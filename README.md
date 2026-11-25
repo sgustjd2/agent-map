@@ -11,7 +11,7 @@ English · [한국어](README.ko.md)
 ![node](https://img.shields.io/badge/node-%E2%89%A518-3c873a)
 ![deps](https://img.shields.io/badge/dependencies-0-brightgreen)
 
-<img src="docs/images/live-projects.png" alt="agent-map dashboard: Claude Code sessions grouped by project and split into working, waiting and dormant" width="900">
+<img src="docs/images/demo.gif" alt="Demo: the agent-map dashboard lists Claude Code sessions as working, waiting or dormant, opens the step-by-step flow of one session with an error row and a running subagent, filters sessions waiting for input, and switches to the dark theme" width="900">
 
 </div>
 
