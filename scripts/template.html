@@ -1,13 +1,19 @@
 <!DOCTYPE html>
-<html lang="ko"><head><meta charset="utf-8"><title>Agent Map</title>
+<html lang="ko" data-theme="soft"><head><meta charset="utf-8"><title>Agent Map</title>
 <style>
-/* Light, large type, one accent. 4px grid; radius 4 / 8 / 12. Design pass after the unslop skill by Damir Sokolovsky (@heydamir), CC BY 4.0. */
-:root{--side:#eceff4;--bg:#f5f7fa;--card:#ffffff;--raised:#e8ecf3;--line:rgba(17,24,39,.12);
---fg:#111827;--sub:#434d5e;--mut:#5f6a7d;--accent:#1a64c8;--sel:#e6f0fd;--ease:cubic-bezier(.22,1,.36,1);
+/* Three screens: soft (default, low glare), light, dark. Large type, one accent, 4px grid, radius 4 / 8 / 12.
+   Design pass after the unslop skill by Damir Sokolovsky (@heydamir), CC BY 4.0. */
+:root{--side:#dde2ea;--bg:#e8ebf0;--card:#f3f5f8;--raised:#dbe0e8;--line:rgba(31,39,51,.15);
+--fg:#1f2733;--sub:#3d4859;--mut:#535f72;--accent:#1a5fbf;--onaccent:#fff;--sel:#d6e4f8;--shadow:0 1px 2px rgba(31,39,51,.08);
+--ease:cubic-bezier(.22,1,.36,1);
 --sans:"Pretendard","Geist",system-ui,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;
 --mono:"Geist Mono","JetBrains Mono","Cascadia Mono",ui-monospace,Consolas,monospace}
+html[data-theme="light"]{--side:#eceff4;--bg:#f5f7fa;--card:#ffffff;--raised:#e8ecf3;--line:rgba(17,24,39,.12);
+--fg:#111827;--sub:#434d5e;--mut:#5f6a7d;--accent:#1a64c8;--sel:#e6f0fd;--shadow:0 1px 2px rgba(17,24,39,.06)}
+html[data-theme="dark"]{--side:#07080d;--bg:#0b0d14;--card:#11141c;--raised:#1a1e28;--line:rgba(238,240,245,.13);
+--fg:#e6e9f0;--sub:#b7bdca;--mut:#8d95a8;--accent:#6cb4ff;--onaccent:#07101c;--sel:#16304e;--shadow:none}
 *{box-sizing:border-box}html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--fg);font:400 16px/24px var(--sans);font-variant-numeric:tabular-nums;display:grid;grid-template-columns:272px minmax(0,1fr) 380px;grid-template-rows:auto minmax(0,1fr);overflow:hidden}
+body{background:var(--bg);color:var(--fg);font:400 16px/24px var(--sans);font-variant-numeric:tabular-nums;display:grid;grid-template-columns:272px minmax(0,1fr) 400px;grid-template-rows:auto minmax(0,1fr);overflow:hidden}
 button{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 aside{grid-row:1/3;background:var(--side);border-right:1px solid var(--line);overflow:auto;padding:24px 12px 16px}
@@ -15,26 +21,39 @@ aside h1{font:600 20px/28px var(--sans);margin:0 12px 4px}
 aside .sub{font:400 13px/20px var(--mono);color:var(--mut);margin:0 12px}
 aside h2{font:500 14px/20px var(--sans);color:var(--mut);margin:24px 12px 8px}
 .gi{display:flex;align-items:center;gap:8px;min-height:40px;margin-bottom:4px;padding:0 12px;border:0;border-radius:8px;background:none;width:100%;text-align:left;color:var(--sub);cursor:pointer;transition:background-color .15s var(--ease),color .15s var(--ease)}
-.gi:hover{background:rgba(17,24,39,.05);color:var(--fg)}
-.gi.on{background:var(--card);color:var(--fg);box-shadow:0 1px 2px rgba(17,24,39,.08)}
+.gi:hover{background:rgba(127,135,150,.14);color:var(--fg)}
+.gi.on{background:var(--card);color:var(--fg);box-shadow:var(--shadow)}
 .gi span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gi em{font:400 14px/20px var(--mono);font-style:normal;color:var(--mut)}.gi.offp{opacity:.65}
 header{grid-column:2/4;padding:16px 24px 0;background:var(--card);border-bottom:1px solid var(--line)}
-.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.row+.row{margin-top:12px}
-input{flex:1;min-width:200px;max-width:560px;height:48px;padding:0 16px;background:var(--bg);border:1px solid var(--line);border-radius:8px;color:var(--fg);font:inherit;transition:border-color .15s var(--ease),background-color .15s var(--ease)}
-input:focus{outline:0;border-color:var(--accent);background:var(--card)}input::placeholder{color:var(--mut)}
+.top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#q{flex:1;min-width:200px;max-width:560px;height:48px;padding:0 16px;background:var(--bg);border:1px solid var(--line);border-radius:8px;color:var(--fg);font:inherit;transition:border-color .15s var(--ease),background-color .15s var(--ease)}
+#q:focus{outline:0;border-color:var(--accent);background:var(--card)}#q::placeholder{color:var(--mut)}
+.meta{margin-left:auto;white-space:nowrap;font:400 14px/20px var(--mono);color:var(--mut)}
+.tools{display:flex;gap:8px;margin-left:16px}
 .btn{height:40px;padding:0 16px;background:var(--card);border:1px solid var(--line);border-radius:8px;color:var(--sub);cursor:pointer;font-size:15px;transition:background-color .15s var(--ease),color .15s var(--ease),border-color .15s var(--ease)}
 .btn:hover{background:var(--raised);color:var(--fg)}
-.btn.on{background:var(--fg);border-color:var(--fg);color:#fff}
-.btn b{font:400 14px/20px var(--mono);margin-left:8px;opacity:.75}
-.btn i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:8px;background:var(--c)}
-.meta{margin-left:auto;white-space:nowrap;font:400 14px/20px var(--mono);color:var(--mut)}
-.zm{display:flex;gap:4px;align-items:center;color:var(--mut);font-size:14px;margin-left:16px}.zm .btn{height:40px;width:40px;padding:0}
+.btn.sm{height:36px;padding:0 12px;font-size:14px}
+.frow{display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap}
+.lab{font:500 14px/20px var(--sans);color:var(--mut);width:40px;flex:none}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;height:36px;padding:0 12px;background:var(--card);border:1px solid var(--line);border-radius:8px;color:var(--sub);cursor:pointer;transition:background-color .15s var(--ease),border-color .15s var(--ease)}
+.chip:hover{background:var(--raised)}
+.chip.on{background:var(--sel);border-color:var(--accent);color:var(--fg);font-weight:600}
+.chip i{width:8px;height:8px;border-radius:2px;margin-right:8px;background:var(--c)}
+.chip b{font:400 13px/20px var(--mono);margin-left:8px;color:var(--mut)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{height:34px;padding:0 16px;background:var(--card);border:0;border-left:1px solid var(--line);color:var(--sub);cursor:pointer;font-size:15px;transition:background-color .15s var(--ease)}
+.seg button:first-child{border-left:0}.seg button:hover{background:var(--raised)}
+.seg button.on{background:var(--accent);color:var(--onaccent);font-weight:600}
+.chk{display:inline-flex;align-items:center;gap:8px;color:var(--sub);font-size:15px;cursor:pointer;margin-left:8px}
+.chk input{width:18px;height:18px;accent-color:var(--accent);margin:0}
+.lnk{background:none;border:0;color:var(--accent);cursor:pointer;font-size:15px;padding:0 8px;height:36px;text-decoration:underline}
 #bar{display:flex;gap:2px;height:8px;margin:16px -24px 0;overflow:hidden}
 #bar i{display:block;background:var(--c);transition:flex .2s var(--ease)}
 #vp{grid-column:2;overflow:auto;padding:24px}
 #w{display:grid;gap:24px;align-items:start}
-.g{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:24px;box-shadow:0 1px 2px rgba(17,24,39,.05);scroll-margin-top:24px;transition:border-color .15s var(--ease)}
+.g{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:24px;box-shadow:var(--shadow);scroll-margin-top:24px;transition:border-color .15s var(--ease)}
 .g.sel{border-color:var(--accent)}.g.offp{opacity:.7}
 .gh{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
 .gh b{font:600 22px/28px var(--sans)}.gh code{font:400 14px/20px var(--mono);color:var(--mut)}
@@ -49,89 +68,117 @@ input:focus{outline:0;border-color:var(--accent);background:var(--card)}input::p
 .empty{margin:8px 0 0;color:var(--sub);font-size:15px;line-height:24px}
 .none{grid-column:1/-1;padding:48px 24px;text-align:center;color:var(--sub)}.none p{margin:0 0 12px}.none p:first-child{font-size:18px;color:var(--fg)}
 #det{grid-column:3;grid-row:2;background:var(--card);border-left:1px solid var(--line);padding:24px;overflow:auto}
-#det h2{display:flex;justify-content:space-between;align-items:center;font:500 14px/20px var(--sans);color:var(--mut);margin:0 0 16px}
-#det h2 .btn{height:32px;padding:0 12px;font-size:14px;display:none}
-#det h3{font:600 20px/28px var(--mono);margin:8px 0 12px;overflow-wrap:anywhere}
+#det .top2{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+#det .tag{font:500 13px/20px var(--mono);color:var(--accent)}
+#det .top2 .btn{display:none;height:32px;padding:0 12px;font-size:14px}
+#det h3{font:600 20px/28px var(--mono);margin:0 0 4px;overflow-wrap:anywhere}
+#det h4{font:500 13px/20px var(--sans);color:var(--mut);margin:24px 0 8px;padding-top:16px;border-top:1px solid var(--line)}
+#det .src{font-size:14px;line-height:20px;color:var(--sub)}
 #det p{margin:0;font-size:16px;line-height:26px;white-space:pre-wrap}
-#det dl{margin:24px 0 0;display:grid;grid-template-columns:72px 1fr;gap:8px 12px;font-size:15px;line-height:24px}
-#det dt{font:400 14px/24px var(--mono);color:var(--mut)}#det dd{margin:0;overflow-wrap:anywhere}
+#det dl{margin:0;display:grid;grid-template-columns:88px minmax(0,1fr);gap:12px 12px;font-size:15px;line-height:24px}
+#det dt{font:400 13px/24px var(--mono);color:var(--mut)}#det dd{margin:0;overflow-wrap:anywhere}
+#det dd code{font:400 14px/20px var(--mono);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:2px 6px}
 .hintbox{color:var(--sub);font-size:15px;line-height:24px}
 @media (max-width:1100px){
  body{grid-template-columns:240px minmax(0,1fr)}header{grid-column:2}
- #det{display:none;position:fixed;left:240px;right:0;bottom:0;max-height:50%;grid-column:auto;border-top:1px solid var(--line);box-shadow:0 -8px 24px rgba(17,24,39,.12)}
- #det.open{display:block}#det h2 .btn{display:inline-block}}
+ #det{display:none;position:fixed;left:240px;right:0;bottom:0;max-height:55%;grid-column:auto;border-top:1px solid var(--line);box-shadow:0 -8px 24px rgba(0,0,0,.18)}
+ #det.open{display:block}#det .top2 .btn{display:inline-block}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style></head><body>
 <aside><h1>Agent Map</h1><p class="sub" id="gen"></p><h2>그룹</h2><div id="gl"></div></aside>
 <header>
- <div class="row"><input id="q" type="search" placeholder="이름이나 설명으로 검색 (/)" aria-label="검색"><button class="btn" id="clr" hidden>지우기</button>
-  <span class="meta" id="meta"></span><div class="zm" title="글자 크기">글자<button class="btn" id="zo" aria-label="글자 작게">A-</button><button class="btn" id="zi" aria-label="글자 크게">A+</button></div></div>
- <div class="row"><span class="row" id="kf" style="margin:0"></span><span class="row" id="sf" style="margin:0"></span><button class="btn on" id="offb" aria-pressed="true">비활성 포함</button><button class="btn" id="rst" hidden>초기화</button></div>
+ <div class="top"><input id="q" type="search" placeholder="이름이나 설명으로 검색 (/)" aria-label="검색"><button class="btn" id="clr" hidden>지우기</button>
+  <span class="meta" id="meta"></span>
+  <div class="tools"><button class="btn sm" id="zo" aria-label="글자 작게" title="글자 작게">A-</button><button class="btn sm" id="zi" aria-label="글자 크게" title="글자 크게">A+</button><button class="btn sm" id="th" title="화면 모드 바꾸기"></button></div></div>
+ <div class="frow"><span class="lab">종류</span><div class="chips" id="kf"></div></div>
+ <div class="frow"><span class="lab">범위</span><div class="seg" id="sf"></div><label class="chk"><input type="checkbox" id="offb" checked>비활성 플러그인 포함</label><button class="lnk" id="rst" hidden>필터 초기화</button></div>
  <div id="bar"></div>
 </header>
 <main id="vp"><div id="w"></div></main>
-<div id="det"><h2><span>상세</span><button class="btn" id="dc">닫기</button></h2><div class="hintbox">카드를 클릭하면 이름, 설명, 출처가 여기에 표시됩니다</div></div>
+<div id="det"><div class="hintbox">카드를 클릭하면 이름, 설명, 호출 방법, 파일 위치 같은 자세한 정보가 여기에 표시됩니다</div></div>
 <script>
 const D=/*DATA*/null;
 const K={skills:'#2f7de1',agents:'#d9822b',commands:'#2fa36b',hooks:'#8a63d2',mcp:'#d9546b'};
+const KL={skills:'스킬',agents:'에이전트',commands:'커맨드',hooks:'훅',mcp:'MCP 서버'};
 const SC={all:'전체',user:'사용자',project:'프로젝트',plugin:'플러그인'};
+const EV={SessionStart:'세션이 시작, 재개, 초기화될 때',UserPromptSubmit:'사용자가 프롬프트를 보낸 직후, Claude가 처리하기 전',PreToolUse:'도구를 실행하기 직전 (실행을 막을 수 있음)',PostToolUse:'도구 실행이 끝난 직후',Stop:'Claude가 응답을 끝낼 때',SubagentStart:'서브에이전트가 시작될 때',SubagentStop:'서브에이전트가 끝날 때',Notification:'알림이 발생할 때',PreCompact:'대화를 압축하기 직전',SessionEnd:'세션이 끝날 때',PermissionRequest:'권한 요청이 나타날 때'};
+const TOOLEV=new Set(['PreToolUse','PostToolUse','PermissionRequest']);
+const TH=['soft','light','dark'],THN={soft:'소프트',light:'라이트',dark:'다크'};
 const st={kind:'all',scope:'all',q:'',off:true};
 const $=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
 const vp=document.getElementById('vp'),w=document.getElementById('w'),det=document.getElementById('det');
+const store={get:k=>{try{return localStorage.getItem(k)}catch{return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}}};
 const inScope=g=>(st.scope==='all'||g.kind===st.scope)&&(st.off||g.enabled!==false);
 const hit=x=>!st.q||(x.name+' '+x.desc).toLowerCase().includes(st.q);
 const kinds=()=>st.kind==='all'?Object.keys(K):[st.kind];
 const items=(g,k)=>g[k].filter(hit);
 const total=g=>kinds().reduce((n,k)=>n+items(g,k).length,0);
 function counts(){const c={};for(const k in K)c[k]=0;for(const g of D.groups)if(inScope(g))for(const k in K)c[k]+=items(g,k).length;return c}
-function cols(){return Math.max(1,Math.min(3,Math.floor((vp.clientWidth-48+24)/(420+24))))}
-function showDet(k,x,g){det.textContent='';const h=$('h2');h.append($('span',0,k));const cb=$('button','btn','닫기');cb.onclick=()=>det.classList.remove('open');h.append(cb);
- const dl=$('dl');for(const [a,b] of [['source',g.name],['kind',k]].concat(x.extra?[['model',x.extra]]:[]))dl.append($('dt',0,a),$('dd',0,b));
- det.append(h,$('h3',0,x.name),$('p',0,x.desc||'설명 없음'),dl);det.classList.add('open')}
+const cols=()=>Math.max(1,Math.min(3,Math.floor((vp.clientWidth-48+24)/(420+24))));
+const pfx=g=>g.kind==='plugin'?g.name+':':'';
+function hookText(x){return x.event?(EV[x.event]||x.event):''}
+function matcherText(x){if(!x.matcher)return '모든 경우';if(TOOLEV.has(x.event))return x.matcher+' 도구일 때만';if(x.event==='SessionStart')return '시작 유형: '+x.matcher;return '조건: '+x.matcher}
+function cardText(k,x){return k==='hooks'?`${hookText(x)}${x.script?' · '+x.script:''}`:(x.desc||'')}
+function detail(k,x,g){
+ const src=g.name+(g.version?' v'+String(g.version).slice(0,8):'');
+ const rows=[['출처',src],['범위',SC[g.kind]+(g.enabled===false?' (비활성)':'')]];
+ let body=x.desc||'설명이 없습니다';
+ if(k==='skills'||k==='commands')rows.push(['호출',`/${pfx(g)}${x.name}`],['인자',x.hint],['허용 도구',x.tools],['파일',x.file]);
+ if(k==='agents')rows.push(['호출',`${pfx(g)}${x.name}`],['모델',x.extra],['도구',x.tools],['파일',x.file]);
+ if(k==='hooks'){body=`이 훅은 ${x.event} 이벤트에 연결돼 있습니다.\n발동 시점: ${hookText(x)}\n대상: ${matcherText(x)}${x.script?'\n실행 파일: '+x.script:''}`;
+  rows.push(['이벤트',x.event],['대상',matcherText(x)],['실행',x.script],['방식',x.htype],['제한 시간',x.timeout?x.timeout+'초':''])}
+ if(k==='mcp'){body=`${x.name} MCP 서버입니다. Claude가 이 서버의 도구를 사용할 수 있습니다.`;rows.push(['연결 방식',x.type],['주소/명령',x.desc])}
+ return {body,rows:rows.filter(r=>r[1])}}
+function showDet(k,x,g){const d=detail(k,x,g);det.textContent='';
+ const t=$('div','top2');t.append($('span','tag',KL[k]));const cb=$('button','btn','닫기');cb.onclick=()=>det.classList.remove('open');t.append(cb);
+ const dl=$('dl');for(const [a,b] of d.rows){dl.append($('dt',0,a));const dd=$('dd');if(['호출','파일','실행','주소/명령'].includes(a)){dd.append($('code',0,b))}else dd.textContent=b;dl.append(dd)}
+ det.append(t,$('h3',0,x.name),$('div','src',g.name),$('h4',0,'설명'),$('p',0,d.body),$('h4',0,'정보'),dl);det.classList.add('open');det.scrollTop=0}
 function toolbar(){const c=counts(),all=Object.values(c).reduce((a,b)=>a+b,0);
  const kf=document.getElementById('kf');kf.textContent='';
- const mk=(key,label,n,col)=>{const b=$('button','btn'+(st.kind===key?' on':''));if(col)b.append($('i'));if(col)b.firstChild.style.setProperty('--c',col);b.append(document.createTextNode(label),$('b',0,String(n)));b.setAttribute('aria-pressed',st.kind===key);b.onclick=()=>{st.kind=key;render()};return b};
- kf.append(mk('all','전체',all));for(const k in K)kf.append(mk(k,k,c[k],K[k]));
+ const mk=(key,label,n,col)=>{const b=$('button','chip'+(st.kind===key?' on':''));if(col){const i=$('i');i.style.setProperty('--c',col);b.append(i)}b.append(document.createTextNode(label),$('b',0,String(n)));b.setAttribute('aria-pressed',st.kind===key);b.onclick=()=>{st.kind=key;render()};return b};
+ kf.append(mk('all','전체',all));for(const k in K)kf.append(mk(k,KL[k],c[k],K[k]));
  const sf=document.getElementById('sf');sf.textContent='';
- for(const s in SC){const b=$('button','btn'+(st.scope===s?' on':''),SC[s]);b.setAttribute('aria-pressed',st.scope===s);b.onclick=()=>{st.scope=s;render()};sf.append(b)}
+ for(const s in SC){const b=$('button',st.scope===s?'on':'',SC[s]);b.setAttribute('aria-pressed',st.scope===s);b.onclick=()=>{st.scope=s;render()};sf.append(b)}
  const bar=document.getElementById('bar');bar.textContent='';for(const k in K){const i=$('i');i.style.flex=String(c[k]||0);i.style.setProperty('--c',K[k]);bar.append(i)}
  document.getElementById('meta').textContent=`${st.kind==='all'?all:c[st.kind]}개 항목`;
- const dirty=st.q||st.kind!=='all'||st.scope!=='all'||!st.off;
- document.getElementById('rst').hidden=!dirty;document.getElementById('clr').hidden=!st.q}
+ document.getElementById('rst').hidden=!(st.q||st.kind!=='all'||st.scope!=='all'||!st.off);document.getElementById('clr').hidden=!st.q}
 function draw(){w.textContent='';const gl=document.getElementById('gl');gl.textContent='';
  const n=cols();w.style.gridTemplateColumns=`repeat(${n},minmax(0,1fr))`;
  const gs=D.groups.filter(inScope);
- const full=gs.filter(g=>total(g)),empty=gs.filter(g=>!g.skills.length&&!g.agents.length&&!g.commands.length&&!g.hooks.length&&!g.mcp.length);
+ const full=gs.filter(g=>total(g)),empty=gs.filter(g=>!Object.keys(K).some(k=>g[k].length));
  for(const g of full){
   const t=total(g),box=$('div','g'+(g.enabled===false?' offp':''));box.style.gridColumn='span '+Math.min(n,t<=6?1:t<=20?2:3);
-  const h=$('div','gh');h.append($('b',0,g.name),...[g.kind,g.enabled===false?'비활성':'',g.version?'v'+String(g.version).slice(0,8):''].filter(Boolean).map(x=>$('code',0,x)));box.append(h);
+  const h=$('div','gh');h.append($('b',0,g.name),...[SC[g.kind],g.enabled===false?'비활성':'',g.version?'v'+String(g.version).slice(0,8):''].filter(Boolean).map(x=>$('code',0,x)));box.append(h);
   if(g.description&&!st.q)box.append($('p','gd',g.description));
   for(const k of kinds()){const it=items(g,k);if(!it.length)continue;
-   const kb=$('div','k');kb.append($('div','kh',`${k} ${it.length}`));const cs=$('div','cs');
-   for(const x of it){const c=$('button','c');c.append($('b',0,x.name),$('p',0,x.desc||''));
+   const kb=$('div','k');kb.append($('div','kh',`${KL[k]} ${it.length}`));const cs=$('div','cs');
+   for(const x of it){const c=$('button','c');c.append($('b',0,x.name),$('p',0,cardText(k,x)));
     c.onclick=()=>{document.querySelectorAll('.c.sel').forEach(y=>y.classList.remove('sel'));c.classList.add('sel');showDet(k,x,g)};cs.append(c)}
    kb.append(cs);box.append(kb)}
   w.append(box);
   const gi=$('button','gi'+(g.enabled===false?' offp':''));gi.append($('span',0,g.name),$('em',0,String(t)));
   gi.onclick=()=>{document.querySelectorAll('.g.sel').forEach(e=>e.classList.remove('sel'));document.querySelectorAll('.gi.on').forEach(e=>e.classList.remove('on'));box.classList.add('sel');gi.classList.add('on');box.scrollIntoView({behavior:'smooth',block:'start'})};gl.append(gi)}
  if(empty.length&&!st.q&&st.kind==='all'){const box=$('div','g');const h=$('div','gh');h.append($('b',0,'구성 요소가 없는 플러그인'));box.append(h,$('p','empty',empty.map(g=>g.name).join(', ')+' (도구나 설정만 제공)'));w.append(box)}
- if(!w.children.length){const box=$('div','none');
-  const all=Object.values(counts()).reduce((a,b)=>a+b,0);
+ if(!w.children.length){const box=$('div','none');const all=Object.values(counts()).reduce((a,b)=>a+b,0);
   box.append($('p',0,'일치하는 항목이 없습니다'));
-  if(st.kind!=='all'&&all){const b=$('button','btn','전체 종류에서 '+all+'개 보기');b.onclick=()=>{st.kind='all';render()};box.append($('p',0,st.kind+' 종류에는 없지만 다른 종류에 있습니다'),b)}
+  if(st.kind!=='all'&&all){const b=$('button','btn','전체 종류에서 '+all+'개 보기');b.onclick=()=>{st.kind='all';render()};box.append($('p',0,KL[st.kind]+' 종류에는 없지만 다른 종류에 있습니다'),b)}
   else box.append($('p',0,'검색어나 필터를 바꿔 보세요'));
   w.append(box)}}
 function render(){toolbar();draw()}
-const q=document.getElementById('q');
+const q=document.getElementById('q'),ob=document.getElementById('offb');
 q.oninput=()=>{st.q=q.value.trim().toLowerCase();render()};
 document.getElementById('clr').onclick=()=>{q.value='';st.q='';render();q.focus()};
-document.getElementById('rst').onclick=()=>{q.value='';Object.assign(st,{kind:'all',scope:'all',q:'',off:true});ob.classList.add('on');render()};
-const ob=document.getElementById('offb');ob.onclick=()=>{st.off=!st.off;ob.classList.toggle('on',st.off);ob.setAttribute('aria-pressed',st.off);render()};
+document.getElementById('rst').onclick=()=>{q.value='';ob.checked=true;Object.assign(st,{kind:'all',scope:'all',q:'',off:true});render()};
+ob.onchange=()=>{st.off=ob.checked;render()};
 addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement!==q){e.preventDefault();q.focus()}else if(e.key==='Escape'){if(st.q){q.value='';st.q='';render()}det.classList.remove('open')}});
-let zoom=+(localStorage.getItem('agent-map-zoom')||1);
-const setZoom=z=>{zoom=Math.min(1.5,Math.max(.8,Math.round(z*100)/100));document.documentElement.style.zoom=zoom;try{localStorage.setItem('agent-map-zoom',zoom)}catch{}};
+let zoom=+(store.get('agent-map-zoom')||1);
+const setZoom=z=>{zoom=Math.min(1.5,Math.max(.8,Math.round(z*100)/100));document.documentElement.style.zoom=zoom;store.set('agent-map-zoom',zoom)};
 document.getElementById('zi').onclick=()=>{setZoom(zoom+.1);draw()};document.getElementById('zo').onclick=()=>{setZoom(zoom-.1);draw()};
+let th=store.get('agent-map-theme');if(!TH.includes(th))th='soft';
+const thb=document.getElementById('th');
+const setTheme=t=>{th=t;document.documentElement.dataset.theme=t;thb.textContent='화면 '+THN[t];store.set('agent-map-theme',t)};
+thb.onclick=()=>setTheme(TH[(TH.indexOf(th)+1)%TH.length]);
 addEventListener('resize',draw);
 document.getElementById('gen').textContent=new Date(D.generatedAt).toLocaleString();
-setZoom(zoom);render();
+setTheme(th);setZoom(zoom);render();
 </script></body></html>

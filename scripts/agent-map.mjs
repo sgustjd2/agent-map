@@ -18,7 +18,7 @@ function front(file) {
   if (!m) return out;
   const lines = m[1].split(/\r?\n/);
   for (let i = 0; i < lines.length; i++) {
-    const kv = lines[i].match(/^(name|description|model|tools):\s*(.*)$/);
+    const kv = lines[i].match(/^(name|description|model|tools|argument-hint|allowed-tools):\s*(.*)$/);
     if (!kv) continue;
     let v = kv[2].trim();
     if (/^[>|][+-]?$/.test(v)) { v = ''; while (i + 1 < lines.length && /^\s+/.test(lines[i + 1])) v += ' ' + lines[++i].trim(); }
@@ -27,6 +27,7 @@ function front(file) {
   return out;
 }
 
+const tilde = (p) => p.replace(HOME, '~').replace(/\\/g, '/'); // shown in the detail panel
 // Redaction: URLs -> scheme+host+path (no userinfo/query), commands -> executable basename only.
 const safeUrl = (u) => { try { const x = new URL(u); return x.origin + x.pathname; } catch { return ''; } };
 const safeCmd = (c) => path.basename(String(c || '').trim().replace(/^["']/, '').split(/\s+/)[0] || '');
@@ -42,6 +43,8 @@ const hookEvents = (h) => Object.entries(h || {}).flatMap(([ev, arr]) => (Array.
   (g.hooks || []).map(x => ({
     name: ev + (g.matcher ? ' [' + String(g.matcher).slice(0, 40) + ']' : ''),
     desc: x.command ? '실행: ' + hookFile(x.command) : '종류: ' + (x.type || 'hook'),
+    event: ev, matcher: g.matcher ? String(g.matcher).slice(0, 200) : '', htype: x.type || 'command',
+    script: x.command ? hookFile(x.command) : '', timeout: x.timeout || '',
   }))));
 const mcpList = (s) => Object.entries(s || {}).filter(([, c]) => c && typeof c === 'object' && (c.command || c.url)).map(([n, c]) => ({ name: n, desc: c.url ? safeUrl(c.url) : safeCmd(c.command), type: c.type || (c.url ? 'http' : 'stdio') }));
 
@@ -49,10 +52,10 @@ function scanDir(root) {
   const skills = ls(path.join(root, 'skills')).filter(d => d.isDirectory() || d.isSymbolicLink())
     .map(d => ({ name: d.name, ...front(path.join(root, 'skills', d.name, 'SKILL.md')) }))
     .filter(s => fs.existsSync(path.join(root, 'skills', s.name, 'SKILL.md')))
-    .map(s => ({ name: s.name, desc: s.description || '' }));
+    .map(s => ({ name: s.name, desc: s.description || '', hint: s['argument-hint'] || '', tools: s['allowed-tools'] || '', file: tilde(path.join(root, 'skills', s.name, 'SKILL.md')) }));
   const md = (sub) => ls(path.join(root, sub)).filter(f => f.name.endsWith('.md')).map(f => {
     const fm = front(path.join(root, sub, f.name));
-    return { name: fm.name || f.name.replace(/\.md$/, ''), desc: fm.description || '', extra: fm.model || '' };
+    return { name: fm.name || f.name.replace(/\.md$/, ''), desc: fm.description || '', extra: fm.model || '', hint: fm['argument-hint'] || '', tools: fm.tools || fm['allowed-tools'] || '', file: tilde(path.join(root, sub, f.name)) };
   });
   const pj = readJson(path.join(root, '.claude-plugin', 'plugin.json')) || {};
   // plugin.json may hold hooks/mcpServers inline (object) or as a relative file path (string).
