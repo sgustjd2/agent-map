@@ -52,15 +52,26 @@ main{overflow:auto;padding:24px;position:relative}
 .ph{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}.ph b{font:600 20px/28px var(--sans)}
 .path{font:400 13px/20px var(--mono);color:var(--mut);margin:0;overflow-wrap:anywhere}
 .st{display:inline-flex;align-items:center;gap:6px;font:500 14px/20px var(--sans)}.st i{width:8px;height:8px;border-radius:50%;background:var(--c)}
+.st.idle i{background:transparent;border:2px solid var(--c)}
+.st.dormant i{height:2px;border-radius:1px}
 .st.running{--c:var(--run);color:var(--run)}.st.idle{--c:var(--idle);color:var(--idle)}.st.dormant{--c:var(--dorm);color:var(--dorm)}
 .stat{display:flex;gap:16px;flex-wrap:wrap;margin:12px 0 0;color:var(--sub);font-size:15px}
 .tl{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .tl span{font:400 13px/20px var(--mono);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:0 8px;color:var(--sub)}
 .ss{margin-top:16px;border-top:1px solid var(--line)}
-.s{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 12px;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:12px 8px;cursor:pointer;border-radius:8px;transition:background-color .15s var(--ease)}
+.s{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 12px;width:100%;text-align:left;background:none;border:0;border-left:3px solid transparent;border-bottom:1px solid var(--line);padding:12px;cursor:pointer;border-radius:8px;transition:background-color .15s var(--ease)}
 .s:hover{background:var(--raised)}
 .s .t{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .s .m{grid-column:1/-1;font:400 13px/20px var(--mono);color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.s.running{background:color-mix(in srgb,var(--run) 10%,transparent);border-left-color:var(--run)}
+.s.running:hover{background:color-mix(in srgb,var(--run) 18%,transparent)}
+.s.running .t{font-weight:600}
+.s.idle{border-left-color:var(--idle)}
+.s.dormant .t{color:var(--mut);font-weight:400}.s.dormant .m{opacity:.8}
+.sg{display:flex;align-items:center;gap:8px;margin:16px 0 4px;font:500 13px/20px var(--mono);color:var(--c)}
+.sg::after{content:"";flex:1;height:1px;background:var(--line)}
+.sg.running{--c:var(--run)}.sg.idle{--c:var(--idle)}.sg.dormant{--c:var(--dorm)}
+.stat .run{color:var(--run);font-weight:600}
 .more{margin-top:8px}
 .none{padding:48px 24px;text-align:center;color:var(--sub)}.none p{margin:0 0 12px}.none p:first-child{font-size:18px;color:var(--fg)}
 /* flow */
@@ -157,7 +168,7 @@ function filtered(){if(!data)return[];const q=el('q').value.trim().toLowerCase()
 function statusBar(){const q=el('q').value.trim().toLowerCase(),scr=view.scr;const c={all:0,running:0,idle:0,dormant:0};
  for(const p of data?data.projects:[]){if(!scr&&p.scratch)continue;const pm=matchP(p,q);const hit={};for(const s of p.sessions)if(pm||matchS(s,q))hit[s.status]=1;if(Object.keys(hit).length)c.all++;for(const k in hit)c[k]++}
  const sf=el('sf');sf.textContent='';for(const [k,l] of [['all','전체'],['running','작업 중'],['idle','대기'],['dormant','휴면']]){const b=$('button',0,l);b.append($('b',0,String(c[k])));b.setAttribute('aria-pressed',view.status===k);b.onclick=()=>{view.status=k;statusBar();drawProjects(true)};sf.append(b)}}
-function sessionRow(p,s){const b=$('button','s');b.dataset.k='s:'+s.sid;const st=$('span','st '+s.status);st.append($('i'),document.createTextNode(ST[s.status]));
+function sessionRow(p,s){const b=$('button','s '+s.status);b.dataset.k='s:'+s.sid;const st=$('span','st '+s.status);st.append($('i'),document.createTextNode(ST[s.status]));
  b.append($('span','t',s.title),st,$('span','m',[lastText(s.last),s.branch&&s.branch!=='HEAD'?s.branch:'',ago(s.lastTs)].filter(Boolean).join('  ·  ')));
  b.setAttribute('aria-label',`${s.title}, ${ST[s.status]}, 작업 흐름 보기`);b.onclick=()=>openFlow(p,s);return b}
 function drawProjects(force){const g=el('grid');if(!data)return;
@@ -170,12 +181,17 @@ function drawProjects(force){const g=el('grid');if(!data)return;
   for(const {p,sessions} of list){const c=$('div','p'+(p.running?' run':''));
    const top=p.running?'running':(Date.now()-Date.parse(p.lastTs)<30*60e3?'idle':'dormant');
    const h=$('div','ph');h.append($('b',0,p.name));const st=$('span','st '+top);st.append($('i'),document.createTextNode(ST[top]));h.append(st);c.append(h,$('p','path',p.cwd||p.dir));
-   const stat=$('div','stat');stat.append($('span',0,`세션 ${p.sessions.length}`),$('span',0,`작업 중 ${p.running}`),$('span',0,`마지막 활동 ${ago(p.lastTs)}`));c.append(stat);
+   const stat=$('div','stat');stat.append($('span',0,`세션 ${p.sessions.length}`),$('span',p.running?'run':0,`작업 중 ${p.running}`),$('span',0,`마지막 활동 ${ago(p.lastTs)}`));c.append(stat);
    if(p.top.length){const tl=$('div','tl');for(const [n,k] of p.top)tl.append($('span',0,`${n} ${k}`));c.append(tl)}
    if(p.skills.length){const tl=$('div','tl');for(const n of p.skills)tl.append($('span',0,'skill '+n));c.append(tl)}
-   const ss=$('div','ss'),open=view.expanded.has(p.dir),shown=open?sessions:sessions.slice(0,4);
-   for(const s of shown)ss.append(sessionRow(p,s));
-   if(sessions.length>4){const m=$('button','btn more',open?'접기':`세션 ${sessions.length-4}개 더 보기`);m.dataset.k='m:'+p.dir;m.setAttribute('aria-expanded',open);m.onclick=()=>{open?view.expanded.delete(p.dir):view.expanded.add(p.dir);drawProjects(true)};ss.append(m)}
+   /* sessions grouped by state: working first, dormant last and collapsed to 2 */
+   const ss=$('div','ss'),open=view.expanded.has(p.dir),by={running:[],idle:[],dormant:[]};
+   for(const s of sessions)by[s.status].push(s);
+   for(const k of ['running','idle','dormant']){const arr=by[k];if(!arr.length)continue;
+    const g=$('div','sg '+k,`${ST[k]} ${arr.length}`);g.setAttribute('role','heading');g.setAttribute('aria-level','4');ss.append(g);
+    const fold=k==='dormant'&&arr.length>2&&!open;
+    for(const s of fold?arr.slice(0,2):arr)ss.append(sessionRow(p,s));
+    if(k==='dormant'&&arr.length>2){const m=$('button','btn more',open?'접기':`휴면 ${arr.length-2}개 더 보기`);m.dataset.k='m:'+p.dir;m.setAttribute('aria-expanded',open);m.onclick=()=>{open?view.expanded.delete(p.dir):view.expanded.add(p.dir);drawProjects(true)};ss.append(m)}}
    c.append(ss);g.append(c)}})}
 
 /* ---------- flow ---------- */
