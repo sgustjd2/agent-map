@@ -102,6 +102,27 @@ main{overflow:auto;padding:24px;position:relative}
 .leg button{display:inline-flex;align-items:center;gap:6px}.leg i{display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--c)}
 #newb{position:sticky;bottom:0;display:flex;justify-content:center;margin-top:16px}
 #newb .btn{background:var(--accent);color:var(--onaccent);border-color:var(--accent);font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.pa{display:flex;gap:8px;margin-top:8px}
+.lnk{background:none;border:0;color:var(--accent);cursor:pointer;font-size:14px;padding:0 8px;height:28px;text-decoration:underline}
+.sg>.lnk{order:2}.sg::after{order:1}
+.btn.danger{background:var(--err);border-color:var(--err);color:var(--onaccent);font-weight:600}
+.btn.danger:hover{background:var(--err);color:var(--onaccent);filter:brightness(1.08)}
+.btn:disabled{opacity:.5;cursor:default}
+dialog{border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--fg);padding:24px;width:min(600px,calc(100% - 32px));max-height:80vh;overflow:auto}
+dialog::backdrop{background:rgba(7,8,13,.5)}
+dialog h2{font:600 20px/28px var(--sans);margin:0 0 8px}
+.dn{margin:0 0 16px;color:var(--sub);font-size:15px;line-height:24px}
+.dq{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.dr{display:flex;flex-direction:column;gap:4px;margin-bottom:16px}
+.cr{display:grid;grid-template-columns:20px minmax(0,1fr);gap:12px;align-items:start;text-align:left;width:100%;padding:12px;background:var(--bg);border:1px solid var(--line);border-radius:8px;cursor:pointer;transition:background-color .15s var(--ease),border-color .15s var(--ease)}
+.cr:hover{background:var(--raised)}.cr[aria-checked="true"]{background:var(--sel);border-color:var(--accent)}
+.cr .box{width:20px;height:20px;border-radius:4px;border:1.5px solid var(--mut);background:var(--card);display:flex;align-items:center;justify-content:center;margin-top:2px}
+.cr[aria-checked="true"] .box{background:var(--accent);border-color:var(--accent)}
+.cr[aria-checked="true"] .box::after{content:"";width:5px;height:10px;border:solid var(--onaccent);border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.cr .tx{display:flex;flex-direction:column;min-width:0}.cr .tx b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cr .mt{font:400 13px/20px var(--mono);color:var(--mut)}.cr .sm{font:500 12px/16px var(--sans);color:var(--idle);margin-top:4px}
+.df{display:flex;gap:8px;justify-content:flex-end}
+#toast{position:fixed;left:24px;bottom:24px;max-width:min(560px,calc(100% - 48px));background:var(--fg);color:var(--bg);padding:12px 16px;border-radius:8px;font-size:14px;line-height:20px;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:10}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style></head><body>
 <header>
@@ -120,7 +141,7 @@ main{overflow:auto;padding:24px;position:relative}
   <div class="seg" id="sortf" role="group" aria-label="정렬"></div>
   <div class="seg" id="daysf" role="group" aria-label="기간"></div>
   <button class="sw" id="scr" role="switch" aria-checked="false"><i></i><span>임시 작업 폴더 포함</span></button>
-  <span class="sum" id="sum"></span>
+  <button class="lnk" id="trashb" hidden></button><span class="sum" id="sum"></span>
  </div>
  <div class="bar" id="fbar" hidden>
   <button class="btn" id="back">← 프로젝트 목록</button><span class="bc" id="bc"></span><span class="sp"></span>
@@ -129,6 +150,8 @@ main{overflow:auto;padding:24px;position:relative}
  </div>
  <main id="main" tabindex="-1"><div id="grid"></div><div id="fv" hidden></div><div id="newb" hidden><button class="btn" id="newbtn"></button></div></main>
 </div>
+<dialog id="dlg" aria-labelledby="dt"></dialog>
+<div id="toast" role="status" hidden></div>
 <div class="sr" role="status" aria-live="polite" id="sr"></div>
 <script>
 const $=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
@@ -180,7 +203,7 @@ function drawProjects(force){const g=el('grid');if(!data)return;
   if(!list.length){const n=$('div','none');n.append($('p',0,'조건에 맞는 프로젝트가 없습니다'),$('p',0,'검색어, 상태, 기간을 바꾸거나 임시 작업 폴더를 포함해 보세요'));g.append(n);return}
   for(const {p,sessions} of list){const c=$('div','p'+(p.running?' run':''));
    const top=p.running?'running':(Date.now()-Date.parse(p.lastTs)<30*60e3?'idle':'dormant');
-   const h=$('div','ph');h.append($('b',0,p.name));const st=$('span','st '+top);st.append($('i'),document.createTextNode(ST[top]));h.append(st);c.append(h,$('p','path',p.cwd||p.dir));
+   const h=$('div','ph');h.append($('b',0,p.name));const st=$('span','st '+top);st.append($('i'),document.createTextNode(ST[top]));h.append(st);c.append(h,$('p','path',p.cwd||p.dir),folderBtns(p));
    const stat=$('div','stat');stat.append($('span',0,`세션 ${p.sessions.length}`),$('span',p.running?'run':0,`작업 중 ${p.running}`),$('span',0,`마지막 활동 ${ago(p.lastTs)}`));c.append(stat);
    if(p.top.length){const tl=$('div','tl');for(const [n,k] of p.top)tl.append($('span',0,`${n} ${k}`));c.append(tl)}
    if(p.skills.length){const tl=$('div','tl');for(const n of p.skills)tl.append($('span',0,'skill '+n));c.append(tl)}
@@ -188,7 +211,9 @@ function drawProjects(force){const g=el('grid');if(!data)return;
    const ss=$('div','ss'),open=view.expanded.has(p.dir),by={running:[],idle:[],dormant:[]};
    for(const s of sessions)by[s.status].push(s);
    for(const k of ['running','idle','dormant']){const arr=by[k];if(!arr.length)continue;
-    const g=$('div','sg '+k,`${ST[k]} ${arr.length}`);g.setAttribute('role','heading');g.setAttribute('aria-level','4');ss.append(g);
+    const g=$('div','sg '+k,`${ST[k]} ${arr.length}`);g.setAttribute('role','heading');g.setAttribute('aria-level','4');
+    if(k==='dormant'){const cb=$('button','lnk','정리…');cb.dataset.k='c:'+p.dir;cb.setAttribute('aria-label',p.name+' 휴면 세션 정리');cb.onclick=()=>openClean(p);g.append(cb)}
+    ss.append(g);
     const fold=k==='dormant'&&arr.length>2&&!open;
     for(const s of fold?arr.slice(0,2):arr)ss.append(sessionRow(p,s));
     if(k==='dormant'&&arr.length>2){const m=$('button','btn more',open?'접기':`휴면 ${arr.length-2}개 더 보기`);m.dataset.k='m:'+p.dir;m.setAttribute('aria-expanded',open);m.onclick=()=>{open?view.expanded.delete(p.dir):view.expanded.add(p.dir);drawProjects(true)};ss.append(m)}}
@@ -250,6 +275,44 @@ async function pollFlow(){if(!view.sel||view.tab!=='f'||view.paused)return;try{c
 function tick(){if(document.hidden)return;pollState();pollFlow()}
 setInterval(tick,2000);document.addEventListener('visibilitychange',tick);
 
+/* ---------- open folder, cleanup (moves to a trash folder), empty trash ---------- */
+const post=(u,o)=>fetch(u,{method:'POST',headers:{'x-agent-map':'1','content-type':'application/json'},body:JSON.stringify(o)}).then(r=>r.json());
+let toastT;const toast=m=>{const t=el('toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>{t.hidden=true},8000)};
+const fmtSize=b=>b<1024?b+' B':b<1048576?Math.round(b/1024)+' KB':(b/1048576).toFixed(1)+' MB';
+async function copyText(x){try{await navigator.clipboard.writeText(x);return true}catch{const a=document.createElement('textarea');a.value=x;document.body.append(a);a.select();let ok=false;try{ok=document.execCommand('copy')}catch{}a.remove();return ok}}
+function folderBtns(p){const d=$('div','pa');
+ const o=$('button','btn sm','폴더 열기');o.setAttribute('aria-label',p.name+' 폴더 열기');
+ o.onclick=async()=>{try{const r=await post('/api/open',{dir:p.dir});toast(r.ok?'폴더를 열었습니다':(r.error||'열지 못했습니다'))}catch{toast('열지 못했습니다')}};
+ const c=$('button','btn sm','경로 복사');c.setAttribute('aria-label',p.name+' 경로 복사');
+ c.onclick=async()=>toast(await copyText(p.full||p.cwd)?'경로를 복사했습니다':'복사하지 못했습니다');
+ d.append(o,c);return d}
+const dlg=el('dlg');dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close()});
+let trashInfo=null;
+async function refreshTrash(){try{const r=await fetch('/api/trash-info');if(!r.ok)return;trashInfo=await r.json();const b=el('trashb');b.hidden=!trashInfo.count;b.textContent=`휴지통 ${trashInfo.count}개 · ${fmtSize(trashInfo.bytes)} 비우기`}catch{}}
+const isSmall=s=>s.size<30720&&s.nTools<=2;
+function openClean(p){const list=p.sessions.filter(s=>s.status==='dormant'),sel=new Set();dlg.textContent='';
+ const h=$('h2',0,'휴면 세션 정리');h.id='dt';
+ const note=$('p','dn',`${p.name} 프로젝트의 휴면 세션 ${list.length}개입니다. 선택한 세션의 기록(대화가 담긴 파일과 하위 폴더)을 휴지통 폴더로 옮깁니다. 프로젝트 폴더의 코드와 파일은 건드리지 않고, 휴지통 폴더에서 되돌릴 수 있습니다. 최근 30분 안에 쓴 세션은 옮겨지지 않습니다.`);
+ const rows=$('div','dr'),ok=$('button','btn danger'),cancel=$('button','btn','취소');
+ const upd=()=>{ok.textContent=`선택한 ${sel.size}개를 휴지통으로 이동`;ok.disabled=!sel.size;for(const r of rows.children)r.setAttribute('aria-checked',String(sel.has(r.dataset.sid)))};
+ for(const s of list){const r=$('button','cr');r.dataset.sid=s.sid;r.setAttribute('role','checkbox');r.setAttribute('aria-checked','false');
+  const tx=$('span','tx');tx.append($('b',0,s.title),$('span','mt',[`마지막 활동 ${ago(s.lastTs)}`,fmtSize(s.size),`도구 ${s.nTools}회`].join('  ·  ')));if(isSmall(s))tx.append($('span','sm','작은 세션 (내용이 거의 없음)'));
+  r.append($('span','box'),tx);r.onclick=()=>{sel.has(s.sid)?sel.delete(s.sid):sel.add(s.sid);upd()};rows.append(r)}
+ const q=$('div','dq');
+ for(const [l,f] of [['작은 세션 선택',s=>isSmall(s)],['전체 선택',()=>true],['선택 해제',()=>false]]){const b=$('button','btn sm',l);b.onclick=()=>{sel.clear();for(const s of list)if(f(s))sel.add(s.sid);upd()};q.append(b)}
+ const foot=$('div','df');foot.append(cancel,ok);cancel.onclick=()=>dlg.close();
+ ok.onclick=async()=>{ok.disabled=true;try{const r=await post('/api/trash',{dir:p.dir,sids:[...sel]});
+   toast(r.error?'옮기지 못했습니다':`${r.moved}개를 휴지통(${r.trash})으로 옮겼습니다${r.skipped.length?`. ${r.skipped.length}개는 옮기지 못했습니다`:''}`)}catch{toast('옮기지 못했습니다')}
+  dlg.close();await pollState();psig='';drawProjects(true);refreshTrash()};
+ dlg.append(h,note,q,rows,foot);upd();dlg.showModal()}
+function openTrash(){if(!trashInfo)return;dlg.textContent='';const h=$('h2',0,'휴지통 비우기');h.id='dt';
+ const ok=$('button','btn danger','영구 삭제'),cancel=$('button','btn','취소');
+ dlg.append(h,$('p','dn',`휴지통 폴더(${trashInfo.dir})에 있는 세션 기록 ${trashInfo.count}개, ${fmtSize(trashInfo.bytes)}를 영구 삭제합니다. 되돌릴 수 없습니다.`));
+ const foot=$('div','df');foot.append(cancel,ok);dlg.append(foot);cancel.onclick=()=>dlg.close();
+ ok.onclick=async()=>{ok.disabled=true;try{const r=await post('/api/trash/empty',{confirm:true});toast(r.ok?'휴지통을 비웠습니다':'비우지 못했습니다')}catch{toast('비우지 못했습니다')}dlg.close();refreshTrash()};
+ dlg.showModal()}
+el('trashb').onclick=openTrash;
+
 /* ---------- controls ---------- */
 const q=el('q');q.oninput=()=>{statusBar();drawProjects(true)};
 function seg(id,opts,key,after){const w=el(id);const draw=()=>{w.textContent='';for(const [v,l] of opts){const b=$('button',0,l);b.setAttribute('aria-pressed',String(view[key])===v);b.onclick=()=>{view[key]=v;store.set('agent-map-'+key,v);draw();after()};w.append(b)}};draw()}
@@ -265,5 +328,5 @@ const TH=['soft','light','dark'],THN={soft:'소프트',light:'라이트',dark:'�
 const thb=el('th');const setTheme=t=>{th=t;document.documentElement.dataset.theme=t;thb.textContent='화면 '+THN[t];store.set('agent-map-theme',t)};thb.onclick=()=>setTheme(TH[(TH.indexOf(th)+1)%TH.length]);
 let zoom=+(store.get('agent-map-zoom')||1);const setZoom=z=>{zoom=Math.min(1.5,Math.max(.8,Math.round(z*100)/100));document.documentElement.style.zoom=zoom;store.set('agent-map-zoom',zoom)};
 el('zi').onclick=()=>setZoom(zoom+.1);el('zo').onclick=()=>setZoom(zoom-.1);
-setTheme(th);setZoom(zoom);legend();route();tick();
+setTheme(th);setZoom(zoom);legend();route();tick();refreshTrash();setInterval(refreshTrash,15000);
 </script></body></html>

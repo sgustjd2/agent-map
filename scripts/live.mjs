@@ -15,6 +15,10 @@ import { fileURLToPath } from 'node:url';
 const HOME = os.homedir();
 const PROJ = path.join(HOME, '.claude', 'projects');
 const BASE = 7788, PORTS = 10, TAIL = 512 * 1024, IDLE_EXIT = 30 * 60 * 1000, SIG = 'agent-map-live';
+const TRASH = path.join(HOME, '.claude', 'agent-map-trash'); // cleanup moves sessions here (recoverable), never deletes directly
+const FRESH_MS = 30 * 60 * 1000;                              // sessions used within 30 minutes are never touched
+const SAFE_ID = /^(?!\.+$)[\w.-]+$/; // no "." or ".." (path traversal); used for every id that becomes part of a path
+const inProjects = (p) => path.resolve(p).startsWith(PROJ + path.sep);
 const argv = process.argv.slice(2);
 const here = path.dirname(fileURLToPath(import.meta.url));
 
@@ -139,12 +143,12 @@ function state(days) {
     const cwd = (ss.find(s => s.i.cwd) || { i: {} }).i.cwd || '';
     const sessions = ss.map(({ sid, i, st }) => ({
       sid, title: i.title || sid.slice(0, 8), branch: i.branch, model: i.model, status: statusOf(i, st, now),
-      lastTs: new Date(st.mtimeMs).toISOString(), nTools: i.nTools, agents: i.agents, last: i.last, top: i.top, skills: i.skills,
+      lastTs: new Date(st.mtimeMs).toISOString(), nTools: i.nTools, agents: i.agents, last: i.last, top: i.top, skills: i.skills, size: st.size,
     }));
     const tools = new Map(), skills = new Set();
     for (const s of sessions) { for (const [n, c] of s.top) tools.set(n, (tools.get(n) || 0) + c); s.skills.forEach(x => skills.add(x)); }
     projects.push({
-      dir, cwd: cwd.replace(HOME, '~').replace(/\\/g, '/'), name: path.basename(cwd.replace(/\\/g, '/')) || dir,
+      dir, full: cwd, cwd: cwd.replace(HOME, '~').replace(/\\/g, '/'), name: path.basename(cwd.replace(/\\/g, '/')) || dir,
       scratch: SCRATCH.test(cwd || dir), lastTs: sessions[0].lastTs, running: sessions.filter(s => s.status === 'running').length,
       sessions, top: [...tools.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6), skills: [...skills].slice(0, 8),
     });
@@ -164,19 +168,89 @@ function flow(dir, sid) {
     events: i.events.slice(-100).map(({ id, ...e }) => e) };
 }
 
+// ---------- actions (POST only, see the router) ----------
+function openFolder(dir) { // the page sends only the project key; the folder comes from the session records, never from the request
+  if (!SAFE_ID.test(dir)) return { error: 'bad request' };
+  const cwd = (sessionsOf(dir, Date.now(), 36500, 3).find(s => s.i.cwd) || { i: {} }).i.cwd || '';
+  let ok = false; try { ok = !!cwd && fs.statSync(cwd).isDirectory(); } catch { /* folder is gone */ }
+  if (!ok) return { error: '폴더를 찾을 수 없습니다' };
+  const [cmd, a] = process.platform === 'win32' ? ['explorer.exe', [cwd]] : process.platform === 'darwin' ? ['open', [cwd]] : ['xdg-open', [cwd]];
+  try { spawn(cmd, a, { stdio: 'ignore', detached: true }).on('error', () => {}).unref(); } catch { return { error: '열지 못했습니다' }; }
+  return { ok: true };
+}
+
+function trashSessions(dir, sids) { // moves <sid>.jsonl and its <sid>/ folder; nothing is deleted
+  if (!SAFE_ID.test(dir) || !sids.length) return { error: 'bad request' };
+  const now = Date.now(), dest = path.join(TRASH, new Date(now).toISOString().replace(/[:.]/g, '-'), dir);
+  let moved = 0; const skipped = [];
+  for (const sid of sids) {
+    if (!SAFE_ID.test(sid)) { skipped.push({ sid, reason: 'bad id' }); continue; }
+    const f = path.join(PROJ, dir, sid + '.jsonl');
+    if (!inProjects(f)) { skipped.push({ sid, reason: 'bad id' }); continue; }
+    let st; try { st = fs.statSync(f); } catch { skipped.push({ sid, reason: 'missing' }); continue; }
+    if (now - st.mtimeMs < FRESH_MS) { skipped.push({ sid, reason: 'active' }); continue; }
+    try {
+      fs.mkdirSync(dest, { recursive: true });
+      fs.renameSync(f, path.join(dest, sid + '.jsonl'));
+      const side = path.join(PROJ, dir, sid);
+      if (fs.existsSync(side) && fs.statSync(side).isDirectory()) fs.renameSync(side, path.join(dest, sid));
+      cache.delete(f); moved++;
+    } catch { skipped.push({ sid, reason: 'error' }); }
+  }
+  return { moved, skipped, trash: TRASH.replace(HOME, '~').replace(/\\/g, '/') };
+}
+
+function trashStats() {
+  let count = 0, bytes = 0;
+  const walk = (d, depth) => {
+    let es = []; try { es = fs.readdirSync(d, { withFileTypes: true }); } catch { return; }
+    for (const e of es) {
+      const p = path.join(d, e.name);
+      if (e.isDirectory()) { if (depth < 6) walk(p, depth + 1); }
+      else { try { bytes += fs.statSync(p).size; } catch { /* vanished */ } if (depth === 2 && e.name.endsWith('.jsonl')) count++; }
+    }
+  };
+  walk(TRASH, 0);
+  return { count, bytes, dir: TRASH.replace(HOME, '~').replace(/\\/g, '/') };
+}
+
+function emptyTrash(confirmed) { // the only permanent delete, limited to the trash folder, needs an explicit confirm flag
+  if (confirmed !== true) return { error: 'confirm required' };
+  try { fs.rmSync(TRASH, { recursive: true, force: true }); } catch { return { error: '비우지 못했습니다' }; }
+  return { ok: true };
+}
+
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    let b = ''; req.on('data', d => { b += d; if (b.length > 1e5) req.destroy(); });
+    req.on('end', () => { try { resolve(JSON.parse(b || '{}')); } catch (e) { reject(e); } });
+  });
+}
+
 // ---------- server ----------
 function serve() {
   const page = path.join(here, 'live.html'); // read per request so edits show up without a restart
   let timer; const bump = () => { clearTimeout(timer); timer = setTimeout(() => process.exit(0), IDLE_EXIT); }; bump();
-  const SAFE = /^[\w.-]+$/;
+  const SAFE = SAFE_ID;
   const server = http.createServer((req, res) => {
     bump();
     const host = (req.headers.host || '').replace(/:\d+$/, '');
     if (host !== '127.0.0.1' && host !== 'localhost') { res.writeHead(403).end(); return; } // DNS-rebinding guard
     const u = new URL(req.url, 'http://x');
     const json = (o, code = 200) => { res.writeHead(code, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }); res.end(JSON.stringify(o)); };
-    if (req.method === 'POST' && u.pathname === '/api/stop' && req.headers['x-agent-map']) { json({ ok: true }); setTimeout(() => process.exit(0), 50); return; }
+    if (req.method === 'POST') { // state-changing: needs a custom header, which another website cannot send without a preflight we never answer
+      if (!req.headers['x-agent-map']) { res.writeHead(403).end(); return; }
+      if (u.pathname === '/api/stop') { json({ ok: true }); setTimeout(() => process.exit(0), 50); return; }
+      readBody(req).then((b) => {
+        if (u.pathname === '/api/open') return json(openFolder(String(b.dir || '')));
+        if (u.pathname === '/api/trash') return json(trashSessions(String(b.dir || ''), Array.isArray(b.sids) ? b.sids.slice(0, 200).map(String) : []));
+        if (u.pathname === '/api/trash/empty') return json(emptyTrash(b.confirm));
+        json({ error: 'not found' }, 404);
+      }).catch(() => json({ error: 'bad request' }, 400));
+      return;
+    }
     if (req.method !== 'GET') { res.writeHead(405).end(); return; }
+    if (u.pathname === '/api/trash-info') return json(trashStats());
     const htmlHead = { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store',
       'content-security-policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'" };
     if (u.pathname === '/') { res.writeHead(200, htmlHead); res.end(fs.readFileSync(page, 'utf8')); return; }
