@@ -4,11 +4,13 @@
 // Only: project folder, session title, timestamps, tool names, file base names, executable names, hostnames.
 //   node live.mjs           start (or reuse) the server and open the browser
 //   node live.mjs --stop    stop the server
+//   node live.mjs --lan     also listen on the local network: token required, read-only for everyone but this computer
 //   node live.mjs --serve   run the server in the foreground (used internally)
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import crypto from 'node:crypto';
 import { spawn, execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
@@ -228,16 +230,54 @@ function readBody(req) {
 }
 
 // ---------- server ----------
+// Default: loopback only. With --lan the server listens on all interfaces, but only for requests that carry a random
+// access token (given as ?t=... once, then kept in an HttpOnly cookie), and those requests are READ-ONLY.
+const LAN = argv.includes('--lan');
+const STATE_FILE = path.join(HOME, '.claude', 'agent-map', 'live.json'); // port + access token of a running LAN server
+const isLoopback = (a) => a === '127.0.0.1' || a === '::1' || a === '::ffff:127.0.0.1';
+const lanIps = () => Object.values(os.networkInterfaces()).flat().filter(n => n && n.family === 'IPv4' && !n.internal).map(n => n.address);
+const NEED_TOKEN = LAN && argv.includes('--token'); // optional extra: a random access token on top of "same network only"
+// "Same network": a private address that sits in the same subnet as one of this computer's own network interfaces.
+const ipToInt = (ip) => ip.split('.').reduce((a, b) => ((a << 8) | +b) >>> 0, 0);
+const isPrivate = (a) => /^(10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.)/.test(a);
+const sameNet = (addr) => {
+  const a = String(addr || '').replace(/^::ffff:/, '');
+  if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(a) || !isPrivate(a)) return false;
+  return Object.values(os.networkInterfaces()).flat().some(n => n && n.family === 'IPv4' && !n.internal
+    && ((ipToInt(a) & ipToInt(n.netmask)) >>> 0) === ((ipToInt(n.address) & ipToInt(n.netmask)) >>> 0));
+};
+
 function serve() {
   const page = path.join(here, 'live.html'); // read per request so edits show up without a restart
   let timer; const bump = () => { clearTimeout(timer); timer = setTimeout(() => process.exit(0), IDLE_EXIT); }; bump();
   const SAFE = SAFE_ID;
+  const token = NEED_TOKEN ? crypto.randomBytes(16).toString('hex') : '';
+  const tokenOk = (g) => NEED_TOKEN && g.length === token.length && crypto.timingSafeEqual(Buffer.from(g), Buffer.from(token));
+  const fails = new Map(); // remote ip -> { n, t }: slows down token guessing
   const server = http.createServer((req, res) => {
     bump();
-    const host = (req.headers.host || '').replace(/:\d+$/, '');
-    if (host !== '127.0.0.1' && host !== 'localhost') { res.writeHead(403).end(); return; } // DNS-rebinding guard
     const u = new URL(req.url, 'http://x');
+    const remote = !isLoopback(req.socket.remoteAddress || '');
+    const host = (req.headers.host || '').replace(/:\d+$/, '').toLowerCase();
+    const hostOk = host === '127.0.0.1' || host === 'localhost' || (LAN && (lanIps().includes(host) || host === os.hostname().toLowerCase()));
+    if (!hostOk) { res.writeHead(403).end(); return; } // DNS-rebinding guard
     const json = (o, code = 200) => { res.writeHead(code, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }); res.end(JSON.stringify(o)); };
+    if (remote) { // anyone who is not on this computer
+      if (!LAN || !sameNet(req.socket.remoteAddress)) { res.writeHead(403, { 'content-type': 'text/plain; charset=utf-8' }).end('같은 네트워크에서만 접속할 수 있습니다'); return; }
+      if (NEED_TOKEN) {
+      const ip = req.socket.remoteAddress, f = fails.get(ip) || { n: 0, t: Date.now() };
+      if (Date.now() - f.t > 5 * 60 * 1000) { f.n = 0; f.t = Date.now(); }
+      if (f.n >= 10) { res.writeHead(429, { 'content-type': 'text/plain; charset=utf-8' }).end('too many attempts'); return; }
+      const qt = u.searchParams.get('t') || '', ck = /(?:^|;\s*)am_t=([0-9a-f]+)/.exec(req.headers.cookie || '');
+      if (!tokenOk(qt || (ck ? ck[1] : ''))) {
+        f.n++; fails.set(ip, f);
+        res.writeHead(401, { 'content-type': 'text/plain; charset=utf-8' }).end('접근 토큰이 필요합니다. live 서버를 실행한 컴퓨터에 표시된 주소(?t=...)로 접속하세요');
+        return;
+      }
+      if (qt) { res.writeHead(302, { 'set-cookie': `am_t=${token}; HttpOnly; SameSite=Strict; Path=/`, location: u.pathname, 'cache-control': 'no-store' }).end(); return; }
+      }
+      if (req.method !== 'GET') { json({ error: '읽기 전용 접속입니다' }, 403); return; }
+    }
     if (req.method === 'POST') { // state-changing: needs a custom header, which another website cannot send without a preflight we never answer
       if (!req.headers['x-agent-map']) { res.writeHead(403).end(); return; }
       if (u.pathname === '/api/stop') { json({ ok: true }); setTimeout(() => process.exit(0), 50); return; }
@@ -250,6 +290,7 @@ function serve() {
       return;
     }
     if (req.method !== 'GET') { res.writeHead(405).end(); return; }
+    if (u.pathname === '/api/mode') return json({ readonly: remote, lan: LAN });
     if (u.pathname === '/api/trash-info') return json(trashStats());
     const htmlHead = { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store',
       'content-security-policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'" };
@@ -261,7 +302,7 @@ function serve() {
       } catch { res.writeHead(500, { 'content-type': 'text/plain; charset=utf-8' }); res.end('구성 지도를 만들지 못했습니다'); }
       return;
     }
-    if (u.pathname === '/api/ping') return json({ sig: SIG });
+    if (u.pathname === '/api/ping') return json({ sig: SIG, lan: LAN, tok: NEED_TOKEN });
     if (u.pathname === '/api/state') return json(state(Math.min(30, Math.max(1, +u.searchParams.get('days') || 3))));
     if (u.pathname === '/api/flow') {
       const dir = u.searchParams.get('dir') || '', sid = u.searchParams.get('sid') || '';
@@ -270,39 +311,57 @@ function serve() {
     }
     res.writeHead(404).end();
   });
+  const bind = LAN ? '0.0.0.0' : '127.0.0.1';
   let port = BASE;
-  server.on('error', (e) => { if (e.code === 'EADDRINUSE' && port < BASE + PORTS - 1) server.listen(++port, '127.0.0.1'); else process.exit(1); });
-  server.listen(port, '127.0.0.1');
+  server.on('error', (e) => { if (e.code === 'EADDRINUSE' && port < BASE + PORTS - 1) server.listen(++port, bind); else process.exit(1); });
+  server.on('listening', () => {
+    if (!LAN) return;
+    try { fs.mkdirSync(path.dirname(STATE_FILE), { recursive: true }); fs.writeFileSync(STATE_FILE, JSON.stringify({ port: server.address().port, token, pid: process.pid }), { mode: 0o600 }); }
+    catch { /* the launcher then cannot print the token */ }
+  });
+  process.on('exit', () => { if (LAN) { try { fs.unlinkSync(STATE_FILE); } catch { /* already gone */ } } });
+  server.listen(port, bind);
 }
 
 // ---------- launcher ----------
 const ping = (port) => new Promise((resolve) => {
   const q = http.get({ host: '127.0.0.1', port, path: '/api/ping', timeout: 800 }, (res) => {
-    let b = ''; res.on('data', d => b += d); res.on('end', () => { try { resolve(JSON.parse(b).sig === SIG ? port : 0); } catch { resolve(0); } });
+    let b = ''; res.on('data', d => b += d);
+    res.on('end', () => { try { const j = JSON.parse(b); resolve(j.sig === SIG ? { port, lan: !!j.lan, tok: !!j.tok } : null); } catch { resolve(null); } });
   });
-  q.on('error', () => resolve(0)); q.on('timeout', () => { q.destroy(); resolve(0); });
+  q.on('error', () => resolve(null)); q.on('timeout', () => { q.destroy(); resolve(null); });
 });
-const findRunning = async () => { for (let p = BASE; p < BASE + PORTS; p++) { if (await ping(p)) return p; } return 0; };
+const findRunning = async () => { for (let p = BASE; p < BASE + PORTS; p++) { const r = await ping(p); if (r) return r; } return null; };
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+const stopServer = (port) => new Promise(r => { const q = http.request({ host: '127.0.0.1', port, path: '/api/stop', method: 'POST', headers: { 'x-agent-map': '1' } }, r); q.on('error', r); q.end(); });
 
 if (argv.includes('--serve')) serve();
 else {
-  let port = await findRunning();
+  let run = await findRunning();
   if (argv.includes('--stop')) {
-    if (!port) console.log('실행 중인 live 서버가 없습니다');
-    else { await new Promise(r => { const q = http.request({ host: '127.0.0.1', port, path: '/api/stop', method: 'POST', headers: { 'x-agent-map': '1' } }, r); q.on('error', r); q.end(); }); console.log('live 서버를 종료했습니다'); }
+    if (!run) console.log('실행 중인 live 서버가 없습니다');
+    else { await stopServer(run.port); console.log('live 서버를 종료했습니다'); }
     process.exit(0);
   }
-  if (!port) {
-    spawn(process.execPath, [fileURLToPath(import.meta.url), '--serve'], { detached: true, stdio: 'ignore', windowsHide: true }).unref();
-    for (let n = 0; n < 25 && !port; n++) { await sleep(200); port = await findRunning(); }
+  if (run && LAN && (!run.lan || run.tok !== NEED_TOKEN)) { await stopServer(run.port); await sleep(600); run = null; } // LAN requested, but the running one is local-only or has another token setting
+  if (!run) {
+    spawn(process.execPath, [fileURLToPath(import.meta.url), '--serve', ...(LAN ? ['--lan'] : []), ...(NEED_TOKEN ? ['--token'] : [])], { detached: true, stdio: 'ignore', windowsHide: true }).unref();
+    for (let n = 0; n < 25 && !run; n++) { await sleep(200); run = await findRunning(); }
   }
-  if (!port) { console.log('live 서버를 시작하지 못했습니다'); process.exit(1); }
-  const url = `http://127.0.0.1:${port}/`;
+  if (!run) { console.log('live 서버를 시작하지 못했습니다'); process.exit(1); }
+  const url = `http://127.0.0.1:${run.port}/`;
   if (!argv.includes('--no-open')) {
     const [cmd, a] = process.platform === 'win32' ? ['cmd', ['/c', 'start', '', url]] : process.platform === 'darwin' ? ['open', [url]] : ['xdg-open', [url]];
     try { spawn(cmd, a, { stdio: 'ignore', detached: true }).on('error', () => {}).unref(); } catch { /* ignore */ }
   }
-  console.log('agent-map live: ' + url + '  (이 컴퓨터에서만 접속됩니다. 종료: node live.mjs --stop, 30분 동안 접속이 없으면 자동 종료)');
+  console.log('agent-map live: ' + url + '  (종료: node live.mjs --stop, 30분 동안 접속이 없으면 자동 종료)');
+  if (run.lan) {
+    let s = null; try { s = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8')); } catch { /* no state file */ }
+    if (s && s.port === run.port) {
+      console.log(`LAN 접속 (읽기 전용, 같은 네트워크만${s.token ? ', 접근 토큰 필요' : ''}):`);
+      for (const ip of lanIps()) console.log(`  http://${ip}:${run.port}/${s.token ? '?t=' + s.token : ''}`);
+      console.log('주의: 같은 네트워크에 있는 누구나' + (s.token ? '(주소를 아는 사람)' : '') + ' 프로젝트 경로와 세션 제목을 볼 수 있습니다. 믿을 수 있는 네트워크에서만 쓰고, 끝나면 node live.mjs --stop 으로 종료하세요. HTTPS가 아니라서 공용 와이파이에서는 쓰지 마세요.' + (s.token ? '' : ' 접근 토큰을 추가하려면 --lan --token 으로 실행하세요.'));
+    } else console.log('LAN 모드로 실행 중이지만 접근 토큰을 읽지 못했습니다. node live.mjs --stop 후 --lan 으로 다시 실행하세요');
+  } else console.log('이 컴퓨터에서만 접속됩니다. 같은 네트워크의 다른 기기에서 보려면 --lan 옵션으로 실행하세요');
   process.exit(0);
 }

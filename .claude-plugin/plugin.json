@@ -1,5 +1,5 @@
 {
   "name": "agent-map",
   "description": "내 로컬 Claude Code의 플러그인·스킬·에이전트·커맨드·훅·MCP 구성 지도와, 프로젝트별 작업 흐름 실시간 대시보드.",
-  "version": "0.5.0"
+  "version": "0.6.0"
 }

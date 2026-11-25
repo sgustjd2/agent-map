@@ -102,6 +102,7 @@ main{overflow:auto;padding:24px;position:relative}
 .leg button{display:inline-flex;align-items:center;gap:6px}.leg i{display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--c)}
 #newb{position:sticky;bottom:0;display:flex;justify-content:center;margin-top:16px}
 #newb .btn{background:var(--accent);color:var(--onaccent);border-color:var(--accent);font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.ro .pa,.ro .sg>.lnk,.ro #trashb{display:none!important}
 .pa{display:flex;gap:8px;margin-top:8px}
 .lnk{background:none;border:0;color:var(--accent);cursor:pointer;font-size:14px;padding:0 8px;height:28px;text-decoration:underline}
 .sg>.lnk{order:2}.sg::after{order:1}
@@ -268,7 +269,7 @@ el('pause').onclick=()=>{view.paused=!view.paused;const b=el('pause');b.setAttri
 
 /* ---------- polling ---------- */
 async function pollState(){try{const r=await fetch('/api/state?days='+view.days);if(!r.ok)throw 0;data=await r.json();
-  if(!ok){ok=true;say('서버에 다시 연결됐습니다')}el('live').classList.remove('off');el('lt').textContent='실시간 · 2초마다 갱신 · '+hms(new Date())}
+  if(!ok){ok=true;say('서버에 다시 연결됐습니다')}el('live').classList.remove('off');el('lt').textContent='실시간 · 2초마다 갱신 · '+hms(new Date())+roNote}
  catch{if(ok){ok=false;say('서버 연결이 끊겼습니다')}el('live').classList.add('off');el('lt').textContent='연결 끊김. 서버가 종료됐다면 /agent-map:live 를 다시 실행하세요'}
  if(data){statusBar();if(view.tab==='p')drawProjects()}}
 async function pollFlow(){if(!view.sel||view.tab!=='f'||view.paused)return;try{const r=await fetch(`/api/flow?dir=${encodeURIComponent(view.sel.dir)}&sid=${encodeURIComponent(view.sel.sid)}`);if(r.ok)fdata=await r.json();else if(r.status===404){fdata=null;el('fv').textContent='';el('fv').append($('div','none','세션 기록을 찾을 수 없습니다'));return}}catch{}drawFlow()}
@@ -328,5 +329,6 @@ const TH=['soft','light','dark'],THN={soft:'소프트',light:'라이트',dark:'�
 const thb=el('th');const setTheme=t=>{th=t;document.documentElement.dataset.theme=t;thb.textContent='화면 '+THN[t];store.set('agent-map-theme',t)};thb.onclick=()=>setTheme(TH[(TH.indexOf(th)+1)%TH.length]);
 let zoom=+(store.get('agent-map-zoom')||1);const setZoom=z=>{zoom=Math.min(1.5,Math.max(.8,Math.round(z*100)/100));document.documentElement.style.zoom=zoom;store.set('agent-map-zoom',zoom)};
 el('zi').onclick=()=>setZoom(zoom+.1);el('zo').onclick=()=>setZoom(zoom-.1);
+let roNote='';fetch('/api/mode').then(r=>r.json()).then(m=>{if(m.readonly){document.body.classList.add('ro');roNote=' · 읽기 전용 접속'}}).catch(()=>{});
 setTheme(th);setZoom(zoom);legend();route();tick();refreshTrash();setInterval(refreshTrash,15000);
 </script></body></html>
