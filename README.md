@@ -58,10 +58,10 @@ Dark theme:
 ## Features
 
 **Live dashboard (`/agent-map:live`)**
-- Sessions per project, grouped as working, waiting for input, or dormant (no activity for 30 minutes). Status is shown by icon shape and text, not color alone
+- A sidebar of sessions grouped as working, waiting for input, or dormant (no activity for 30 minutes). Click one and its flow opens on the right. Status is shown by icon shape and text, not color alone
 - Error count per session, last tool used, branch, time since last activity
 - Flow view: one row per step with a duration bar, grouped repeats (`x3`), a "now" banner, KPI strip (span, turns, tool calls, errors, subagents, context tokens), most-edited files, slowest steps, commands, MCP servers
-- Open a project folder, copy its path, search, filter, sort, 1 to 30 day window
+- Project picker, search, 1 to 30 day window; open a project folder or copy its path
 - English and Korean UI. It follows your browser language; switch with the button in the header
 - Three themes, text zoom, keyboard shortcuts (`/` search, `Esc` back)
 

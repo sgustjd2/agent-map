@@ -26,16 +26,13 @@ button,select,input{font:inherit;color:inherit}:focus-visible{outline:2px solid 
 .ic{display:inline-flex;width:20px;height:20px;flex:none}.ic svg{width:20px;height:20px}.ic .m{stroke:var(--onicon)}
 .ic.running{color:var(--run)}.ic.idle{color:var(--wait)}.ic.dormant{color:var(--dorm)}
 /* header */
-header{background:var(--surface);border-bottom:1px solid var(--line);padding:10px 24px 0}
+header{background:var(--surface);border-bottom:1px solid var(--line);padding:10px 24px}
 .top{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .brand{font:600 16px/24px var(--sans);margin:0}
 .live{font:400 12px/18px var(--mono);color:var(--mut);display:flex;align-items:center;gap:8px}
 .live i{width:8px;height:8px;border-radius:50%;background:var(--run-bar)}.live.off{color:var(--err)}.live.off i{background:var(--err)}
 .sp{flex:1}
-.tabs{display:flex;gap:2px;margin-top:6px}
-.tab{height:40px;padding:0 14px;border:0;border-bottom:2px solid transparent;background:none;color:var(--sub);cursor:pointer;font:500 14px/1 var(--sans);text-decoration:none;display:inline-flex;align-items:center}
-.tab[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent);font-weight:600}.tab:disabled{opacity:.45;cursor:default}
-.tab:hover:not(:disabled){color:var(--fg);background:var(--hover)}
+a.btn{text-decoration:none;display:inline-flex;align-items:center}
 /* controls */
 .btn{height:32px;padding:0 12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);color:var(--fg);cursor:pointer;font:500 13.5px/1 var(--sans);transition:background-color .12s var(--ease)}
 .btn:hover{background:var(--hover)}.btn.sm{height:28px;padding:0 10px;font-size:13px}
@@ -44,7 +41,7 @@ header{background:var(--surface);border-bottom:1px solid var(--line);padding:10p
 .btn:disabled{opacity:.5;cursor:default}
 .lnk{background:none;border:0;color:var(--accent);cursor:pointer;font:500 13px/1 var(--sans);padding:0 4px;height:28px;text-decoration:underline}
 .sch{position:relative}.sch svg{position:absolute;left:10px;top:9px;width:14px;height:14px;color:var(--mut);pointer-events:none}
-input[type=search]{height:32px;width:280px;padding:0 10px 0 30px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);font-size:14px}
+input[type=search]{height:32px;width:100%;padding:0 10px 0 30px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);font-size:14px}
 input[type=search]:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}input::placeholder{color:var(--mut)}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface)}
 .seg button{height:30px;padding:0 12px;border:0;border-left:1px solid var(--line);background:transparent;color:var(--sub);cursor:pointer;font:500 13px/1 var(--sans)}
@@ -55,20 +52,26 @@ input[type=search]:focus{outline:2px solid var(--accent);outline-offset:-1px;bor
 .sw i{position:relative;flex:none;width:34px;height:20px;border-radius:10px;background:var(--subtle);border:1px solid var(--line)}
 .sw i::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:7px;background:var(--mut);transition:transform .12s var(--ease)}
 .sw[aria-checked="true"] i{background:var(--accent);border-color:var(--accent)}.sw[aria-checked="true"] i::after{transform:translateX(14px);background:var(--onaccent)}
-/* projects: sidebar + list */
-.wrap{display:flex;flex-direction:column;min-height:0}
-.pv{flex:1;display:grid;grid-template-columns:264px minmax(0,1fr);min-height:0}
-.side{border-right:1px solid var(--line);background:var(--canvas);overflow:auto;padding:16px 8px}
-.sh{font:600 12px/20px var(--sans);color:var(--mut);padding:0 12px 6px}
-.si2{display:flex;align-items:center;gap:8px;width:100%;min-height:34px;padding:0 12px 0 10px;border:0;border-left:2px solid transparent;border-radius:var(--r);background:none;color:var(--sub);text-align:left;cursor:pointer;font:500 14px/20px var(--sans)}
-.si2:hover{background:var(--hover);color:var(--fg)}
-.si2.on{background:var(--sel);color:var(--fg);border-left-color:var(--accent);font-weight:600}
-.si2 .sn{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* master-detail: sessions grouped by state on the left (like Paseo's workspace list), the selected session on the right */
+.app{display:grid;grid-template-columns:320px minmax(0,1fr);min-height:0}
+.mainc{display:flex;flex-direction:column;min-height:0}
+.side{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line);background:var(--canvas)}
+.sbtop{position:relative;display:flex;flex-direction:column;gap:8px;padding:12px;border-bottom:1px solid var(--line)}
+.pick{display:flex;align-items:center;gap:8px;width:100%;height:34px;padding:0 10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);cursor:pointer;text-align:left;font:600 14px/1 var(--sans)}
+.pick:hover{background:var(--hover)}.pick .pn{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pick svg{width:14px;height:14px;color:var(--mut);flex:none}
+.pmenu{position:absolute;left:12px;right:12px;top:calc(100% - 8px);z-index:6;max-height:50vh;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:4px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.pi{display:flex;align-items:center;gap:8px;width:100%;min-height:32px;padding:0 8px;border:0;border-radius:4px;background:none;text-align:left;cursor:pointer;color:var(--sub);font:500 14px/20px var(--sans)}
+.pi:hover{background:var(--hover);color:var(--fg)}.pi.on{background:var(--sel);color:var(--fg);font-weight:600}
+.pi .sn{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sc{display:inline-flex;gap:4px}.sc i{font:600 11.5px/18px var(--mono);font-style:normal;min-width:20px;text-align:center;padding:0 5px;border-radius:9px;color:#fff}
 .sc i.run{background:var(--run-bar)}.sc i.idle{background:var(--wait-bar)}
-.pm{overflow:auto;padding:16px 24px 32px}
-.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
-.sum{margin-left:auto;color:var(--sub);font-size:13px}.sum b{font:600 13px/20px var(--mono);color:var(--fg);margin:0 10px 0 4px}
+.sbody{flex:1;overflow:auto;padding:4px 0 12px}
+.sbfoot{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;padding:10px 12px;border-top:1px solid var(--line);background:var(--surface)}
+.sbfoot .seg button{height:26px;padding:0 8px;font-size:12.5px}.sbfoot .sw{height:26px;font-size:12.5px}
+.pm{flex:1;overflow:auto;padding:16px 24px 32px}
+.ovs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--line);border-radius:var(--r);background:var(--surface);margin-bottom:16px}
+.ovs div{padding:14px 18px;border-left:1px solid var(--line)}.ovs div:first-child{border-left:0}
+.ovs b{display:block;font:600 24px/32px var(--mono)}.ovs span{font:500 13px/20px var(--sans);color:var(--mut)}.ovs .run b{color:var(--run)}.ovs .wait b{color:var(--wait)}
 .phd{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 20px;margin-bottom:16px}
 .phn{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}.phn b{font:600 20px/28px var(--sans)}
 .path{font:400 12.5px/20px var(--mono);color:var(--mut);margin:0;overflow-wrap:anywhere}
@@ -80,29 +83,29 @@ input[type=search]:focus{outline:2px solid var(--accent);outline-offset:-1px;bor
 .ub{display:block;height:6px;border-radius:3px;background:var(--line2);overflow:hidden}.ub i{display:block;height:100%;background:var(--accent);border-radius:3px}
 .uc{font:400 12px/16px var(--mono);color:var(--mut);text-align:right}
 .tl{display:flex;gap:6px;flex-wrap:wrap}.tl span{font:400 12.5px/20px var(--mono);border:1px solid var(--line);border-radius:var(--r);padding:0 8px;color:var(--sub);background:var(--subtle)}
-.list{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}
-.gr{display:flex;align-items:center;gap:8px;padding:8px 16px;background:var(--subtle);border-bottom:1px solid var(--line);font:700 13px/20px var(--sans)}
+.gr{display:flex;align-items:center;gap:8px;padding:12px 12px 6px;font:700 12.5px/20px var(--sans)}
 .gr .gc{font:600 12px/20px var(--mono);margin-left:2px}
-.gr.running{color:var(--run)}.gr.idle{color:var(--wait)}.gr.dormant{color:var(--dorm)}.gr.name{color:var(--fg)}
+.gr.running{color:var(--run)}.gr.idle{color:var(--wait)}.gr.dormant{color:var(--dorm)}
 .gr .ic,.gr .ic svg{width:16px;height:16px}
-.r{position:relative;border-bottom:1px solid var(--line2)}.r:last-child{border-bottom:0}
-.rm{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:0 12px;align-items:center;width:100%;padding:11px 16px 11px 13px;border:0;border-left:3px solid transparent;background:none;text-align:left;cursor:pointer;color:inherit}
-.r.running{background:var(--run-bg)}.r.running .rm{border-left-color:var(--run-bar)}
-.r.idle{background:var(--wait-bg)}.r.idle .rm{border-left-color:var(--wait-bar)}
-.r:hover{filter:brightness(.97)}.r.dormant:hover{filter:none;background:var(--hover)}
-.rt{font:600 15px/22px var(--sans);color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
-.r.dormant .rt{font-weight:500;color:var(--sub)}
+.sri{position:relative;border-left:3px solid transparent}
+.sim{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:0 10px;align-items:start;width:100%;padding:8px 12px 8px 9px;border:0;background:none;text-align:left;cursor:pointer;color:inherit}
+.sim .ic{margin-top:1px}
+.sri.running{background:var(--run-bg);border-left-color:var(--run-bar)}
+.sri.idle{background:var(--wait-bg);border-left-color:var(--wait-bar)}
+.sri:hover{filter:brightness(.97)}.sri.dormant:hover{filter:none;background:var(--hover)}
+.sri.sel{box-shadow:inset 0 0 0 2px var(--accent)}
+.rt{font:600 14px/20px var(--sans);color:var(--fg);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sri.dormant .rt{font-weight:500;color:var(--sub)}
 .etag{font:700 12px/18px var(--sans);color:var(--err);margin-left:8px}
-.rmeta{font:400 12.5px/18px var(--mono);color:var(--sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
-.r.dormant .rmeta{color:var(--mut)}
-.rr{text-align:right;min-width:92px}.rs{display:block;font:700 13px/18px var(--sans)}.rtm{display:block;font:400 12.5px/18px var(--sans);color:var(--sub)}
-.rs.running{color:var(--run)}.rs.idle{color:var(--wait)}.rs.dormant{color:var(--dorm);font-weight:600}
-.rx{position:absolute;right:12px;top:50%;transform:translateY(-50%);opacity:0;height:28px}
-.r:hover .rx,.rx:focus-visible{opacity:1}
-.more{display:block;width:100%;padding:10px 16px;border:0;border-top:1px solid var(--line2);background:var(--subtle);color:var(--accent);font:600 13px/20px var(--sans);text-align:left;cursor:pointer}
+.rmeta{font:400 12px/18px var(--mono);color:var(--sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+.sri.dormant .rmeta{color:var(--mut)}
+.rtm{font:400 12px/20px var(--sans);color:var(--sub);white-space:nowrap}
+.rx{position:absolute;right:8px;top:6px;opacity:0;width:26px;height:26px;padding:0;display:flex;align-items:center;justify-content:center}.rx svg{width:14px;height:14px}
+.sri:hover .rx,.rx:focus-visible{opacity:1}.sri.dormant:hover .rtm{visibility:hidden}
+.more{display:block;width:100%;padding:8px 12px 8px 41px;border:0;background:none;color:var(--accent);font:600 13px/20px var(--sans);text-align:left;cursor:pointer}
 .more:hover{background:var(--hover)}
 .none{padding:48px 24px;text-align:center;color:var(--sub)}.none p{margin:0 0 8px}.none p:first-child{font-size:16px;color:var(--fg);font-weight:600}
-.ro .pa .btn,.ro .rx,.ro .fa,.ro #trashb,.ro #txtb,.ro .cleanb,.ro a.tab{display:none!important}
+.ro .pa .btn,.ro .rx,.ro .fa,.ro #trashb,.ro #txtb,.ro .cleanb,.ro #cfg{display:none!important}.ro .sri.dormant:hover .rtm{visibility:visible}
 /* flow */
 .fbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 24px;background:var(--surface);border-bottom:1px solid var(--line)}
 .bc{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;color:var(--sub)}.bc b{color:var(--fg);font-weight:600}
@@ -177,46 +180,39 @@ dialog h2{font:600 18px/26px var(--sans);margin:0 0 8px}
 .dperm[aria-checked="true"] .tx2 b{color:var(--err)}
 .df{display:flex;gap:8px;justify-content:flex-end}
 #toast{position:fixed;left:24px;bottom:24px;max-width:min(560px,calc(100% - 48px));background:var(--fg);color:var(--canvas);padding:10px 14px;border-radius:var(--r);font-size:14px;line-height:20px;z-index:10}
-@media (max-width:900px){.pv{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}.side{display:flex;gap:4px;overflow:auto;border-right:0;border-bottom:1px solid var(--line);padding:8px 12px}.sh{display:none}.si2{width:auto;flex:none}.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.kpi:nth-child(4){border-left:0}}
+@media (max-width:900px){.app{grid-template-columns:1fr;grid-template-rows:minmax(0,45vh) minmax(0,1fr)}.side{border-right:0;border-bottom:1px solid var(--line)}.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.kpi:nth-child(4){border-left:0}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style></head><body>
 <header>
  <div class="top"><h1 class="brand">Agent Map</h1><span class="live" id="live"><i></i><span id="lt">연결 중</span></span><span class="sp"></span>
-  <button class="btn sm" id="zo" aria-label="글자 작게" title="글자 작게">A-</button><button class="btn sm" id="zi" aria-label="글자 크게" title="글자 크게">A+</button><button class="btn sm" id="th" title="화면 모드 바꾸기"></button><button class="btn sm" id="lg"></button></div>
- <div class="tabs" role="tablist" aria-label="보기">
-  <button class="tab" role="tab" id="t1" aria-selected="true" aria-controls="pv" tabindex="0">프로젝트</button>
-  <button class="tab" role="tab" id="t2" aria-selected="false" aria-controls="main" tabindex="-1" disabled title="프로젝트 탭에서 세션을 선택하세요">실시간 흐름</button>
-  <a class="tab" href="/map">구성 지도</a>
- </div>
+  <a class="btn sm" id="cfg" href="/map">구성 지도</a><button class="btn sm" id="zo" aria-label="글자 작게" title="글자 작게">A-</button><button class="btn sm" id="zi" aria-label="글자 크게" title="글자 크게">A+</button><button class="btn sm" id="th" title="화면 모드 바꾸기"></button><button class="btn sm" id="lg"></button></div>
 </header>
-<div class="wrap">
- <div class="fbar" id="fbar" hidden>
-  <button class="btn" id="back">← 목록</button><span class="bc" id="bc"></span><span class="sp"></span>
-  <div class="seg leg" id="leg" role="group" aria-label="도구 종류 강조"></div>
-  <button class="btn" id="txtb" aria-pressed="true" title="프롬프트와 응답의 첫 줄, 단계 설명을 보여줍니다. 이 컴퓨터에서만 볼 수 있습니다">작업 내용 표시</button><button class="btn" id="pause" aria-pressed="false">일시정지</button>
+<div class="app">
+ <aside class="side" aria-label="세션">
+  <div class="sbtop" role="search">
+   <div class="sch"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/></svg><input type="search" id="q" placeholder="세션, 브랜치, 도구 검색 (/)" aria-label="세션 검색"></div>
+   <button class="pick" id="pick" aria-haspopup="listbox" aria-expanded="false" aria-label="프로젝트 선택"><span class="pn" id="pn"></span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></button>
+   <div class="pmenu" id="pmenu" role="listbox" hidden></div>
+  </div>
+  <nav class="sbody" id="sbody" aria-label="세션 목록"></nav>
+  <div class="sbfoot"><div class="seg" id="daysf" role="group" aria-label="기간"></div><button class="sw" id="scr" role="switch" aria-checked="false"><i></i><span>임시 작업 폴더 포함</span></button><button class="lnk" id="trashb" hidden></button></div>
+ </aside>
+ <div class="mainc">
+  <div class="fbar" id="fbar" hidden>
+   <button class="btn" id="back">← 개요</button><span class="bc" id="bc"></span><span class="sp"></span>
+   <div class="seg leg" id="leg" role="group" aria-label="도구 종류 강조"></div>
+   <button class="btn" id="txtb" aria-pressed="true" title="프롬프트와 응답의 첫 줄, 단계 설명을 보여줍니다. 이 컴퓨터에서만 볼 수 있습니다">작업 내용 표시</button><button class="btn" id="pause" aria-pressed="false">일시정지</button>
+  </div>
+  <section class="pm" id="pm"><div id="grid"></div></section>
+  <main id="main" tabindex="-1" hidden><div id="fv"></div><div id="newb" hidden><button class="btn" id="newbtn"></button></div></main>
  </div>
- <div class="pv" id="pv">
-  <nav class="side" id="side" aria-label="프로젝트"></nav>
-  <section class="pm" id="pm">
-   <div class="bar" id="pbar" role="search">
-    <div class="sch"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/></svg><input type="search" id="q" placeholder="세션, 브랜치, 도구 검색 (/)" aria-label="세션 검색"></div>
-    <div class="seg" id="sf" role="group" aria-label="상태"></div>
-    <div class="seg" id="sortf" role="group" aria-label="정렬"></div>
-    <div class="seg" id="daysf" role="group" aria-label="기간"></div>
-    <button class="sw" id="scr" role="switch" aria-checked="false"><i></i><span>임시 작업 폴더 포함</span></button>
-    <button class="lnk" id="trashb" hidden></button><span class="sum" id="sum"></span>
-   </div>
-   <div id="grid"></div>
-  </section>
- </div>
- <main id="main" tabindex="-1" hidden><div id="fv"></div><div id="newb" hidden><button class="btn" id="newbtn"></button></div></main>
 </div>
 <dialog id="dlg" aria-labelledby="dt"></dialog>
 <div id="toast" role="status" hidden></div>
 <div class="sr" role="status" aria-live="polite" id="sr"></div>
 <script>
 const LANG=(()=>{try{const q=new URLSearchParams(location.search).get('lang');if(q==='ko'||q==='en')return q;const v=localStorage.getItem('agent-map-lang');if(v==='ko'||v==='en')return v}catch{}return /^ko/i.test(navigator.language||'')?'ko':'en'})();
-const EN={"Agent Map 실시간":"Agent Map Live","연결 중":"Connecting","글자 작게":"Smaller text","글자 크게":"Larger text","화면 모드 바꾸기":"Change theme","보기":"View","프로젝트":"Projects","프로젝트 탭에서 세션을 선택하세요":"Pick a session on the Projects tab","실시간 흐름":"Live flow","구성 지도":"Config map","← 목록":"← List","도구 종류 강조":"Highlight tool type","프롬프트와 응답의 첫 줄, 단계 설명을 보여줍니다. 이 컴퓨터에서만 볼 수 있습니다":"Shows the first line of prompts and replies and step descriptions. Visible on this computer only","작업 내용 표시":"Show content","일시정지":"Pause","세션, 브랜치, 도구 검색 (/)":"Search sessions, branches, tools (/)","세션 검색":"Search sessions","상태":"Status","정렬":"Sort","기간":"Period","임시 작업 폴더 포함":"Include temp folders","작업 중":"Working","작업 중 ":"Working ","대기 ":"Waiting ","대기":"Waiting","휴면":"Dormant","Claude가 작업하고 있습니다":"Claude is working","응답을 마치고 내 입력을 기다리는 중입니다":"Finished replying and waiting for your input","30분 넘게 활동이 없습니다":"No activity for over 30 minutes","읽기·검색":"Read/search","수정·쓰기":"Edit/write","명령 실행":"Commands","서브에이전트":"Subagent","MCP 도구":"MCP tools","기타":"Other","방금":"just now","초 전":" s ago","분 전":" min ago","시간 전":" h ago","일 전":" d ago","초":"s","분 ":"m ","전체":"All","전체 프로젝트":"All projects","오류 ":"Errors ",", 오류 ":", errors ","건":"","삭제…":"Delete…"," 삭제":" delete","휴면 세션 정리…":"Clean up dormant sessions…","많이 쓴 도구 (최근 호출 횟수)":"Most used tools (recent calls)","사용한 스킬":"Skills used","세션":"Sessions","조건에 맞는 세션이 없습니다":"No sessions match","검색어, 상태, 기간을 바꾸거나 임시 작업 폴더를 포함해 보세요":"Change the search, status or period, or include temp folders","접기":"Collapse","프로젝트 › ":"Projects › ","서브에이전트 ":"Subagent ","응답이 없으면 권한 승인을 기다리는 중일 수 있습니다. Claude Code 창을 확인해 보세요":"If nothing happens, it may be waiting for a permission approval. Check the Claude Code window","지금: Claude가 다음 단계를 생각하는 중":"Now: Claude is thinking about the next step","최근 요청":"Last request","마지막 응답":"Last reply","기록 구간":"Time span","턴":"Turns","도구 호출":"Tool calls","오류":"Errors","컨텍스트":"Context"," 토큰":" tokens","수정·작성한 파일":"Files edited","회":"x","읽은 파일":"Files read","오래 걸린 단계":"Slowest steps","실행한 명령":"Commands run","사용한 MCP 서버":"MCP servers used","오류가 난 단계":"Steps with errors","불러오는 중":"Loading","브랜치":"Branch","모델":"Model","이 세션 삭제…":"Delete this session…","프로젝트 목록에서 이 세션을 찾을 수 없습니다. 기간을 늘려 보세요":"Session not found in the project list. Try a longer period","시간 배분 (최근 ":"Time split (last ","단계, 도구 실행 시간 기준)":" steps, by tool run time)","작업 흐름":"Flow","프롬프트":"Prompt","응답":"Reply","진행 중":"running","소요 ":"took ","새 단계 ":"New steps ","개 · 최신으로 ↓":" · jump to latest ↓","재개":"Resume","실시간 갱신을 일시정지했습니다":"Live updates paused","실시간 갱신을 재개했습니다":"Live updates resumed","서버에 다시 연결됐습니다":"Reconnected to the server","실시간 · 2초마다 갱신 · ":"Live · refreshes every 2s · ","서버 연결이 끊겼습니다":"Lost connection to the server","연결 끊김. 서버가 종료됐다면 /agent-map:live 를 다시 실행하세요":"Disconnected. If the server stopped, run /agent-map:live again","세션 기록을 찾을 수 없습니다":"Session record not found","폴더 열기":"Open folder","상위 폴더 열기":"Open parent folder"," 폴더 열기":": open folder"," 폴더가 없어 상위 폴더 열기":": folder is gone, open parent","이 폴더는 삭제되어 없습니다. 남아 있는 가장 가까운 상위 폴더를 엽니다":"This folder was deleted. Opens the nearest parent that still exists","원래 폴더가 없어 상위 폴더를 열었습니다: ":"The folder is gone, opened its parent: ","폴더를 열었습니다: ":"Opened folder: ",". 창이 보이지 않으면 작업 표시줄을 확인하세요":". If no window appears, check the taskbar","열지 못했습니다":"Could not open it","경로 복사":"Copy path"," 경로 복사":": copy path","경로를 복사했습니다":"Path copied","복사하지 못했습니다":"Could not copy","폴더가 삭제됨":"Folder deleted","세션 삭제·정리":"Delete / clean up sessions","취소":"Cancel","휴지통 거치지 않고 바로 영구 삭제":"Delete permanently, skip the trash","켜면 되돌릴 수 없습니다. 삭제 전에 버튼을 두 번 누르게 합니다":"Cannot be undone. Asks you to press the button twice","한 번 더 누르면 영구 삭제됩니다":"Press once more to delete permanently","작은 세션 (내용이 거의 없음)":"Small session (almost no content)","작은 세션 선택":"Select small sessions","전체 선택":"Select all","선택 해제":"Clear selection","처리하지 못했습니다":"Could not complete it","휴지통 비우기":"Empty trash","영구 삭제":"Delete permanently","휴지통을 비웠습니다":"Trash emptied","비우지 못했습니다":"Could not empty it","최근 활동순":"Recent first","이름순":"By name","1일":"1 day","3일":"3 days","7일":"7 days","30일":"30 days","소프트":"Soft","라이트":"Light","다크":"Dark","화면 ":"Theme "," · 읽기 전용 접속":" · read-only access","폴더를 찾을 수 없습니다":"Folder not found","읽기 전용 접속입니다":"Read-only access","구성 지도는 이 컴퓨터에서만 볼 수 있습니다":"The config map is only available on this computer","마지막 활동":"Last activity","작업 흐름 보기":"view flow"};
+const EN={"Agent Map 실시간":"Agent Map Live","연결 중":"Connecting","글자 작게":"Smaller text","글자 크게":"Larger text","화면 모드 바꾸기":"Change theme","보기":"View","프로젝트":"Projects","프로젝트 탭에서 세션을 선택하세요":"Pick a session on the Projects tab","실시간 흐름":"Live flow","구성 지도":"Config map","← 목록":"← List","도구 종류 강조":"Highlight tool type","프롬프트와 응답의 첫 줄, 단계 설명을 보여줍니다. 이 컴퓨터에서만 볼 수 있습니다":"Shows the first line of prompts and replies and step descriptions. Visible on this computer only","작업 내용 표시":"Show content","일시정지":"Pause","세션, 브랜치, 도구 검색 (/)":"Search sessions, branches, tools (/)","세션 검색":"Search sessions","상태":"Status","정렬":"Sort","기간":"Period","임시 작업 폴더 포함":"Include temp folders","작업 중":"Working","작업 중 ":"Working ","대기 ":"Waiting ","대기":"Waiting","휴면":"Dormant","Claude가 작업하고 있습니다":"Claude is working","응답을 마치고 내 입력을 기다리는 중입니다":"Finished replying and waiting for your input","30분 넘게 활동이 없습니다":"No activity for over 30 minutes","읽기·검색":"Read/search","수정·쓰기":"Edit/write","명령 실행":"Commands","서브에이전트":"Subagent","MCP 도구":"MCP tools","기타":"Other","방금":"just now","초 전":" s ago","분 전":" min ago","시간 전":" h ago","일 전":" d ago","초":"s","분 ":"m ","전체":"All","전체 프로젝트":"All projects","오류 ":"Errors ",", 오류 ":", errors ","건":"","삭제…":"Delete…"," 삭제":" delete","휴면 세션 정리…":"Clean up dormant sessions…","많이 쓴 도구 (최근 호출 횟수)":"Most used tools (recent calls)","사용한 스킬":"Skills used","세션":"Sessions","조건에 맞는 세션이 없습니다":"No sessions match","검색어, 상태, 기간을 바꾸거나 임시 작업 폴더를 포함해 보세요":"Change the search, status or period, or include temp folders","접기":"Collapse","프로젝트 › ":"Projects › ","서브에이전트 ":"Subagent ","응답이 없으면 권한 승인을 기다리는 중일 수 있습니다. Claude Code 창을 확인해 보세요":"If nothing happens, it may be waiting for a permission approval. Check the Claude Code window","지금: Claude가 다음 단계를 생각하는 중":"Now: Claude is thinking about the next step","최근 요청":"Last request","마지막 응답":"Last reply","기록 구간":"Time span","턴":"Turns","도구 호출":"Tool calls","오류":"Errors","컨텍스트":"Context"," 토큰":" tokens","수정·작성한 파일":"Files edited","회":"x","읽은 파일":"Files read","오래 걸린 단계":"Slowest steps","실행한 명령":"Commands run","사용한 MCP 서버":"MCP servers used","오류가 난 단계":"Steps with errors","불러오는 중":"Loading","브랜치":"Branch","모델":"Model","이 세션 삭제…":"Delete this session…","프로젝트 목록에서 이 세션을 찾을 수 없습니다. 기간을 늘려 보세요":"Session not found in the project list. Try a longer period","시간 배분 (최근 ":"Time split (last ","단계, 도구 실행 시간 기준)":" steps, by tool run time)","작업 흐름":"Flow","프롬프트":"Prompt","응답":"Reply","진행 중":"running","소요 ":"took ","새 단계 ":"New steps ","개 · 최신으로 ↓":" · jump to latest ↓","재개":"Resume","실시간 갱신을 일시정지했습니다":"Live updates paused","실시간 갱신을 재개했습니다":"Live updates resumed","서버에 다시 연결됐습니다":"Reconnected to the server","실시간 · 2초마다 갱신 · ":"Live · refreshes every 2s · ","서버 연결이 끊겼습니다":"Lost connection to the server","연결 끊김. 서버가 종료됐다면 /agent-map:live 를 다시 실행하세요":"Disconnected. If the server stopped, run /agent-map:live again","세션 기록을 찾을 수 없습니다":"Session record not found","폴더 열기":"Open folder","상위 폴더 열기":"Open parent folder"," 폴더 열기":": open folder"," 폴더가 없어 상위 폴더 열기":": folder is gone, open parent","이 폴더는 삭제되어 없습니다. 남아 있는 가장 가까운 상위 폴더를 엽니다":"This folder was deleted. Opens the nearest parent that still exists","원래 폴더가 없어 상위 폴더를 열었습니다: ":"The folder is gone, opened its parent: ","폴더를 열었습니다: ":"Opened folder: ",". 창이 보이지 않으면 작업 표시줄을 확인하세요":". If no window appears, check the taskbar","열지 못했습니다":"Could not open it","경로 복사":"Copy path"," 경로 복사":": copy path","경로를 복사했습니다":"Path copied","복사하지 못했습니다":"Could not copy","폴더가 삭제됨":"Folder deleted","세션 삭제·정리":"Delete / clean up sessions","취소":"Cancel","휴지통 거치지 않고 바로 영구 삭제":"Delete permanently, skip the trash","켜면 되돌릴 수 없습니다. 삭제 전에 버튼을 두 번 누르게 합니다":"Cannot be undone. Asks you to press the button twice","한 번 더 누르면 영구 삭제됩니다":"Press once more to delete permanently","작은 세션 (내용이 거의 없음)":"Small session (almost no content)","작은 세션 선택":"Select small sessions","전체 선택":"Select all","선택 해제":"Clear selection","처리하지 못했습니다":"Could not complete it","휴지통 비우기":"Empty trash","영구 삭제":"Delete permanently","휴지통을 비웠습니다":"Trash emptied","비우지 못했습니다":"Could not empty it","최근 활동순":"Recent first","이름순":"By name","1일":"1 day","3일":"3 days","7일":"7 days","30일":"30 days","소프트":"Soft","라이트":"Light","다크":"Dark","화면 ":"Theme "," · 읽기 전용 접속":" · read-only access","폴더를 찾을 수 없습니다":"Folder not found","읽기 전용 접속입니다":"Read-only access","구성 지도는 이 컴퓨터에서만 볼 수 있습니다":"The config map is only available on this computer","마지막 활동":"Last activity","작업 흐름 보기":"view flow","프로젝트 선택":"Choose project","세션 목록":"Session list","← 개요":"← Overview"};
 const tt=s=>LANG==='en'&&EN[s]!==undefined?EN[s]:s;
 const K=(ko,en)=>LANG==='en'?en:ko;
 const $=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
@@ -236,7 +232,7 @@ const store={get:k=>{try{return localStorage.getItem(k)}catch{return null}},set:
 const el=id=>document.getElementById(id);
 const view={tab:'p',sel:null,proj:null,status:'all',expanded:new Set(),hl:null,paused:false,txt:store.get('agent-map-txt')!=='0',days:store.get('agent-map-days')||'3',sort:store.get('agent-map-sort')||'act',scr:false};
 let data=null,fdata=null,ok=true,psig='',fsig='',seenT='',newCount=0;
-const ago=ts=>{const s=Math.max(0,(Date.now()-Date.parse(ts))/1000);if(s<10)returntt('방금');if(s<60)return Math.floor(s)+tt('초 전');if(s<3600)return Math.floor(s/60)+tt('분 전');if(s<86400)return Math.floor(s/3600)+tt('시간 전');return Math.floor(s/86400)+tt('일 전')};
+const ago=ts=>{const s=Math.max(0,(Date.now()-Date.parse(ts))/1000);if(s<10)return tt('방금');if(s<60)return Math.floor(s)+tt('초 전');if(s<3600)return Math.floor(s/60)+tt('분 전');if(s<86400)return Math.floor(s/3600)+tt('시간 전');return Math.floor(s/86400)+tt('일 전')};
 const hms=ts=>{if(!ts)return'';const d=new Date(ts),p=n=>String(n).padStart(2,'0');return p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds())};
 const fmtDur=ms=>ms<1000?'':ms<60000?(ms/1000).toFixed(ms<10000?1:0)+tt('초'):Math.floor(ms/60000)+tt('분 ')+Math.round(ms%60000/1000)+tt('초');
 const cat=e=>e.k==='agent'?'--c-agent':e.k!=='tool'?'--c-other':e.name.startsWith('mcp__')?'--c-mcp':/^(Read|Grep|Glob|WebFetch|WebSearch|LSP)$/.test(e.name)?'--c-read':/^(Edit|Write|MultiEdit|NotebookEdit)$/.test(e.name)?'--c-write':/^(Bash|PowerShell|Monitor)$/.test(e.name)?'--c-bash':'--c-other';
@@ -249,11 +245,9 @@ function keepFocus(fn){const a=document.activeElement,k=a&&a.dataset&&a.dataset.
 /* ---------- routing: #p, #p/<project>, #f/<project>/<session> ---------- */
 function route(){const h=location.hash.slice(1).split('/');
  if(h[0]==='f'&&h[1]&&h[2]){const n=decodeURIComponent(h[1]),s=decodeURIComponent(h[2]);if(!view.sel||view.sel.sid!==s){view.sel={dir:n,sid:s};fdata=null;fsig='';seenT='';newCount=0}view.tab='f'}
- else{view.tab='p';view.proj=h[0]==='p'&&h[1]?decodeURIComponent(h[1]):null}
- el('t2').disabled=!view.sel;el('t2').removeAttribute('title');
- el('t1').setAttribute('aria-selected',view.tab==='p');el('t2').setAttribute('aria-selected',view.tab==='f');el('t1').tabIndex=view.tab==='p'?0:-1;el('t2').tabIndex=view.tab==='f'?0:-1;
- el('fbar').hidden=view.tab!=='f';el('pv').hidden=view.tab!=='p';el('main').hidden=view.tab!=='f';el('newb').hidden=true;
- psig='';fsig='';if(view.tab==='p'){if(data){statusBar();drawProjects(true)}}else{drawFlow();pollFlow()}}
+ else{view.tab='p';if(h[0]==='p'&&h[1])view.proj=decodeURIComponent(h[1])}
+ el('fbar').hidden=view.tab!=='f';el('pm').hidden=view.tab!=='p';el('main').hidden=view.tab!=='f';el('newb').hidden=true;
+ psig='';fsig='';statusBar();if(data)drawProjects(true);if(view.tab==='f'){drawFlow();pollFlow()}}
 const openFlow=(p,s)=>{view.sel={dir:p.dir,sid:s.sid,name:p.name,title:s.title};location.hash='f/'+encodeURIComponent(p.dir)+'/'+encodeURIComponent(s.sid)};
 addEventListener('hashchange',route);
 
@@ -263,23 +257,26 @@ const ORD={running:0,idle:1,dormant:2};
 function baseRows(){if(!data)return[];const q=el('q').value.trim().toLowerCase(),out=[];
  for(const p of data.projects){if(!view.scr&&p.scratch)continue;if(view.proj&&p.dir!==view.proj)continue;for(const s of p.sessions)if(matchS(p,s,q))out.push({p,s})}
  return out}
-function statusBar(){const rows=baseRows(),c={all:rows.length,running:0,idle:0,dormant:0};for(const r of rows)c[r.s.status]++;
- const sf=el('sf');sf.textContent='';for(const [k,l] of [['all',tt('전체')],['running',tt('작업 중')],['idle',tt('대기')],['dormant',tt('휴면')]]){const b=$('button',0,l);b.append($('b',0,String(c[k])));b.setAttribute('aria-pressed',view.status===k);if(k==='idle')b.title=STT.idle;b.onclick=()=>{view.status=k;statusBar();drawProjects(true)};sf.append(b)}}
-function drawSide(){const sd=el('side');sd.textContent='';sd.append($('div','sh',tt('프로젝트')));
- const ps=data?data.projects.filter(p=>view.scr||!p.scratch):[];
- const mk=(name,dir,run,idle)=>{const b=$('button','si2'+(view.proj===dir?' on':''));b.dataset.k='p:'+(dir||'all');b.setAttribute('aria-current',String(view.proj===dir));b.append($('span','sn',name));
+function statusBar(){const p=view.proj&&data&&data.projects.find(x=>x.dir===view.proj);el('pn').textContent=p?p.name:tt('전체 프로젝트')}
+/* project picker: a menu instead of a long project list, so the sidebar can be all about sessions */
+const pick=el('pick'),pmenu=el('pmenu');
+function drawMenu(){pmenu.textContent='';const ps=data?data.projects.filter(p=>view.scr||!p.scratch):[];
+ const mk=(name,dir,run,idle)=>{const b=$('button','pi'+(view.proj===dir?' on':''));b.setAttribute('role','option');b.setAttribute('aria-selected',String(view.proj===dir));b.append($('span','sn',name));
   const c=$('span','sc');if(run){const i=$('i','run',String(run));i.title=tt('작업 중 ')+run;c.append(i)}if(idle){const i=$('i','idle',String(idle));i.title=tt('대기 ')+idle;c.append(i)}b.append(c);
-  b.onclick=()=>{location.hash=dir?'p/'+encodeURIComponent(dir):'p'};return b};
- const all=ps.reduce((a,p)=>[a[0]+p.sessions.filter(s=>s.status==='running').length,a[1]+p.sessions.filter(s=>s.status==='idle').length],[0,0]);
- sd.append(mk(tt('전체 프로젝트'),null,all[0],all[1]));
- const sorted=[...ps].sort((a,b)=>view.sort==='name'?a.name.localeCompare(b.name):(b.running-a.running)||(Date.parse(b.lastTs)-Date.parse(a.lastTs)));
- for(const p of sorted)sd.append(mk(p.name,p.dir,p.sessions.filter(s=>s.status==='running').length,p.sessions.filter(s=>s.status==='idle').length))}
-function sessionRow(p,s,showProj){const r=$('div','r '+s.status),b=$('button','rm');b.dataset.k='s:'+s.sid;
+  b.onclick=()=>{closeMenu();setProj(dir)};return b};
+ const n=(p,k)=>p.sessions.filter(s=>s.status===k).length;
+ pmenu.append(mk(tt('전체 프로젝트'),null,ps.reduce((a,p)=>a+n(p,'running'),0),ps.reduce((a,p)=>a+n(p,'idle'),0)));
+ for(const p of [...ps].sort((a,b)=>(b.running-a.running)||(Date.parse(b.lastTs)-Date.parse(a.lastTs))))pmenu.append(mk(p.name,p.dir,n(p,'running'),n(p,'idle')))}
+const closeMenu=()=>{pmenu.hidden=true;pick.setAttribute('aria-expanded','false')};
+pick.onclick=()=>{if(pmenu.hidden){drawMenu();pmenu.hidden=false;pick.setAttribute('aria-expanded','true')}else closeMenu()};
+document.addEventListener('click',e=>{if(!pmenu.hidden&&!pmenu.contains(e.target)&&!pick.contains(e.target))closeMenu()});
+function setProj(dir){view.proj=dir;psig='';statusBar();drawProjects(true);if(view.tab==='p')location.hash=pHash()}
+function sessionRow(p,s,showProj){const sel=!!(view.sel&&view.sel.sid===s.sid),r=$('div','sri '+s.status+(sel?' sel':'')),b=$('button','sim');b.dataset.k='s:'+s.sid;
  const mid=$('span');const t=$('span','rt',s.title);if(s.errs)t.append($('span','etag',tt('오류 ')+s.errs));
  mid.append(t,$('span','rmeta',[showProj?p.name:'',s.branch&&s.branch!=='HEAD'?s.branch:'',lastText(s.last)].filter(Boolean).join('  ·  ')));
- const rr=$('span','rr');rr.append($('span','rs '+s.status,ST[s.status]),$('span','rtm',ago(s.lastTs)));
- b.append(icon(s.status),mid,rr);b.setAttribute('aria-label',`${s.title}, ${ST[s.status]}${s.errs?tt(', 오류 ')+s.errs+tt('건'):''}, ${tt('작업 흐름 보기')}`);b.onclick=()=>openFlow(p,s);r.append(b);
- if(s.status==='dormant'){const x=$('button','btn sm rx',tt('삭제…'));x.setAttribute('aria-label',s.title+tt(' 삭제'));x.dataset.k='x:'+s.sid;x.onclick=()=>openClean(p,s.sid);r.append(x)}return r}
+ b.append(icon(s.status),mid,$('span','rtm',ago(s.lastTs)));
+ b.setAttribute('aria-label',`${s.title}, ${ST[s.status]}${s.errs?tt(', 오류 ')+s.errs+tt('건'):''}, ${tt('작업 흐름 보기')}`);b.setAttribute('aria-current',String(sel));b.onclick=()=>openFlow(p,s);r.append(b);
+ if(s.status==='dormant'){const x=$('button','btn sm rx');x.innerHTML=TRASHSVG;x.title=tt('삭제…');x.setAttribute('aria-label',s.title+tt(' 삭제'));x.dataset.k='x:'+s.sid;x.onclick=()=>openClean(p,s.sid);r.append(x)}return r}
 function projHeader(p){const d=$('div','phd'),n=$('div','phn');n.append($('b',0,p.name),$('span','path',p.cwd||p.dir));d.append(n,folderBtns(p));
  const ss=p.sessions,dorm=ss.filter(s=>s.status==='dormant').length;
  if(dorm){const cb=$('button','btn sm cleanb',tt('휴면 세션 정리…'));cb.dataset.k='c:'+p.dir;cb.onclick=()=>openClean(p);d.querySelector('.pa').append(cb)}
@@ -288,25 +285,25 @@ function projHeader(p){const d=$('div','phd'),n=$('div','phn');n.append($('b',0,
   for(const [nm,k] of p.top){const r=$('div','ur'),b=$('span','ub'),i=$('i');i.style.width=Math.max(4,k/mx*100)+'%';b.append(i);r.append($('span','un',toolLabel(nm)),b,$('span','uc',String(k)));r.title=nm;u.append(r)}d.append(u)}
  if(p.skills.length){const u=$('div','use');u.append($('div','ul',tt('사용한 스킬')));const tl=$('div','tl');for(const nm of p.skills)tl.append($('span',0,nm));u.append(tl);d.append(u)}
  return d}
-function drawProjects(force){const g=el('grid');if(!data)return;
+function drawProjects(force){if(!data)return;
  if(view.proj&&!data.projects.some(p=>p.dir===view.proj))view.proj=null;
  const running=data.projects.reduce((n,p)=>n+p.running,0);document.title=(running?`(${running}) `:'')+tt('Agent Map 실시간');
- const rows=baseRows(),vis=rows.filter(r=>view.status==='all'||r.s.status===view.status);
- vis.sort((a,b)=>view.sort==='name'?(a.p.name.localeCompare(b.p.name)||ORD[a.s.status]-ORD[b.s.status]||Date.parse(b.s.lastTs)-Date.parse(a.s.lastTs)):(ORD[a.s.status]-ORD[b.s.status]||Date.parse(b.s.lastTs)-Date.parse(a.s.lastTs)));
- const sum=el('sum');sum.textContent='';for(const [a,b] of [[tt('프로젝트'),new Set(rows.map(r=>r.p.dir)).size],[tt('세션'),rows.length],[tt('작업 중'),rows.filter(r=>r.s.status==='running').length]])sum.append(document.createTextNode(a),$('b',0,String(b)));
- const sig=JSON.stringify([vis.map(r=>[r.p.dir,r.s.sid,r.s.status,r.s.lastTs,r.s.errs,r.s.last&&r.s.last.name]),view.proj,view.status,view.sort,[...view.expanded],data.projects.length,Math.floor(Date.now()/30000)]);
+ const rows=baseRows();rows.sort((a,b)=>ORD[a.s.status]-ORD[b.s.status]||Date.parse(b.s.lastTs)-Date.parse(a.s.lastTs));
+ const sig=JSON.stringify([rows.map(r=>[r.p.dir,r.s.sid,r.s.status,r.s.lastTs,r.s.errs,r.s.last&&r.s.last.name]),view.proj,view.sel&&view.sel.sid,[...view.expanded],data.projects.length,Math.floor(Date.now()/30000)]);
  if(sig===psig&&!force)return;psig=sig;
- keepFocus(()=>{drawSide();g.textContent='';
-  const cur=view.proj&&data.projects.find(p=>p.dir===view.proj);if(cur)g.append(projHeader(cur));
-  if(!vis.length){const n=$('div','none');n.append($('p',0,tt('조건에 맞는 세션이 없습니다')),$('p',0,tt('검색어, 상태, 기간을 바꾸거나 임시 작업 폴더를 포함해 보세요')));g.append(n);return}
-  const L=$('div','list');const groups=new Map();
-  for(const r of vis){const k=view.sort==='name'?r.p.name:r.s.status;if(!groups.has(k))groups.set(k,[]);groups.get(k).push(r)}
-  for(const [k,arr] of groups){const byName=view.sort==='name';
-   const h=$('div','gr '+(byName?'name':k));if(!byName)h.append(icon(k));h.append($('span',0,byName?k:ST[k]),$('span','gc',String(arr.length)));if(!byName&&k==='idle')h.title=STT.idle;L.append(h);
-   const fold=!byName&&k==='dormant'&&arr.length>4&&!view.expanded.has('dormant');
-   for(const r of fold?arr.slice(0,4):arr)L.append(sessionRow(r.p,r.s,!view.proj));
-   if(!byName&&k==='dormant'&&arr.length>4){const m=$('button','more',fold?K(`휴면 ${arr.length-4}개 더 보기`,`Show ${arr.length-4} more dormant`):tt('접기'));m.dataset.k='m:dormant';m.setAttribute('aria-expanded',String(!fold));m.onclick=()=>{fold?view.expanded.add('dormant'):view.expanded.delete('dormant');drawProjects(true)};L.append(m)}}
-  g.append(L)})}
+ keepFocus(()=>{drawSessions(rows);drawOverview(rows)})}
+function drawSessions(rows){const sb=el('sbody');sb.textContent='';
+ if(!rows.length){const n=$('div','none');n.append($('p',0,tt('조건에 맞는 세션이 없습니다')),$('p',0,tt('검색어, 상태, 기간을 바꾸거나 임시 작업 폴더를 포함해 보세요')));sb.append(n);return}
+ for(const k of ['running','idle','dormant']){const arr=rows.filter(r=>r.s.status===k);if(!arr.length)continue;
+  const h=$('div','gr '+k);h.append(icon(k),$('span',0,ST[k]),$('span','gc',String(arr.length)));if(k==='idle')h.title=STT.idle;sb.append(h);
+  const fold=k==='dormant'&&arr.length>4&&!view.expanded.has('dormant');
+  for(const r of fold?arr.slice(0,4):arr)sb.append(sessionRow(r.p,r.s,!view.proj));
+  if(k==='dormant'&&arr.length>4){const m=$('button','more',fold?K(`휴면 ${arr.length-4}개 더 보기`,`Show ${arr.length-4} more dormant`):tt('접기'));m.dataset.k='m:dormant';m.setAttribute('aria-expanded',String(!fold));m.onclick=()=>{fold?view.expanded.add('dormant'):view.expanded.delete('dormant');drawProjects(true)};sb.append(m)}}}
+function drawOverview(rows){const g=el('grid');g.textContent='';
+ const cur=view.proj&&data.projects.find(p=>p.dir===view.proj);if(cur)g.append(projHeader(cur));
+ const c={running:0,idle:0,dormant:0};for(const r of rows)c[r.s.status]++;
+ const o=$('div','ovs');for(const [k,cls] of [['running','run'],['idle','wait'],['dormant','']]){const d=$('div',cls);d.append($('b',0,String(c[k])),$('span',0,ST[k]));o.append(d)}g.append(o);
+ const n=$('div','none');n.append($('p',0,K('왼쪽에서 세션을 고르면 작업 흐름을 볼 수 있습니다','Pick a session on the left to see its flow')));g.append(n)}
 
 /* ---------- flow ---------- */
 function legend(){const lg=el('leg');lg.textContent='';for(const [v,n] of CAT){const b=$('button');const i=$('i');i.style.setProperty('--c',`var(${v})`);b.append(i,document.createTextNode(n));b.setAttribute('aria-pressed',view.hl===v);b.onclick=()=>{view.hl=view.hl===v?null:v;legend();fsig='';drawFlow()};lg.append(b)}}
@@ -400,7 +397,7 @@ txtb.onclick=()=>{view.txt=!view.txt;store.set('agent-map-txt',view.txt?'1':'0')
 async function pollState(){try{const r=await fetch('/api/state?days='+view.days);if(!r.ok)throw 0;data=await r.json();
   if(!ok){ok=true;say(tt('서버에 다시 연결됐습니다'))}el('live').classList.remove('off');el('lt').textContent=tt('실시간 · 2초마다 갱신 · ')+hms(new Date())+roNote}
  catch{if(ok){ok=false;say(tt('서버 연결이 끊겼습니다'))}el('live').classList.add('off');el('lt').textContent=tt('연결 끊김. 서버가 종료됐다면 /agent-map:live 를 다시 실행하세요')}
- if(data&&view.tab==='p'){statusBar();drawProjects()}}
+ if(data){statusBar();drawProjects()}}
 async function pollFlow(){if(!view.sel||view.tab!=='f'||view.paused)return;try{const r=await fetch(`/api/flow?dir=${encodeURIComponent(view.sel.dir)}&sid=${encodeURIComponent(view.sel.sid)}&text=${view.txt?1:0}`);if(r.ok)fdata=await r.json();else if(r.status===404){fdata=null;el('fv').textContent='';el('fv').append($('div','none',tt('세션 기록을 찾을 수 없습니다')));return}}catch{}drawFlow()}
 function tick(){if(document.hidden)return;pollState();pollFlow()}
 setInterval(tick,2000);document.addEventListener('visibilitychange',tick);
@@ -456,14 +453,11 @@ el('trashb').onclick=openTrash;
 /* ---------- controls ---------- */
 const q=el('q');q.oninput=()=>{statusBar();drawProjects(true)};
 function seg(id,opts,key,after){const w=el(id);const draw=()=>{w.textContent='';for(const [v,l] of opts){const b=$('button',0,l);b.setAttribute('aria-pressed',String(view[key])===v);b.onclick=()=>{view[key]=v;store.set('agent-map-'+key,v);draw();after()};w.append(b)}};draw()}
-seg('sortf',[['act',tt('최근 활동순')],['name',tt('이름순')]],'sort',()=>{statusBar();drawProjects(true)});
 seg('daysf',[['1',tt('1일')],['3',tt('3일')],['7',tt('7일')],['30',tt('30일')]],'days',pollState);
 const sw=el('scr');const setSw=()=>sw.setAttribute('aria-checked',String(view.scr));sw.onclick=()=>{view.scr=!view.scr;setSw();statusBar();drawProjects(true)};setSw();
-el('t1').onclick=()=>{location.hash=pHash()};el('t2').onclick=()=>{if(view.sel)location.hash='f/'+encodeURIComponent(view.sel.dir)+'/'+encodeURIComponent(view.sel.sid)};
-el('t1').parentElement.addEventListener('keydown',e=>{if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;const t=view.tab==='p'?(view.sel?el('t2'):null):el('t1');if(t){e.preventDefault();t.click();t.focus()}});
 addEventListener('keydown',e=>{const tag=(document.activeElement||{}).tagName;
  if(e.key==='/'&&tag!=='INPUT'&&tag!=='SELECT'&&view.tab==='p'){e.preventDefault();q.focus()}
- else if(e.key==='Escape'){if(document.activeElement===q&&q.value){q.value='';statusBar();drawProjects(true)}else if(view.tab==='f')location.hash=pHash()}});
+ else if(e.key==='Escape'){if(!pmenu.hidden){closeMenu();pick.focus()}else if(document.activeElement===q&&q.value){q.value='';statusBar();drawProjects(true)}else if(view.tab==='f')location.hash=pHash()}});
 const TH=['soft','light','dark'],THN={soft:tt('소프트'),light:tt('라이트'),dark:tt('다크')};let th=store.get('agent-map-theme');if(!TH.includes(th))th='soft';{const qt=new URLSearchParams(location.search).get('theme');if(TH.includes(qt))th=qt} /* ?theme=soft|light|dark, handy for screenshots */
 const thb=el('th');const setTheme=t=>{th=t;document.documentElement.dataset.theme=t;thb.textContent=tt('화면 ')+THN[t];store.set('agent-map-theme',t)};thb.onclick=()=>setTheme(TH[(TH.indexOf(th)+1)%TH.length]);
 let zoom=+(store.get('agent-map-zoom')||1);const setZoom=z=>{zoom=Math.min(1.5,Math.max(.8,Math.round(z*100)/100));document.documentElement.style.zoom=zoom;store.set('agent-map-zoom',zoom)};

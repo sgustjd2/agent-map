@@ -39,22 +39,23 @@ const go = async (url, ms = 2500) => { await cdp('Page.navigate', { url }); awai
 const until = async (cond, ms = 10000) => { for (let t = 0; t < ms; t += 200) { if (await js(cond)) return; await sleep(200); } throw new Error('timed out waiting for ' + cond); };
 const click = (sel, nth = 0) => js(`document.querySelectorAll(${JSON.stringify(sel)})[${nth}].click()`);
 
-// 1. the list: working and waiting sessions stand out
-await go(`${base}/?theme=light&lang=${process.env.DEMO_LANG || 'en'}#p`, 800); await until(`!!document.querySelector('.r.running')`); await sleep(500);
+// 1. sessions grouped by state in the sidebar: working and waiting stand out
+await go(`${base}/?theme=light&lang=${process.env.DEMO_LANG || 'en'}#p`, 800); await until(`!!document.querySelector('.sri.running')`); await sleep(500);
 await shot('list', 2600);
 // 2. open the session that is working
-await click('.r.running .rm'); await until(`document.querySelectorAll('.tr').length>3`); await sleep(600);
+await click('.sri.running .sim'); await until(`document.querySelectorAll('.tr').length>3`); await sleep(600);
 await js(`document.getElementById('main').scrollTop=0`); await sleep(300);
 await shot('flow-top', 2400);
 // 3. the step trace: an error row and the step that is running now
 await js(`document.getElementById('main').scrollTop=document.getElementById('main').scrollHeight`); await sleep(400);
 await shot('flow-trace', 2800);
-// 4. back to the list, only sessions waiting for input
-await click('#back'); await until(`!!document.querySelector('.r')`); await sleep(500);
-await click('#sf button', 2); await sleep(700);
-await shot('waiting', 2200);
-// 5. same page in the dark theme
-await click('#sf button', 0); await js(`document.getElementById('th').click()`); await sleep(700);
+// 4. the project picker narrows the sidebar; the open session stays on the right
+await click('#pick'); await sleep(400);
+await shot('picker', 2200);
+await click('.pi', 2); await sleep(700);
+await shot('project', 2200);
+// 5. same view in the dark theme
+await js(`document.getElementById('th').click()`); await sleep(700);
 await shot('dark', 2600);
 
 ws.close(); proc.kill();
