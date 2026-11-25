@@ -22,7 +22,10 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const FILE_TOOLS = new Set(['Read', 'Edit', 'Write', 'NotebookEdit', 'MultiEdit']);
 const baseName = (p) => path.basename(String(p || '').replace(/\\/g, '/')).slice(0, 60);
 const exeName = (c) => {
-  const t = (String(c || '').match(/"[^"]*"|'[^']*'|\S+/g) || []).map(x => x.replace(/^["']|["']$/g, '')).find(x => !x.includes('=') && !x.startsWith('-'));
+  // "cd dir && git status" -> git: skip leading cd segments so the executable is the informative part
+  const segs = String(c || '').split(/&&|\|\||;|\n/).map(s => s.trim()).filter(Boolean);
+  const pick = segs.find(s => !/^cd(\s|$)/.test(s)) || segs[0] || '';
+  const t = (pick.match(/"[^"]*"|'[^']*'|\S+/g) || []).map(x => x.replace(/^["']|["']$/g, '')).find(x => !x.includes('=') && !x.startsWith('-'));
   return baseName(t).slice(0, 30);
 };
 const hostOf = (u) => { try { return new URL(u).hostname; } catch { return ''; } };
