@@ -85,7 +85,7 @@ Dark theme:
 | Shown on this computer only | First line of prompts and replies, one-line step descriptions. Switchable. The server never sends them to other devices |
 | Never read | Command arguments, tool output, file contents, environment variables, headers |
 | Sent anywhere | Nothing. No telemetry, no model calls |
-| Network | `127.0.0.1` only by default. Write actions need a custom header and are refused for other devices |
+| Network | `127.0.0.1` only by default. Write actions need a custom header and are refused for other devices. With `--lan`, other devices get a read-only dashboard; the config map (`/map`) stays local. Pages cannot be framed by other sites |
 
 Session titles can reveal what you work on. Turn the content switch off and mind your screen when sharing.
 

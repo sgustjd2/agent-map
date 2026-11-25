@@ -192,7 +192,8 @@ function nearestExisting(p) {
 }
 function openFolder(dir) { // the page sends only the project key; the folder comes from the session records, never from the request
   if (!SAFE_ID.test(dir)) return { error: 'bad request' };
-  const cwd = (sessionsOf(dir, Date.now(), 36500, 3).find(s => s.i.cwd) || { i: {} }).i.cwd || '';
+  let cwd = (sessionsOf(dir, Date.now(), 36500, 3).find(s => s.i.cwd) || { i: {} }).i.cwd || '';
+  if (!path.isAbsolute(cwd)) cwd = ''; // never hand a relative or option-like value to the file manager
   const target = cwd ? nearestExisting(cwd) : '';
   if (!target) return { error: '폴더를 찾을 수 없습니다' };
   const [cmd, a] = process.platform === 'win32' ? ['explorer.exe', [target]] : process.platform === 'darwin' ? ['open', [target]] : ['xdg-open', [target]];
@@ -284,9 +285,12 @@ function serve() {
     const a = Buffer.from(g), b = Buffer.from(token);
     return a.length === b.length && crypto.timingSafeEqual(a, b);
   };
+  let lastMap = 0;
   const fails = new Map(); // remote ip -> { n, t }: slows down token guessing
   const handle = (req, res) => {
     bump();
+    // no framing (clickjacking on the delete buttons), no sniffing, no referrer
+    res.setHeader("x-frame-options", "DENY"); res.setHeader("x-content-type-options", "nosniff"); res.setHeader("referrer-policy", "no-referrer");
     const u = new URL(req.url, 'http://x');
     const remote = !isOwnAddr(req.socket.remoteAddress);
     const host = (req.headers.host || '').replace(/:\d+$/, '').toLowerCase();
@@ -297,6 +301,7 @@ function serve() {
       if (!LAN || !sameNet(req.socket.remoteAddress)) { res.writeHead(403, { 'content-type': 'text/plain; charset=utf-8' }).end('같은 네트워크에서만 접속할 수 있습니다'); return; }
       if (NEED_TOKEN) {
       const ip = req.socket.remoteAddress, f = fails.get(ip) || { n: 0, t: Date.now() };
+      if (fails.size > 500) fails.clear(); // bounded memory
       if (Date.now() - f.t > 5 * 60 * 1000) { f.n = 0; f.t = Date.now(); }
       if (f.n >= 10) { res.writeHead(429, { 'content-type': 'text/plain; charset=utf-8' }).end('too many attempts'); return; }
       const qt = u.searchParams.get('t') || '', ck = /(?:^|;\s*)am_t=([0-9a-f]+)/.exec(req.headers.cookie || '');
@@ -324,11 +329,12 @@ function serve() {
     if (u.pathname === '/api/mode') return json({ readonly: remote, lan: LAN });
     if (u.pathname === '/api/trash-info') return json(trashStats());
     const htmlHead = { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store',
-      'content-security-policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'" };
+      'content-security-policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" };
     if (u.pathname === '/') { res.writeHead(200, htmlHead); res.end(fs.readFileSync(page, 'utf8')); return; }
-    if (u.pathname === '/map') { // config map, regenerated on every visit so it is never stale
+    if (u.pathname === '/map') { // config map (MCP addresses, hooks): this computer only; regenerated at most every 3 seconds so repeated requests cannot stall the server
+      if (remote) { res.writeHead(403, { 'content-type': 'text/plain; charset=utf-8' }).end('구성 지도는 이 컴퓨터에서만 볼 수 있습니다'); return; }
       try {
-        execFileSync(process.execPath, [path.join(here, 'agent-map.mjs'), '--no-open'], { timeout: 15000, stdio: 'ignore' });
+        if (Date.now() - lastMap > 3000) { execFileSync(process.execPath, [path.join(here, 'agent-map.mjs'), '--no-open'], { timeout: 15000, stdio: 'ignore' }); lastMap = Date.now(); }
         res.writeHead(200, htmlHead); res.end(fs.readFileSync(path.join(HOME, '.claude', 'agent-map', 'agent-map.html'), 'utf8'));
       } catch { res.writeHead(500, { 'content-type': 'text/plain; charset=utf-8' }); res.end('구성 지도를 만들지 못했습니다'); }
       return;
