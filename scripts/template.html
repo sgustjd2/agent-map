@@ -103,7 +103,7 @@ a.btn{display:inline-flex;align-items:center;text-decoration:none}[hidden]{displ
 </style></head><body>
 <header>
  <div class="top"><h1>Agent Map</h1><span class="live" id="gen"></span><span class="sp"></span>
-  <button class="btn" id="zo" aria-label="글자 작게" title="글자 작게">A-</button><button class="btn" id="zi" aria-label="글자 크게" title="글자 크게">A+</button><button class="btn" id="th" title="화면 모드 바꾸기"></button></div>
+  <button class="btn" id="zo" aria-label="글자 작게" title="글자 작게">A-</button><button class="btn" id="zi" aria-label="글자 크게" title="글자 크게">A+</button><button class="btn" id="th" title="화면 모드 바꾸기"></button><button class="btn" id="lg"></button></div>
  <nav class="tabs" id="tabs" aria-label="보기"></nav>
 </header>
 <div class="tb">
@@ -119,13 +119,19 @@ a.btn{display:inline-flex;align-items:center;text-decoration:none}[hidden]{displ
 </div>
 <div class="sr" role="status" aria-live="polite" id="sr"></div>
 <script>
+const LANG=(()=>{try{const q=new URLSearchParams(location.search).get('lang');if(q==='ko'||q==='en')return q;const v=localStorage.getItem('agent-map-lang');if(v==='ko'||v==='en')return v}catch{}return /^ko/i.test(navigator.language||'')?'ko':'en'})();
+const EN={"글자 작게":"Smaller text","글자 크게":"Larger text","화면 모드 바꾸기":"Change theme","보기":"View","이름이나 설명으로 검색 (/)":"Search by name or description (/)","검색":"Search","지우기":"Clear","종류":"Type","범위":"Scope","비활성 플러그인 포함":"Include inactive plugins","필터 초기화":"Reset filters","그룹":"Groups","카드를 클릭하면 이름, 설명, 호출 방법, 파일 위치 같은 자세한 정보가 여기에 표시됩니다":"Click a card to see its name, description, how to invoke it and where the file is","스킬":"Skills","에이전트":"Agents","커맨드":"Commands","훅":"Hooks","MCP 서버":"MCP servers","전체":"All","사용자":"User","프로젝트":"Project","플러그인":"Plugin","소프트":"Soft","라이트":"Light","다크":"Dark","화면 ":"Theme ","세션이 시작, 재개, 초기화될 때":"When a session starts, resumes or is cleared","사용자가 프롬프트를 보낸 직후, Claude가 처리하기 전":"Right after you send a prompt, before Claude processes it","도구를 실행하기 직전 (실행을 막을 수 있음)":"Just before a tool runs (can block it)","도구 실행이 끝난 직후":"Right after a tool finishes","Claude가 응답을 끝낼 때":"When Claude finishes replying","서브에이전트가 시작될 때":"When a subagent starts","서브에이전트가 끝날 때":"When a subagent finishes","알림이 발생할 때":"When a notification is raised","대화를 압축하기 직전":"Just before the conversation is compacted","세션이 끝날 때":"When the session ends","권한 요청이 나타날 때":"When a permission request appears","모든 경우":"Always"," 도구일 때만":" tool only","시작 유형: ":"Start type: ","조건: ":"Condition: ","출처":"Source"," (비활성)":" (inactive)","설명이 없습니다":"No description","호출":"Invoke","인자":"Arguments","허용 도구":"Allowed tools","파일":"File","모델":"Model","도구":"Tools","이벤트":"Event","대상":"Target","실행":"Runs","방식":"Method","제한 시간":"Timeout","초":"s","연결 방식":"Connection","주소/명령":"Address / command","복사":"Copy"," 복사":": copy","복사됨":"Copied","복사 실패":"Copy failed","을 복사했습니다":" copied","복사하지 못했습니다":"Could not copy","닫기":"Close","설명":"Description","정보":"Info","비활성":"inactive","구성 요소가 없는 플러그인":"Plugins without components"," (도구나 설정만 제공)":" (tools or settings only)","일치하는 항목이 없습니다":"No matching items"," 종류에는 없지만 다른 종류에 있습니다":" has none, but other types do","검색어나 필터를 바꿔 보세요":"Try a different search or filter","전체 종류에서 ":"Show ","개 보기":" in all types","구성 지도 · 생성 ":"Config map · generated ","실시간 서버에서만 열 수 있습니다 (/agent-map:live)":"Only available on the live server (/agent-map:live)","실시간 흐름":"Live flow","프로젝트 탭에서 세션을 선택하세요":"Pick a session on the Projects tab","구성 지도":"Config map"};
+const tt=s=>LANG==='en'&&EN[s]!==undefined?EN[s]:s;
+const KR=(ko,en)=>LANG==='en'?en:ko;
+const GN=n=>LANG==='en'?String(n).replace(/^사용자 \(/,'User (').replace(/^프로젝트 \(/,'Project ('):n;
+const DD=d=>LANG==='en'?String(d).replace(/^실행: /,'Runs: ').replace(/^종류: /,'Type: '):d;
 const D=/*DATA*/null;
 const K={skills:'#2f7de1',agents:'#d9822b',commands:'#2fa36b',hooks:'#8a63d2',mcp:'#d9546b'};
-const KL={skills:'스킬',agents:'에이전트',commands:'커맨드',hooks:'훅',mcp:'MCP 서버'};
-const SC={all:'전체',user:'사용자',project:'프로젝트',plugin:'플러그인'};
-const EV={SessionStart:'세션이 시작, 재개, 초기화될 때',UserPromptSubmit:'사용자가 프롬프트를 보낸 직후, Claude가 처리하기 전',PreToolUse:'도구를 실행하기 직전 (실행을 막을 수 있음)',PostToolUse:'도구 실행이 끝난 직후',Stop:'Claude가 응답을 끝낼 때',SubagentStart:'서브에이전트가 시작될 때',SubagentStop:'서브에이전트가 끝날 때',Notification:'알림이 발생할 때',PreCompact:'대화를 압축하기 직전',SessionEnd:'세션이 끝날 때',PermissionRequest:'권한 요청이 나타날 때'};
+const KL={skills:tt('스킬'),agents:tt('에이전트'),commands:tt('커맨드'),hooks:tt('훅'),mcp:tt('MCP 서버')};
+const SC={all:tt('전체'),user:tt('사용자'),project:tt('프로젝트'),plugin:tt('플러그인')};
+const EV={SessionStart:tt('세션이 시작, 재개, 초기화될 때'),UserPromptSubmit:tt('사용자가 프롬프트를 보낸 직후, Claude가 처리하기 전'),PreToolUse:tt('도구를 실행하기 직전 (실행을 막을 수 있음)'),PostToolUse:tt('도구 실행이 끝난 직후'),Stop:tt('Claude가 응답을 끝낼 때'),SubagentStart:tt('서브에이전트가 시작될 때'),SubagentStop:tt('서브에이전트가 끝날 때'),Notification:tt('알림이 발생할 때'),PreCompact:tt('대화를 압축하기 직전'),SessionEnd:tt('세션이 끝날 때'),PermissionRequest:tt('권한 요청이 나타날 때')};
 const TOOLEV=new Set(['PreToolUse','PostToolUse','PermissionRequest']);
-const TH=['soft','light','dark'],THN={soft:'소프트',light:'라이트',dark:'다크'};
+const TH=['soft','light','dark'],THN={soft:tt('소프트'),light:tt('라이트'),dark:tt('다크')};
 const st={kind:'all',scope:'all',q:'',off:true};
 const $=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
 const vp=document.getElementById('vp'),w=document.getElementById('w'),det=document.getElementById('det');
@@ -139,33 +145,33 @@ function counts(){const c={};for(const k in K)c[k]=0;for(const g of D.groups)if(
 const cols=()=>Math.max(1,Math.min(3,Math.floor((vp.clientWidth-48+24)/(420+24))));
 const pfx=g=>g.kind==='plugin'?g.name+':':'';
 function hookText(x){return x.event?(EV[x.event]||x.event):''}
-function matcherText(x){if(!x.matcher)return '모든 경우';if(TOOLEV.has(x.event))return x.matcher+' 도구일 때만';if(x.event==='SessionStart')return '시작 유형: '+x.matcher;return '조건: '+x.matcher}
+function matcherText(x){if(!x.matcher)return tt('모든 경우');if(TOOLEV.has(x.event))return x.matcher+tt(' 도구일 때만');if(x.event==='SessionStart')return tt('시작 유형: ')+x.matcher;return tt('조건: ')+x.matcher}
 function cardText(k,x){return k==='hooks'?`${hookText(x)}${x.script?' · '+x.script:''}`:(x.desc||'')}
 function detail(k,x,g){
- const src=g.name+(g.version?' v'+String(g.version).slice(0,8):'');
- const rows=[['출처',src],['범위',SC[g.kind]+(g.enabled===false?' (비활성)':'')]];
- let body=x.desc||'설명이 없습니다';
- if(k==='skills'||k==='commands')rows.push(['호출',`/${pfx(g)}${x.name}`],['인자',x.hint],['허용 도구',x.tools],['파일',x.file]);
- if(k==='agents')rows.push(['호출',`${pfx(g)}${x.name}`],['모델',x.extra],['도구',x.tools],['파일',x.file]);
- if(k==='hooks'){body=`이 훅은 ${x.event} 이벤트에 연결돼 있습니다.\n발동 시점: ${hookText(x)}\n대상: ${matcherText(x)}${x.script?'\n실행 파일: '+x.script:''}`;
-  rows.push(['이벤트',x.event],['대상',matcherText(x)],['실행',x.script],['방식',x.htype],['제한 시간',x.timeout?x.timeout+'초':''])}
- if(k==='mcp'){body=`${x.name} MCP 서버입니다. Claude가 이 서버의 도구를 사용할 수 있습니다.`;rows.push(['연결 방식',x.type],['주소/명령',x.desc])}
+ const src=GN(g.name)+(g.version?' v'+String(g.version).slice(0,8):'');
+ const rows=[[tt('출처'),src],[tt('범위'),SC[g.kind]+(g.enabled===false?tt(' (비활성)'):'')]];
+ let body=x.desc||tt('설명이 없습니다');
+ if(k==='skills'||k==='commands')rows.push([tt('호출'),`/${pfx(g)}${x.name}`],[tt('인자'),x.hint],[tt('허용 도구'),x.tools],[tt('파일'),x.file]);
+ if(k==='agents')rows.push([tt('호출'),`${pfx(g)}${x.name}`],[tt('모델'),x.extra],[tt('도구'),x.tools],[tt('파일'),x.file]);
+ if(k==='hooks'){body=KR(`이 훅은 ${x.event} 이벤트에 연결돼 있습니다.\n발동 시점: ${hookText(x)}\n대상: ${matcherText(x)}${x.script?'\n실행 파일: '+x.script:''}`,`This hook is attached to the ${x.event} event.\nFires: ${hookText(x)}\nTarget: ${matcherText(x)}${x.script?'\nRuns: '+x.script:''}`);
+  rows.push([tt('이벤트'),x.event],[tt('대상'),matcherText(x)],[tt('실행'),x.script],[tt('방식'),x.htype],[tt('제한 시간'),x.timeout?x.timeout+tt('초'):''])}
+ if(k==='mcp'){body=KR(`${x.name} MCP 서버입니다. Claude가 이 서버의 도구를 사용할 수 있습니다.`,`${x.name} is an MCP server. Claude can use this server's tools.`);rows.push([tt('연결 방식'),x.type],[tt('주소/명령'),x.desc])}
  return {body,rows:rows.filter(r=>r[1])}}
-function copyBtn(text,what){const b=$('button','btn sm cp','복사');b.setAttribute('aria-label',what+' 복사');
+function copyBtn(text,what){const b=$('button','btn sm cp',tt('복사'));b.setAttribute('aria-label',what+tt(' 복사'));
  b.onclick=async()=>{let ok=true;try{await navigator.clipboard.writeText(text)}catch{const t=document.createElement('textarea');t.value=text;document.body.append(t);t.select();try{ok=document.execCommand('copy')}catch{ok=false}t.remove()}
-  b.textContent=ok?'복사됨':'복사 실패';document.getElementById('sr').textContent=ok?what+'을 복사했습니다':'복사하지 못했습니다';setTimeout(()=>b.textContent='복사',1500)};return b}
+  b.textContent=ok?tt('복사됨'):tt('복사 실패');document.getElementById('sr').textContent=ok?what+tt('을 복사했습니다'):tt('복사하지 못했습니다');setTimeout(()=>b.textContent=tt('복사'),1500)};return b}
 function showDet(k,x,g){const d=detail(k,x,g);det.textContent='';
- const t=$('div','top2');t.append($('span','tag',KL[k]));const cb=$('button','btn','닫기');cb.onclick=()=>det.classList.remove('open');t.append(cb);
- const dl=$('dl');for(const [a,b] of d.rows){dl.append($('dt',0,a));const dd=$('dd');if(['호출','파일','실행','주소/명령'].includes(a)){dd.append($('code',0,b));if(a==='호출'||a==='파일')dd.append(copyBtn(b,a))}else dd.textContent=b;dl.append(dd)}
- det.append(t,$('h3',0,x.name),$('div','src',g.name),$('h4',0,'설명'),$('p',0,d.body),$('h4',0,'정보'),dl);det.classList.add('open');det.scrollTop=0}
+ const t=$('div','top2');t.append($('span','tag',KL[k]));const cb=$('button','btn',tt('닫기'));cb.onclick=()=>det.classList.remove('open');t.append(cb);
+ const dl=$('dl');for(const [a,b] of d.rows){dl.append($('dt',0,a));const dd=$('dd');if([tt('호출'),tt('파일'),tt('실행'),tt('주소/명령')].includes(a)){dd.append($('code',0,b));if(a===tt('호출')||a===tt('파일'))dd.append(copyBtn(b,a))}else dd.textContent=b;dl.append(dd)}
+ det.append(t,$('h3',0,x.name),$('div','src',GN(g.name)),$('h4',0,tt('설명')),$('p',0,d.body),$('h4',0,tt('정보')),dl);det.classList.add('open');det.scrollTop=0}
 function toolbar(){const c=counts(),all=Object.values(c).reduce((a,b)=>a+b,0);
  const kf=document.getElementById('kf');kf.textContent='';
  const mk=(key,label,n,col)=>{const b=$('button','chip'+(st.kind===key?' on':''));if(col){const i=$('i');i.style.setProperty('--c',col);b.append(i)}b.append(document.createTextNode(label),$('b',0,String(n)));b.setAttribute('aria-pressed',st.kind===key);b.onclick=()=>{st.kind=key;render()};return b};
- kf.append(mk('all','전체',all));for(const k in K)kf.append(mk(k,KL[k],c[k],K[k]));
+ kf.append(mk('all',tt('전체'),all));for(const k in K)kf.append(mk(k,KL[k],c[k],K[k]));
  const sf=document.getElementById('sf');sf.textContent='';
  for(const s in SC){const b=$('button',st.scope===s?'on':'',SC[s]);b.setAttribute('aria-pressed',st.scope===s);b.onclick=()=>{st.scope=s;render()};sf.append(b)}
  const bar=document.getElementById('bar');bar.textContent='';for(const k in K){const i=$('i');i.style.flex=String(c[k]||0);i.style.setProperty('--c',K[k]);bar.append(i)}
- document.getElementById('meta').textContent=`${st.kind==='all'?all:c[st.kind]}개 항목`;
+ document.getElementById('meta').textContent=KR(`${st.kind==='all'?all:c[st.kind]}개 항목`,`${st.kind==='all'?all:c[st.kind]} items`);
  document.getElementById('rst').hidden=!(st.q||st.kind!=='all'||st.scope!=='all'||!st.off);document.getElementById('clr').hidden=!st.q}
 function draw(){w.textContent='';const gl=document.getElementById('gl');gl.textContent='';
  const n=cols();w.style.gridTemplateColumns=`repeat(${n},minmax(0,1fr))`;
@@ -173,7 +179,7 @@ function draw(){w.textContent='';const gl=document.getElementById('gl');gl.textC
  const full=gs.filter(g=>total(g)),empty=gs.filter(g=>!Object.keys(K).some(k=>g[k].length));
  for(const g of full){
   const t=total(g),box=$('div','g'+(g.enabled===false?' offp':''));box.style.gridColumn='span '+Math.min(n,t<=6?1:t<=20?2:3);
-  const h=$('div','gh');h.append($('b',0,g.name),...[SC[g.kind],g.enabled===false?'비활성':'',g.version?'v'+String(g.version).slice(0,8):''].filter(Boolean).map(x=>$('code',0,x)));box.append(h);
+  const h=$('div','gh');h.append($('b',0,GN(g.name)),...[SC[g.kind],g.enabled===false?tt('비활성'):'',g.version?'v'+String(g.version).slice(0,8):''].filter(Boolean).map(x=>$('code',0,x)));box.append(h);
   if(g.description&&!st.q)box.append($('p','gd',g.description));
   for(const k of kinds()){const it=items(g,k);if(!it.length)continue;
    const kb=$('div','k');kb.append($('div','kh',`${KL[k]} ${it.length}`));const cs=$('div','cs');
@@ -181,13 +187,13 @@ function draw(){w.textContent='';const gl=document.getElementById('gl');gl.textC
     c.onclick=()=>{document.querySelectorAll('.c.sel').forEach(y=>y.classList.remove('sel'));c.classList.add('sel');showDet(k,x,g)};cs.append(c)}
    kb.append(cs);box.append(kb)}
   w.append(box);
-  const gi=$('button','gi'+(g.enabled===false?' offp':''));gi.append($('span',0,g.name),$('em',0,String(t)));
+  const gi=$('button','gi'+(g.enabled===false?' offp':''));gi.append($('span',0,GN(g.name)),$('em',0,String(t)));
   gi.onclick=()=>{document.querySelectorAll('.g.sel').forEach(e=>e.classList.remove('sel'));document.querySelectorAll('.gi.on').forEach(e=>e.classList.remove('on'));box.classList.add('sel');gi.classList.add('on');box.scrollIntoView({behavior:'smooth',block:'start'})};gl.append(gi)}
- if(empty.length&&!st.q&&st.kind==='all'){const box=$('div','g');const h=$('div','gh');h.append($('b',0,'구성 요소가 없는 플러그인'));box.append(h,$('p','empty',empty.map(g=>g.name).join(', ')+' (도구나 설정만 제공)'));w.append(box)}
+ if(empty.length&&!st.q&&st.kind==='all'){const box=$('div','g');const h=$('div','gh');h.append($('b',0,tt('구성 요소가 없는 플러그인')));box.append(h,$('p','empty',empty.map(g=>g.name).join(', ')+tt(' (도구나 설정만 제공)')));w.append(box)}
  if(!w.children.length){const box=$('div','none');const all=Object.values(counts()).reduce((a,b)=>a+b,0);
-  box.append($('p',0,'일치하는 항목이 없습니다'));
-  if(st.kind!=='all'&&all){const b=$('button','btn','전체 종류에서 '+all+'개 보기');b.onclick=()=>{st.kind='all';render()};box.append($('p',0,KL[st.kind]+' 종류에는 없지만 다른 종류에 있습니다'),b)}
-  else box.append($('p',0,'검색어나 필터를 바꿔 보세요'));
+  box.append($('p',0,tt('일치하는 항목이 없습니다')));
+  if(st.kind!=='all'&&all){const b=$('button','btn',tt('전체 종류에서 ')+all+tt('개 보기'));b.onclick=()=>{st.kind='all';render()};box.append($('p',0,KL[st.kind]+tt(' 종류에는 없지만 다른 종류에 있습니다')),b)}
+  else box.append($('p',0,tt('검색어나 필터를 바꿔 보세요')));
   w.append(box)}}
 function render(){toolbar();draw()}
 const q=document.getElementById('q'),ob=document.getElementById('offb');
@@ -201,13 +207,16 @@ const setZoom=z=>{zoom=Math.min(1.5,Math.max(.8,Math.round(z*100)/100));document
 document.getElementById('zi').onclick=()=>{setZoom(zoom+.1);draw()};document.getElementById('zo').onclick=()=>{setZoom(zoom-.1);draw()};
 let th=store.get('agent-map-theme');if(!TH.includes(th))th='soft';{const qt=new URLSearchParams(location.search).get('theme');if(TH.includes(qt))th=qt} /* ?theme=soft|light|dark, handy for screenshots */
 const thb=document.getElementById('th');
-const setTheme=t=>{th=t;document.documentElement.dataset.theme=t;thb.textContent='화면 '+THN[t];store.set('agent-map-theme',t)};
+const setTheme=t=>{th=t;document.documentElement.dataset.theme=t;thb.textContent=tt('화면 ')+THN[t];store.set('agent-map-theme',t)};
 thb.onclick=()=>setTheme(TH[(TH.indexOf(th)+1)%TH.length]);
 addEventListener('resize',draw);
-{const d=new Date(D.generatedAt),p=n=>String(n).padStart(2,'0');document.getElementById('gen').textContent='구성 지도 · 생성 '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds())}
+{const d=new Date(D.generatedAt),p=n=>String(n).padStart(2,'0');document.getElementById('gen').textContent=tt('구성 지도 · 생성 ')+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds())}
 { /* same three tabs as the live dashboard; the other two only work when served by the live server */
- const nav=document.getElementById('tabs'),live=/^https?:$/.test(location.protocol),off='실시간 서버에서만 열 수 있습니다 (/agent-map:live)';
+ const nav=document.getElementById('tabs'),live=/^https?:$/.test(location.protocol),off=tt('실시간 서버에서만 열 수 있습니다 (/agent-map:live)');
  const mk=(label,href,cur,tip)=>{const link=href&&live&&!cur,a=$(link?'a':'span','tab',label);if(link)a.href=href;else if(cur)a.setAttribute('aria-current','page');else{a.setAttribute('aria-disabled','true');a.title=tip}return a};
- nav.append(mk('프로젝트','/#p',false,off),mk('실시간 흐름','',false,live?'프로젝트 탭에서 세션을 선택하세요':off),mk('구성 지도','',true))}
+ nav.append(mk(tt('프로젝트'),'/#p',false,off),mk(tt('실시간 흐름'),'',false,live?tt('프로젝트 탭에서 세션을 선택하세요'):off),mk(tt('구성 지도'),'',true))}
+function localize(){document.documentElement.lang='en';const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);for(let n;n=w.nextNode();){const t=n.nodeValue.trim();if(t&&EN[t])n.nodeValue=n.nodeValue.replace(t,EN[t])}for(const e of document.querySelectorAll('[title],[aria-label],[placeholder]'))for(const a of ['title','aria-label','placeholder']){const v=e.getAttribute(a);if(v&&EN[v])e.setAttribute(a,EN[v])}}
+document.getElementById('lg').textContent=LANG==='en'?'한국어':'English';document.getElementById('lg').onclick=()=>{store.set('agent-map-lang',LANG==='en'?'ko':'en');location.reload()};
+if(LANG==='en')localize();
 setTheme(th);setZoom(zoom);render();
 </script></body></html>

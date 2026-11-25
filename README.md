@@ -17,8 +17,6 @@ English · [한국어](README.ko.md)
 
 Run several Claude Code sessions at once and you lose track: which terminal is still working, which one stopped to ask you something, which one failed ten minutes ago. agent-map reads the session logs Claude Code already writes on your machine and shows them in one page. Nothing leaves your computer and no model tokens are used.
 
-> The UI text is currently Korean. An English UI is on the wish list; the docs and code are in English and Korean.
-
 ## Install
 
 In Claude Code:
@@ -64,6 +62,7 @@ Dark theme:
 - Error count per session, last tool used, branch, time since last activity
 - Flow view: one row per step with a duration bar, grouped repeats (`x3`), a "now" banner, KPI strip (span, turns, tool calls, errors, subagents, context tokens), most-edited files, slowest steps, commands, MCP servers
 - Open a project folder, copy its path, search, filter, sort, 1 to 30 day window
+- English and Korean UI. It follows your browser language; switch with the button in the header
 - Three themes, text zoom, keyboard shortcuts (`/` search, `Esc` back)
 
 **Config map (`/agent-map`)**

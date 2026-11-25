@@ -182,7 +182,7 @@ dialog h2{font:600 18px/26px var(--sans);margin:0 0 8px}
 </style></head><body>
 <header>
  <div class="top"><h1 class="brand">Agent Map</h1><span class="live" id="live"><i></i><span id="lt">연결 중</span></span><span class="sp"></span>
-  <button class="btn sm" id="zo" aria-label="글자 작게" title="글자 작게">A-</button><button class="btn sm" id="zi" aria-label="글자 크게" title="글자 크게">A+</button><button class="btn sm" id="th" title="화면 모드 바꾸기"></button></div>
+  <button class="btn sm" id="zo" aria-label="글자 작게" title="글자 작게">A-</button><button class="btn sm" id="zi" aria-label="글자 크게" title="글자 크게">A+</button><button class="btn sm" id="th" title="화면 모드 바꾸기"></button><button class="btn sm" id="lg"></button></div>
  <div class="tabs" role="tablist" aria-label="보기">
   <button class="tab" role="tab" id="t1" aria-selected="true" aria-controls="pv" tabindex="0">프로젝트</button>
   <button class="tab" role="tab" id="t2" aria-selected="false" aria-controls="main" tabindex="-1" disabled title="프로젝트 탭에서 세션을 선택하세요">실시간 흐름</button>
@@ -215,10 +215,14 @@ dialog h2{font:600 18px/26px var(--sans);margin:0 0 8px}
 <div id="toast" role="status" hidden></div>
 <div class="sr" role="status" aria-live="polite" id="sr"></div>
 <script>
+const LANG=(()=>{try{const q=new URLSearchParams(location.search).get('lang');if(q==='ko'||q==='en')return q;const v=localStorage.getItem('agent-map-lang');if(v==='ko'||v==='en')return v}catch{}return /^ko/i.test(navigator.language||'')?'ko':'en'})();
+const EN={"Agent Map 실시간":"Agent Map Live","연결 중":"Connecting","글자 작게":"Smaller text","글자 크게":"Larger text","화면 모드 바꾸기":"Change theme","보기":"View","프로젝트":"Projects","프로젝트 탭에서 세션을 선택하세요":"Pick a session on the Projects tab","실시간 흐름":"Live flow","구성 지도":"Config map","← 목록":"← List","도구 종류 강조":"Highlight tool type","프롬프트와 응답의 첫 줄, 단계 설명을 보여줍니다. 이 컴퓨터에서만 볼 수 있습니다":"Shows the first line of prompts and replies and step descriptions. Visible on this computer only","작업 내용 표시":"Show content","일시정지":"Pause","세션, 브랜치, 도구 검색 (/)":"Search sessions, branches, tools (/)","세션 검색":"Search sessions","상태":"Status","정렬":"Sort","기간":"Period","임시 작업 폴더 포함":"Include temp folders","작업 중":"Working","작업 중 ":"Working ","대기 ":"Waiting ","대기":"Waiting","휴면":"Dormant","Claude가 작업하고 있습니다":"Claude is working","응답을 마치고 내 입력을 기다리는 중입니다":"Finished replying and waiting for your input","30분 넘게 활동이 없습니다":"No activity for over 30 minutes","읽기·검색":"Read/search","수정·쓰기":"Edit/write","명령 실행":"Commands","서브에이전트":"Subagent","MCP 도구":"MCP tools","기타":"Other","방금":"just now","초 전":" s ago","분 전":" min ago","시간 전":" h ago","일 전":" d ago","초":"s","분 ":"m ","전체":"All","전체 프로젝트":"All projects","오류 ":"Errors ",", 오류 ":", errors ","건":"","삭제…":"Delete…"," 삭제":" delete","휴면 세션 정리…":"Clean up dormant sessions…","많이 쓴 도구 (최근 호출 횟수)":"Most used tools (recent calls)","사용한 스킬":"Skills used","세션":"Sessions","조건에 맞는 세션이 없습니다":"No sessions match","검색어, 상태, 기간을 바꾸거나 임시 작업 폴더를 포함해 보세요":"Change the search, status or period, or include temp folders","접기":"Collapse","프로젝트 › ":"Projects › ","서브에이전트 ":"Subagent ","응답이 없으면 권한 승인을 기다리는 중일 수 있습니다. Claude Code 창을 확인해 보세요":"If nothing happens, it may be waiting for a permission approval. Check the Claude Code window","지금: Claude가 다음 단계를 생각하는 중":"Now: Claude is thinking about the next step","최근 요청":"Last request","마지막 응답":"Last reply","기록 구간":"Time span","턴":"Turns","도구 호출":"Tool calls","오류":"Errors","컨텍스트":"Context"," 토큰":" tokens","수정·작성한 파일":"Files edited","회":"x","읽은 파일":"Files read","오래 걸린 단계":"Slowest steps","실행한 명령":"Commands run","사용한 MCP 서버":"MCP servers used","오류가 난 단계":"Steps with errors","불러오는 중":"Loading","브랜치":"Branch","모델":"Model","이 세션 삭제…":"Delete this session…","프로젝트 목록에서 이 세션을 찾을 수 없습니다. 기간을 늘려 보세요":"Session not found in the project list. Try a longer period","시간 배분 (최근 ":"Time split (last ","단계, 도구 실행 시간 기준)":" steps, by tool run time)","작업 흐름":"Flow","프롬프트":"Prompt","응답":"Reply","진행 중":"running","소요 ":"took ","새 단계 ":"New steps ","개 · 최신으로 ↓":" · jump to latest ↓","재개":"Resume","실시간 갱신을 일시정지했습니다":"Live updates paused","실시간 갱신을 재개했습니다":"Live updates resumed","서버에 다시 연결됐습니다":"Reconnected to the server","실시간 · 2초마다 갱신 · ":"Live · refreshes every 2s · ","서버 연결이 끊겼습니다":"Lost connection to the server","연결 끊김. 서버가 종료됐다면 /agent-map:live 를 다시 실행하세요":"Disconnected. If the server stopped, run /agent-map:live again","세션 기록을 찾을 수 없습니다":"Session record not found","폴더 열기":"Open folder","상위 폴더 열기":"Open parent folder"," 폴더 열기":": open folder"," 폴더가 없어 상위 폴더 열기":": folder is gone, open parent","이 폴더는 삭제되어 없습니다. 남아 있는 가장 가까운 상위 폴더를 엽니다":"This folder was deleted. Opens the nearest parent that still exists","원래 폴더가 없어 상위 폴더를 열었습니다: ":"The folder is gone, opened its parent: ","폴더를 열었습니다: ":"Opened folder: ",". 창이 보이지 않으면 작업 표시줄을 확인하세요":". If no window appears, check the taskbar","열지 못했습니다":"Could not open it","경로 복사":"Copy path"," 경로 복사":": copy path","경로를 복사했습니다":"Path copied","복사하지 못했습니다":"Could not copy","폴더가 삭제됨":"Folder deleted","세션 삭제·정리":"Delete / clean up sessions","취소":"Cancel","휴지통 거치지 않고 바로 영구 삭제":"Delete permanently, skip the trash","켜면 되돌릴 수 없습니다. 삭제 전에 버튼을 두 번 누르게 합니다":"Cannot be undone. Asks you to press the button twice","한 번 더 누르면 영구 삭제됩니다":"Press once more to delete permanently","작은 세션 (내용이 거의 없음)":"Small session (almost no content)","작은 세션 선택":"Select small sessions","전체 선택":"Select all","선택 해제":"Clear selection","처리하지 못했습니다":"Could not complete it","휴지통 비우기":"Empty trash","영구 삭제":"Delete permanently","휴지통을 비웠습니다":"Trash emptied","비우지 못했습니다":"Could not empty it","최근 활동순":"Recent first","이름순":"By name","1일":"1 day","3일":"3 days","7일":"7 days","30일":"30 days","소프트":"Soft","라이트":"Light","다크":"Dark","화면 ":"Theme "," · 읽기 전용 접속":" · read-only access","폴더를 찾을 수 없습니다":"Folder not found","읽기 전용 접속입니다":"Read-only access","구성 지도는 이 컴퓨터에서만 볼 수 있습니다":"The config map is only available on this computer","마지막 활동":"Last activity","작업 흐름 보기":"view flow"};
+const tt=s=>LANG==='en'&&EN[s]!==undefined?EN[s]:s;
+const K=(ko,en)=>LANG==='en'?en:ko;
 const $=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
-const ST={running:'작업 중',idle:'대기',dormant:'휴면'};
-const STT={running:'Claude가 작업하고 있습니다',idle:'응답을 마치고 내 입력을 기다리는 중입니다',dormant:'30분 넘게 활동이 없습니다'};
-const CAT=[['--c-read','읽기·검색'],['--c-write','수정·쓰기'],['--c-bash','명령 실행'],['--c-agent','서브에이전트'],['--c-mcp','MCP 도구'],['--c-other','기타']];
+const ST={running:tt('작업 중'),idle:tt('대기'),dormant:tt('휴면')};
+const STT={running:tt('Claude가 작업하고 있습니다'),idle:tt('응답을 마치고 내 입력을 기다리는 중입니다'),dormant:tt('30분 넘게 활동이 없습니다')};
+const CAT=[['--c-read',tt('읽기·검색')],['--c-write',tt('수정·쓰기')],['--c-bash',tt('명령 실행')],['--c-agent',tt('서브에이전트')],['--c-mcp',tt('MCP 도구')],['--c-other',tt('기타')]];
 /* status icons: shape differs per state (not only color), after GitHub Actions' check / warning / in-progress glyphs */
 const IC={
  running:'<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.7" opacity=".3"/><path d="M8 1.7a6.3 6.3 0 0 1 6.3 6.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="8" r="2.2" fill="currentColor"/></svg>',
@@ -232,9 +236,9 @@ const store={get:k=>{try{return localStorage.getItem(k)}catch{return null}},set:
 const el=id=>document.getElementById(id);
 const view={tab:'p',sel:null,proj:null,status:'all',expanded:new Set(),hl:null,paused:false,txt:store.get('agent-map-txt')!=='0',days:store.get('agent-map-days')||'3',sort:store.get('agent-map-sort')||'act',scr:false};
 let data=null,fdata=null,ok=true,psig='',fsig='',seenT='',newCount=0;
-const ago=ts=>{const s=Math.max(0,(Date.now()-Date.parse(ts))/1000);if(s<10)return'방금';if(s<60)return Math.floor(s)+'초 전';if(s<3600)return Math.floor(s/60)+'분 전';if(s<86400)return Math.floor(s/3600)+'시간 전';return Math.floor(s/86400)+'일 전'};
+const ago=ts=>{const s=Math.max(0,(Date.now()-Date.parse(ts))/1000);if(s<10)returntt('방금');if(s<60)return Math.floor(s)+tt('초 전');if(s<3600)return Math.floor(s/60)+tt('분 전');if(s<86400)return Math.floor(s/3600)+tt('시간 전');return Math.floor(s/86400)+tt('일 전')};
 const hms=ts=>{if(!ts)return'';const d=new Date(ts),p=n=>String(n).padStart(2,'0');return p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds())};
-const fmtDur=ms=>ms<1000?'':ms<60000?(ms/1000).toFixed(ms<10000?1:0)+'초':Math.floor(ms/60000)+'분 '+Math.round(ms%60000/1000)+'초';
+const fmtDur=ms=>ms<1000?'':ms<60000?(ms/1000).toFixed(ms<10000?1:0)+tt('초'):Math.floor(ms/60000)+tt('분 ')+Math.round(ms%60000/1000)+tt('초');
 const cat=e=>e.k==='agent'?'--c-agent':e.k!=='tool'?'--c-other':e.name.startsWith('mcp__')?'--c-mcp':/^(Read|Grep|Glob|WebFetch|WebSearch|LSP)$/.test(e.name)?'--c-read':/^(Edit|Write|MultiEdit|NotebookEdit)$/.test(e.name)?'--c-write':/^(Bash|PowerShell|Monitor)$/.test(e.name)?'--c-bash':'--c-other';
 const lastText=l=>l?`${l.name}${l.target?' '+l.target:''}`:'';
 const say=t=>{el('sr').textContent=t};
@@ -260,48 +264,48 @@ function baseRows(){if(!data)return[];const q=el('q').value.trim().toLowerCase()
  for(const p of data.projects){if(!view.scr&&p.scratch)continue;if(view.proj&&p.dir!==view.proj)continue;for(const s of p.sessions)if(matchS(p,s,q))out.push({p,s})}
  return out}
 function statusBar(){const rows=baseRows(),c={all:rows.length,running:0,idle:0,dormant:0};for(const r of rows)c[r.s.status]++;
- const sf=el('sf');sf.textContent='';for(const [k,l] of [['all','전체'],['running','작업 중'],['idle','대기'],['dormant','휴면']]){const b=$('button',0,l);b.append($('b',0,String(c[k])));b.setAttribute('aria-pressed',view.status===k);if(k==='idle')b.title=STT.idle;b.onclick=()=>{view.status=k;statusBar();drawProjects(true)};sf.append(b)}}
-function drawSide(){const sd=el('side');sd.textContent='';sd.append($('div','sh','프로젝트'));
+ const sf=el('sf');sf.textContent='';for(const [k,l] of [['all',tt('전체')],['running',tt('작업 중')],['idle',tt('대기')],['dormant',tt('휴면')]]){const b=$('button',0,l);b.append($('b',0,String(c[k])));b.setAttribute('aria-pressed',view.status===k);if(k==='idle')b.title=STT.idle;b.onclick=()=>{view.status=k;statusBar();drawProjects(true)};sf.append(b)}}
+function drawSide(){const sd=el('side');sd.textContent='';sd.append($('div','sh',tt('프로젝트')));
  const ps=data?data.projects.filter(p=>view.scr||!p.scratch):[];
  const mk=(name,dir,run,idle)=>{const b=$('button','si2'+(view.proj===dir?' on':''));b.dataset.k='p:'+(dir||'all');b.setAttribute('aria-current',String(view.proj===dir));b.append($('span','sn',name));
-  const c=$('span','sc');if(run){const i=$('i','run',String(run));i.title='작업 중 '+run;c.append(i)}if(idle){const i=$('i','idle',String(idle));i.title='대기 '+idle;c.append(i)}b.append(c);
+  const c=$('span','sc');if(run){const i=$('i','run',String(run));i.title=tt('작업 중 ')+run;c.append(i)}if(idle){const i=$('i','idle',String(idle));i.title=tt('대기 ')+idle;c.append(i)}b.append(c);
   b.onclick=()=>{location.hash=dir?'p/'+encodeURIComponent(dir):'p'};return b};
  const all=ps.reduce((a,p)=>[a[0]+p.sessions.filter(s=>s.status==='running').length,a[1]+p.sessions.filter(s=>s.status==='idle').length],[0,0]);
- sd.append(mk('전체 프로젝트',null,all[0],all[1]));
+ sd.append(mk(tt('전체 프로젝트'),null,all[0],all[1]));
  const sorted=[...ps].sort((a,b)=>view.sort==='name'?a.name.localeCompare(b.name):(b.running-a.running)||(Date.parse(b.lastTs)-Date.parse(a.lastTs)));
  for(const p of sorted)sd.append(mk(p.name,p.dir,p.sessions.filter(s=>s.status==='running').length,p.sessions.filter(s=>s.status==='idle').length))}
 function sessionRow(p,s,showProj){const r=$('div','r '+s.status),b=$('button','rm');b.dataset.k='s:'+s.sid;
- const mid=$('span');const t=$('span','rt',s.title);if(s.errs)t.append($('span','etag','오류 '+s.errs));
+ const mid=$('span');const t=$('span','rt',s.title);if(s.errs)t.append($('span','etag',tt('오류 ')+s.errs));
  mid.append(t,$('span','rmeta',[showProj?p.name:'',s.branch&&s.branch!=='HEAD'?s.branch:'',lastText(s.last)].filter(Boolean).join('  ·  ')));
  const rr=$('span','rr');rr.append($('span','rs '+s.status,ST[s.status]),$('span','rtm',ago(s.lastTs)));
- b.append(icon(s.status),mid,rr);b.setAttribute('aria-label',`${s.title}, ${ST[s.status]}${s.errs?', 오류 '+s.errs+'건':''}, 작업 흐름 보기`);b.onclick=()=>openFlow(p,s);r.append(b);
- if(s.status==='dormant'){const x=$('button','btn sm rx','삭제…');x.setAttribute('aria-label',s.title+' 삭제');x.dataset.k='x:'+s.sid;x.onclick=()=>openClean(p,s.sid);r.append(x)}return r}
+ b.append(icon(s.status),mid,rr);b.setAttribute('aria-label',`${s.title}, ${ST[s.status]}${s.errs?tt(', 오류 ')+s.errs+tt('건'):''}, ${tt('작업 흐름 보기')}`);b.onclick=()=>openFlow(p,s);r.append(b);
+ if(s.status==='dormant'){const x=$('button','btn sm rx',tt('삭제…'));x.setAttribute('aria-label',s.title+tt(' 삭제'));x.dataset.k='x:'+s.sid;x.onclick=()=>openClean(p,s.sid);r.append(x)}return r}
 function projHeader(p){const d=$('div','phd'),n=$('div','phn');n.append($('b',0,p.name),$('span','path',p.cwd||p.dir));d.append(n,folderBtns(p));
  const ss=p.sessions,dorm=ss.filter(s=>s.status==='dormant').length;
- if(dorm){const cb=$('button','btn sm cleanb','휴면 세션 정리…');cb.dataset.k='c:'+p.dir;cb.onclick=()=>openClean(p);d.querySelector('.pa').append(cb)}
- const st=$('div','pst');st.append($('span',0,`세션 ${ss.length}`),$('span',p.running?'run':0,`작업 중 ${p.running}`),$('span',0,`마지막 활동 ${ago(p.lastTs)}`));d.append(st);
- if(p.top.length){const mx=Math.max(...p.top.map(t=>t[1])),u=$('div','use');u.append($('div','ul','많이 쓴 도구 (최근 호출 횟수)'));
+ if(dorm){const cb=$('button','btn sm cleanb',tt('휴면 세션 정리…'));cb.dataset.k='c:'+p.dir;cb.onclick=()=>openClean(p);d.querySelector('.pa').append(cb)}
+ const st=$('div','pst');st.append($('span',0,`${tt('세션')} ${ss.length}`),$('span',p.running?'run':0,`${tt('작업 중')} ${p.running}`),$('span',0,`${tt('마지막 활동')} ${ago(p.lastTs)}`));d.append(st);
+ if(p.top.length){const mx=Math.max(...p.top.map(t=>t[1])),u=$('div','use');u.append($('div','ul',tt('많이 쓴 도구 (최근 호출 횟수)')));
   for(const [nm,k] of p.top){const r=$('div','ur'),b=$('span','ub'),i=$('i');i.style.width=Math.max(4,k/mx*100)+'%';b.append(i);r.append($('span','un',toolLabel(nm)),b,$('span','uc',String(k)));r.title=nm;u.append(r)}d.append(u)}
- if(p.skills.length){const u=$('div','use');u.append($('div','ul','사용한 스킬'));const tl=$('div','tl');for(const nm of p.skills)tl.append($('span',0,nm));u.append(tl);d.append(u)}
+ if(p.skills.length){const u=$('div','use');u.append($('div','ul',tt('사용한 스킬')));const tl=$('div','tl');for(const nm of p.skills)tl.append($('span',0,nm));u.append(tl);d.append(u)}
  return d}
 function drawProjects(force){const g=el('grid');if(!data)return;
  if(view.proj&&!data.projects.some(p=>p.dir===view.proj))view.proj=null;
- const running=data.projects.reduce((n,p)=>n+p.running,0);document.title=(running?`(${running}) `:'')+'Agent Map 실시간';
+ const running=data.projects.reduce((n,p)=>n+p.running,0);document.title=(running?`(${running}) `:'')+tt('Agent Map 실시간');
  const rows=baseRows(),vis=rows.filter(r=>view.status==='all'||r.s.status===view.status);
  vis.sort((a,b)=>view.sort==='name'?(a.p.name.localeCompare(b.p.name)||ORD[a.s.status]-ORD[b.s.status]||Date.parse(b.s.lastTs)-Date.parse(a.s.lastTs)):(ORD[a.s.status]-ORD[b.s.status]||Date.parse(b.s.lastTs)-Date.parse(a.s.lastTs)));
- const sum=el('sum');sum.textContent='';for(const [a,b] of [['프로젝트',new Set(rows.map(r=>r.p.dir)).size],['세션',rows.length],['작업 중',rows.filter(r=>r.s.status==='running').length]])sum.append(document.createTextNode(a),$('b',0,String(b)));
+ const sum=el('sum');sum.textContent='';for(const [a,b] of [[tt('프로젝트'),new Set(rows.map(r=>r.p.dir)).size],[tt('세션'),rows.length],[tt('작업 중'),rows.filter(r=>r.s.status==='running').length]])sum.append(document.createTextNode(a),$('b',0,String(b)));
  const sig=JSON.stringify([vis.map(r=>[r.p.dir,r.s.sid,r.s.status,r.s.lastTs,r.s.errs,r.s.last&&r.s.last.name]),view.proj,view.status,view.sort,[...view.expanded],data.projects.length,Math.floor(Date.now()/30000)]);
  if(sig===psig&&!force)return;psig=sig;
  keepFocus(()=>{drawSide();g.textContent='';
   const cur=view.proj&&data.projects.find(p=>p.dir===view.proj);if(cur)g.append(projHeader(cur));
-  if(!vis.length){const n=$('div','none');n.append($('p',0,'조건에 맞는 세션이 없습니다'),$('p',0,'검색어, 상태, 기간을 바꾸거나 임시 작업 폴더를 포함해 보세요'));g.append(n);return}
+  if(!vis.length){const n=$('div','none');n.append($('p',0,tt('조건에 맞는 세션이 없습니다')),$('p',0,tt('검색어, 상태, 기간을 바꾸거나 임시 작업 폴더를 포함해 보세요')));g.append(n);return}
   const L=$('div','list');const groups=new Map();
   for(const r of vis){const k=view.sort==='name'?r.p.name:r.s.status;if(!groups.has(k))groups.set(k,[]);groups.get(k).push(r)}
   for(const [k,arr] of groups){const byName=view.sort==='name';
    const h=$('div','gr '+(byName?'name':k));if(!byName)h.append(icon(k));h.append($('span',0,byName?k:ST[k]),$('span','gc',String(arr.length)));if(!byName&&k==='idle')h.title=STT.idle;L.append(h);
    const fold=!byName&&k==='dormant'&&arr.length>4&&!view.expanded.has('dormant');
    for(const r of fold?arr.slice(0,4):arr)L.append(sessionRow(r.p,r.s,!view.proj));
-   if(!byName&&k==='dormant'&&arr.length>4){const m=$('button','more',fold?`휴면 ${arr.length-4}개 더 보기`:'접기');m.dataset.k='m:dormant';m.setAttribute('aria-expanded',String(!fold));m.onclick=()=>{fold?view.expanded.add('dormant'):view.expanded.delete('dormant');drawProjects(true)};L.append(m)}}
+   if(!byName&&k==='dormant'&&arr.length>4){const m=$('button','more',fold?K(`휴면 ${arr.length-4}개 더 보기`,`Show ${arr.length-4} more dormant`):tt('접기'));m.dataset.k='m:dormant';m.setAttribute('aria-expanded',String(!fold));m.onclick=()=>{fold?view.expanded.add('dormant'):view.expanded.delete('dormant');drawProjects(true)};L.append(m)}}
   g.append(L)})}
 
 /* ---------- flow ---------- */
@@ -312,19 +316,19 @@ const topN=(o,n)=>Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,n);
 /* what is useful to know about a session at a glance: current state, size of the work, files touched, slow steps, errors */
 function insights(f,rows,now){const box=$('div');
  const ev=f.events,work=ev.filter(e=>e.k==='tool'||e.k==='agent');
- const pend=[...work].reverse().find(e=>e.s==='run'),lbl=e=>e.k==='agent'?'서브에이전트 '+e.target:e.name+(e.target?' '+e.target:'');
+ const pend=[...work].reverse().find(e=>e.s==='run'),lbl=e=>e.k==='agent'?tt('서브에이전트 ')+e.target:e.name+(e.target?' '+e.target:'');
  let txt,hint='',cls='now';
- if(f.status==='running'&&pend){const sec=Math.round((now-Date.parse(pend.t))/1000);txt=`지금: ${toolLabel(lbl(pend))} 실행 중 (${fmtDur(sec*1000)||sec+'초'}째)`;cls='now run';
-  if(sec>25&&pend.name!=='Bash'&&pend.name!=='PowerShell'&&pend.k!=='agent')hint='응답이 없으면 권한 승인을 기다리는 중일 수 있습니다. Claude Code 창을 확인해 보세요'}
- else if(f.status==='running'){txt='지금: Claude가 다음 단계를 생각하는 중';cls='now run'}
- else if(f.status==='idle'){txt=`입력 대기: 응답을 마치고 내 입력을 기다리고 있습니다 (${ago(f.lastTs)})`;cls='now wait'}
- else txt=`마지막 활동 ${ago(f.lastTs)}`;
+ if(f.status==='running'&&pend){const sec=Math.round((now-Date.parse(pend.t))/1000);txt=K(`지금: ${toolLabel(lbl(pend))} 실행 중 (${fmtDur(sec*1000)||sec+'초'}째)`,`Now: ${toolLabel(lbl(pend))} running (${fmtDur(sec*1000)||sec+'s'} so far)`);cls='now run';
+  if(sec>25&&pend.name!=='Bash'&&pend.name!=='PowerShell'&&pend.k!=='agent')hint=tt('응답이 없으면 권한 승인을 기다리는 중일 수 있습니다. Claude Code 창을 확인해 보세요')}
+ else if(f.status==='running'){txt=tt('지금: Claude가 다음 단계를 생각하는 중');cls='now run'}
+ else if(f.status==='idle'){txt=K(`입력 대기: 응답을 마치고 내 입력을 기다리고 있습니다 (${ago(f.lastTs)})`,`Waiting for input: finished replying (${ago(f.lastTs)})`);cls='now wait'}
+ else txt=K(`마지막 활동 ${ago(f.lastTs)}`,`Last activity ${ago(f.lastTs)}`);
  const nw=$('div',cls,txt);if(hint)nw.append($('small',0,hint));box.append(nw);
  if(view.txt){const lp=[...ev].reverse().find(e=>e.k==='prompt'&&e.x),lr=[...ev].reverse().find(e=>e.k==='text'&&e.x);
-  if(lp||lr){const tb=$('div','task');for(const [lab,e] of [['최근 요청',lp],['마지막 응답',lr]]){if(!e)continue;const r=$('div');r.append($('b',0,lab),document.createTextNode(e.x));tb.append(r)}box.append(tb)}}
+  if(lp||lr){const tb=$('div','task');for(const [lab,e] of [[tt('최근 요청'),lp],[tt('마지막 응답'),lr]]){if(!e)continue;const r=$('div');r.append($('b',0,lab),document.createTextNode(e.x));tb.append(r)}box.append(tb)}}
  const t0=ev.length?Date.parse(ev[0].t):0,span=Date.parse(f.lastTs)-t0,errs=work.filter(e=>e.s==='err'),turns=ev.filter(e=>e.k==='prompt').length;
- const kp=[['기록 구간',fmtDur(span)||'-'],['턴',String(turns)],['도구 호출',String(work.length)+(span>60000?` (분당 ${(work.length/(span/60000)).toFixed(1)})`:'')],['오류',String(errs.length)],['서브에이전트',String(f.agents)],['컨텍스트',f.ctx?fmtTok(f.ctx)+' 토큰':'-']];
- const k=$('div','kpis');for(const [a,b] of kp){const d=$('div','kpi');const v=$('b',0,b);if(a==='오류'&&errs.length)v.className='bad';d.append(v,$('span',0,a));k.append(d)}box.append(k);
+ const kp=[[tt('기록 구간'),fmtDur(span)||'-'],[tt('턴'),String(turns)],[tt('도구 호출'),String(work.length)+(span>60000?K(` (분당 ${(work.length/(span/60000)).toFixed(1)})`,` (${(work.length/(span/60000)).toFixed(1)}/min)`):'')],[tt('오류'),String(errs.length)],[tt('서브에이전트'),String(f.agents)],[tt('컨텍스트'),f.ctx?fmtTok(f.ctx)+tt(' 토큰'):'-']];
+ const k=$('div','kpis');for(const [a,b] of kp){const d=$('div','kpi');const v=$('b',0,b);if(a===tt('오류')&&errs.length)v.className='bad';d.append(v,$('span',0,a));k.append(d)}box.append(k);
  const edits={},reads={},cmds={},mcps={};
  for(const e of work){if(e.name==='Skill')continue;
   if(/^(Edit|Write|MultiEdit|NotebookEdit)$/.test(e.name)&&e.target)edits[e.target]=(edits[e.target]||0)+1;
@@ -332,10 +336,10 @@ function insights(f,rows,now){const box=$('div');
   else if(/^(Bash|PowerShell)$/.test(e.name)&&e.target)cmds[e.target]=(cmds[e.target]||0)+1;
   else if(e.name.startsWith('mcp__')){const s=e.name.split('__')[1];mcps[s]=(mcps[s]||0)+1}}
  const slow=rows.filter(r=>!r.sep&&r.dur>=1000).sort((a,b)=>b.dur-a.dur).slice(0,4);
- const panels=[['수정·작성한 파일',topN(edits,6).map(([n,c])=>[n,c+'회'])],['읽은 파일',topN(reads,5).map(([n,c])=>[n,c+'회'])],
-  ['오래 걸린 단계',slow.map(r=>[toolLabel(r.k==='agent'?'서브에이전트 '+r.target:r.name+(r.target?' '+r.target:'')),fmtDur(r.dur)])],
-  ['실행한 명령',topN(cmds,5).map(([n,c])=>[n,c+'회'])],['사용한 MCP 서버',topN(mcps,4).map(([n,c])=>[n,c+'회'])],
-  ['오류가 난 단계',errs.slice(-5).reverse().map(e=>[toolLabel(lbl(e)),hms(e.t)])]];
+ const panels=[[tt('수정·작성한 파일'),topN(edits,6).map(([n,c])=>[n,c+tt('회')])],[tt('읽은 파일'),topN(reads,5).map(([n,c])=>[n,c+tt('회')])],
+  [tt('오래 걸린 단계'),slow.map(r=>[toolLabel(r.k==='agent'?tt('서브에이전트 ')+r.target:r.name+(r.target?' '+r.target:'')),fmtDur(r.dur)])],
+  [tt('실행한 명령'),topN(cmds,5).map(([n,c])=>[n,c+tt('회')])],[tt('사용한 MCP 서버'),topN(mcps,4).map(([n,c])=>[n,c+tt('회')])],
+  [tt('오류가 난 단계'),errs.slice(-5).reverse().map(e=>[toolLabel(lbl(e)),hms(e.t)])]];
  const g=$('div','ins');
  for(const [title,items] of panels){if(!items.length)continue;const b=$('div','ib');b.append($('h5',0,title));const ul=$('ul','il');
   for(const [a,c] of items){const li=$('li');const s1=$('span',0,a);s1.title=a;li.append(s1,$('em',0,c));ul.append(li)}b.append(ul);g.append(b)}
@@ -349,8 +353,8 @@ function flowRows(events,now){const out=[];
   out.push({k:e.k,name:e.name,target:e.target,desc:e.d||'',t:e.t,n:1,dur:Math.max(0,d),s:e.s,first:e})}
  return out}
 function drawFlow(){const fv=el('fv'),mn=el('main');if(!view.sel)return;
- const f=fdata;el('bc').textContent='';el('bc').append(document.createTextNode('프로젝트 › '),$('b',0,view.sel.name||(f?f.cwd.split('/').pop():'')),document.createTextNode(' › '+((f&&f.title)||view.sel.title||'세션')));
- if(!f){fv.textContent='';fv.append($('div','none','불러오는 중'));return}
+ const f=fdata;el('bc').textContent='';el('bc').append(document.createTextNode(tt('프로젝트 › ')),$('b',0,view.sel.name||(f?f.cwd.split('/').pop():'')),document.createTextNode(' › '+((f&&f.title)||view.sel.title||tt('세션'))));
+ if(!f){fv.textContent='';fv.append($('div','none',tt('불러오는 중')));return}
  const now=Date.now(),sig=JSON.stringify([f.status,f.events.length,f.events.length&&f.events[f.events.length-1].t,f.events.map(e=>e.s).join(''),view.hl,view.txt,Math.floor(now/(f.status==='running'?2000:30000))]);
  if(sig===fsig)return;fsig=sig;
  const near=mn.scrollHeight-mn.scrollTop-mn.clientHeight<120;
@@ -358,46 +362,46 @@ function drawFlow(){const fv=el('fv'),mn=el('main');if(!view.sel)return;
  const rows=flowRows(f.events,now),work=rows.filter(r=>!r.sep),max=Math.max(1000,...work.map(r=>r.dur));
  const slow3=new Set(work.filter(r=>r.dur>=3000).sort((a,b)=>b.dur-a.dur).slice(0,3));
  const h=$('div','fh'),t=$('h2',0,f.title);const st=$('span','stt '+f.status);st.append(icon(f.status,'ic'),document.createTextNode(ST[f.status]));t.append(st);h.append(t,$('p','path',f.cwd));
- const kv=$('div','kv');for(const [a,b] of [['브랜치',f.branch&&f.branch!=='HEAD'?f.branch:''],['모델',f.model]].filter(x=>x[1])){const s=$('span');s.append($('b',0,a),document.createTextNode(b));kv.append(s)}h.append(kv,insights(f,rows,now));
- if(f.status==='dormant'){const fa=$('div','fa'),db=$('button','btn sm','이 세션 삭제…');db.onclick=()=>{const p=data&&data.projects.find(x=>x.dir===view.sel.dir);if(p&&p.sessions.some(s=>s.sid===view.sel.sid))openClean(p,view.sel.sid);else toast('프로젝트 목록에서 이 세션을 찾을 수 없습니다. 기간을 늘려 보세요')};fa.append(db);h.append(fa)}
+ const kv=$('div','kv');for(const [a,b] of [[tt('브랜치'),f.branch&&f.branch!=='HEAD'?f.branch:''],[tt('모델'),f.model]].filter(x=>x[1])){const s=$('span');s.append($('b',0,a),document.createTextNode(b));kv.append(s)}h.append(kv,insights(f,rows,now));
+ if(f.status==='dormant'){const fa=$('div','fa'),db=$('button','btn sm',tt('이 세션 삭제…'));db.onclick=()=>{const p=data&&data.projects.find(x=>x.dir===view.sel.dir);if(p&&p.sessions.some(s=>s.sid===view.sel.sid))openClean(p,view.sel.sid);else toast(tt('프로젝트 목록에서 이 세션을 찾을 수 없습니다. 기간을 늘려 보세요'))};fa.append(db);h.append(fa)}
  const tot={};for(const r of work){const c=cat(r.first);tot[c]=(tot[c]||0)+r.dur}
  const sum=Object.values(tot).reduce((a,b)=>a+b,0);
  if(sum>0){const bar=$('div','dist'),lab=$('div','dl');
   for(const [v] of CAT){if(!tot[v])continue;const s=$('i');s.style.flex=String(tot[v]);s.style.setProperty('--c','var('+v+')');bar.append(s)}
   for(const [v,n] of CAT.filter(x=>tot[x[0]]).sort((a,b)=>tot[b[0]]-tot[a[0]])){const sp=$('span'),i=$('i');i.style.setProperty('--c','var('+v+')');sp.append(i,document.createTextNode(n+' '+Math.round(tot[v]/sum*100)+'%'));lab.append(sp)}
-  h.append($('p','dh','시간 배분 (최근 '+work.length+'단계, 도구 실행 시간 기준)'),bar,lab)}
+  h.append($('p','dh',tt('시간 배분 (최근 ')+work.length+tt('단계, 도구 실행 시간 기준)')),bar,lab)}
  fv.append(h);
- const tr=$('div','trace');tr.setAttribute('role','list');tr.setAttribute('aria-label','작업 흐름');
+ const tr=$('div','trace');tr.setAttribute('role','list');tr.setAttribute('aria-label',tt('작업 흐름'));
  for(const r of rows){
-  if(r.sep){const s=$('div','sep'+(r.sep.k==='prompt'?' pr':''));s.setAttribute('role','separator');s.append($('b',0,r.sep.k==='prompt'?'프롬프트':'응답'),$('span',0,hms(r.sep.t)));
+  if(r.sep){const s=$('div','sep'+(r.sep.k==='prompt'?' pr':''));s.setAttribute('role','separator');s.append($('b',0,r.sep.k==='prompt'?tt('프롬프트'):tt('응답')),$('span',0,hms(r.sep.t)));
   if(view.txt&&r.sep.x){const w=$('div','sepw');w.append(s,$('div','sx',r.sep.x));tr.append(w)}else tr.append(s);continue}
   const c=cat(r.first),col=r.s==='run'?'var(--accent)':r.s==='err'?'var(--err)':'var('+c+')';
   const row=$('div','tr'+(r.s==='run'?' run':r.s==='err'?' err':'')+(view.hl&&view.hl!==c?' dim':''));row.setAttribute('role','listitem');
-  const label=r.k==='agent'?'서브에이전트':r.name;
+  const label=r.k==='agent'?tt('서브에이전트'):r.name;
   row.append($('span','tm',hms(r.t)));
   const si=$('span','si '+(r.s==='run'?'run':r.s==='err'?'err':'ok'));si.innerHTML=IC[r.s==='run'?'run2':r.s==='err'?'err':'ok'];row.append(si);
   const nm=$('span','nm');nm.append($('b',0,label));if(r.target)nm.append(document.createTextNode(' '),$('span','tg',r.target));if(r.n>1)nm.append($('span','x',' ×'+r.n));row.append(nm);
   const bw=$('span','bw'),bar=$('span','bar2');bar.style.width=(r.dur?Math.max(1,r.dur/max*(view.txt?46:80)):0)+'%';bar.style.setProperty('--c',col);if(!r.dur)bar.style.display='none';
-  bw.append(bar,$('span','du'+(slow3.has(r)?' slow':''),[fmtDur(r.dur),r.s==='run'?'진행 중':r.s==='err'?'오류':''].filter(Boolean).join('  ')));
+  bw.append(bar,$('span','du'+(slow3.has(r)?' slow':''),[fmtDur(r.dur),r.s==='run'?tt('진행 중'):r.s==='err'?tt('오류'):''].filter(Boolean).join('  ')));
   if(view.txt&&r.desc)bw.append($('span','ds',r.desc));row.append(bw);
-  row.title=[label,r.target,r.n>1?r.n+'회':'',hms(r.t),fmtDur(r.dur)&&'소요 '+fmtDur(r.dur)].filter(Boolean).join(' · ');
+  row.title=[label,r.target,r.n>1?r.n+tt('회'):'',hms(r.t),fmtDur(r.dur)&&tt('소요 ')+fmtDur(r.dur)].filter(Boolean).join(' · ');
   tr.append(row)}
  fv.append(tr);
  const last=f.events.length?f.events[f.events.length-1].t:'';
  if(near||!seenT){mn.scrollTop=mn.scrollHeight;seenT=last;newCount=0;el('newb').hidden=true}
- else{newCount=f.events.filter(e=>e.t>seenT).length;el('newb').hidden=!newCount;if(newCount)el('newbtn').textContent='새 단계 '+newCount+'개 · 최신으로 ↓'}}
+ else{newCount=f.events.filter(e=>e.t>seenT).length;el('newb').hidden=!newCount;if(newCount)el('newbtn').textContent=tt('새 단계 ')+newCount+tt('개 · 최신으로 ↓')}}
 el('newbtn').onclick=()=>{const mn=el('main');mn.scrollTop=mn.scrollHeight;seenT=fdata&&fdata.events.length?fdata.events[fdata.events.length-1].t:'';newCount=0;el('newb').hidden=true};
 el('back').onclick=()=>{location.hash=pHash()};
-el('pause').onclick=()=>{view.paused=!view.paused;const b=el('pause');b.setAttribute('aria-pressed',view.paused);b.textContent=view.paused?'재개':'일시정지';say(view.paused?'실시간 갱신을 일시정지했습니다':'실시간 갱신을 재개했습니다');if(!view.paused)pollFlow()};
+el('pause').onclick=()=>{view.paused=!view.paused;const b=el('pause');b.setAttribute('aria-pressed',view.paused);b.textContent=view.paused?tt('재개'):tt('일시정지');say(view.paused?tt('실시간 갱신을 일시정지했습니다'):tt('실시간 갱신을 재개했습니다'));if(!view.paused)pollFlow()};
 
 const txtb=el('txtb');const syncTxt=()=>txtb.setAttribute('aria-pressed',String(view.txt));syncTxt();
 txtb.onclick=()=>{view.txt=!view.txt;store.set('agent-map-txt',view.txt?'1':'0');syncTxt();fsig='';pollFlow()};
 /* ---------- polling ---------- */
 async function pollState(){try{const r=await fetch('/api/state?days='+view.days);if(!r.ok)throw 0;data=await r.json();
-  if(!ok){ok=true;say('서버에 다시 연결됐습니다')}el('live').classList.remove('off');el('lt').textContent='실시간 · 2초마다 갱신 · '+hms(new Date())+roNote}
- catch{if(ok){ok=false;say('서버 연결이 끊겼습니다')}el('live').classList.add('off');el('lt').textContent='연결 끊김. 서버가 종료됐다면 /agent-map:live 를 다시 실행하세요'}
+  if(!ok){ok=true;say(tt('서버에 다시 연결됐습니다'))}el('live').classList.remove('off');el('lt').textContent=tt('실시간 · 2초마다 갱신 · ')+hms(new Date())+roNote}
+ catch{if(ok){ok=false;say(tt('서버 연결이 끊겼습니다'))}el('live').classList.add('off');el('lt').textContent=tt('연결 끊김. 서버가 종료됐다면 /agent-map:live 를 다시 실행하세요')}
  if(data&&view.tab==='p'){statusBar();drawProjects()}}
-async function pollFlow(){if(!view.sel||view.tab!=='f'||view.paused)return;try{const r=await fetch(`/api/flow?dir=${encodeURIComponent(view.sel.dir)}&sid=${encodeURIComponent(view.sel.sid)}&text=${view.txt?1:0}`);if(r.ok)fdata=await r.json();else if(r.status===404){fdata=null;el('fv').textContent='';el('fv').append($('div','none','세션 기록을 찾을 수 없습니다'));return}}catch{}drawFlow()}
+async function pollFlow(){if(!view.sel||view.tab!=='f'||view.paused)return;try{const r=await fetch(`/api/flow?dir=${encodeURIComponent(view.sel.dir)}&sid=${encodeURIComponent(view.sel.sid)}&text=${view.txt?1:0}`);if(r.ok)fdata=await r.json();else if(r.status===404){fdata=null;el('fv').textContent='';el('fv').append($('div','none',tt('세션 기록을 찾을 수 없습니다')));return}}catch{}drawFlow()}
 function tick(){if(document.hidden)return;pollState();pollFlow()}
 setInterval(tick,2000);document.addEventListener('visibilitychange',tick);
 
@@ -407,63 +411,66 @@ let toastT;const toast=m=>{const t=el('toast');t.textContent=m;t.hidden=false;cl
 const fmtSize=b=>b<1024?b+' B':b<1048576?Math.round(b/1024)+' KB':(b/1048576).toFixed(1)+' MB';
 async function copyText(x){try{await navigator.clipboard.writeText(x);return true}catch{const a=document.createElement('textarea');a.value=x;document.body.append(a);a.select();let ok=false;try{ok=document.execCommand('copy')}catch{}a.remove();return ok}}
 function folderBtns(p){const d=$('div','pa');
- const o=$('button','btn sm',p.exists?'폴더 열기':'상위 폴더 열기');o.setAttribute('aria-label',p.name+(p.exists?' 폴더 열기':' 폴더가 없어 상위 폴더 열기'));
- if(!p.exists)o.title='이 폴더는 삭제되어 없습니다. 남아 있는 가장 가까운 상위 폴더를 엽니다';
+ const o=$('button','btn sm',p.exists?tt('폴더 열기'):tt('상위 폴더 열기'));o.setAttribute('aria-label',p.name+(p.exists?tt(' 폴더 열기'):tt(' 폴더가 없어 상위 폴더 열기')));
+ if(!p.exists)o.title=tt('이 폴더는 삭제되어 없습니다. 남아 있는 가장 가까운 상위 폴더를 엽니다');
  o.onclick=async()=>{try{const r=await post('/api/open',{dir:p.dir});
-  toast(r.ok?(r.fallback?'원래 폴더가 없어 상위 폴더를 열었습니다: ':'폴더를 열었습니다: ')+r.opened+'. 창이 보이지 않으면 작업 표시줄을 확인하세요':(r.error||'열지 못했습니다'))}catch{toast('열지 못했습니다')}};
- const c=$('button','btn sm','경로 복사');c.setAttribute('aria-label',p.name+' 경로 복사');
- c.onclick=async()=>toast(await copyText(p.full||p.cwd)?'경로를 복사했습니다':'복사하지 못했습니다');
- d.append(o,c);if(!p.exists)d.append($('span','gone','폴더가 삭제됨'));return d}
+  toast(r.ok?(r.fallback?tt('원래 폴더가 없어 상위 폴더를 열었습니다: '):tt('폴더를 열었습니다: '))+r.opened+tt('. 창이 보이지 않으면 작업 표시줄을 확인하세요'):(r.error?tt(r.error):tt('열지 못했습니다')))}catch{toast(tt('열지 못했습니다'))}};
+ const c=$('button','btn sm',tt('경로 복사'));c.setAttribute('aria-label',p.name+tt(' 경로 복사'));
+ c.onclick=async()=>toast(await copyText(p.full||p.cwd)?tt('경로를 복사했습니다'):tt('복사하지 못했습니다'));
+ d.append(o,c);if(!p.exists)d.append($('span','gone',tt('폴더가 삭제됨')));return d}
 const dlg=el('dlg');dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close()});
 let trashInfo=null;
-async function refreshTrash(){try{const r=await fetch('/api/trash-info');if(!r.ok)return;trashInfo=await r.json();const b=el('trashb');b.hidden=!trashInfo.count;b.textContent=`휴지통 ${trashInfo.count}개 · ${fmtSize(trashInfo.bytes)} 비우기`}catch{}}
+async function refreshTrash(){try{const r=await fetch('/api/trash-info');if(!r.ok)return;trashInfo=await r.json();const b=el('trashb');b.hidden=!trashInfo.count;b.textContent=K(`휴지통 ${trashInfo.count}개 · ${fmtSize(trashInfo.bytes)} 비우기`,`Empty trash: ${trashInfo.count} items · ${fmtSize(trashInfo.bytes)}`)}catch{}}
 const isSmall=s=>s.size<30720&&s.nTools<=2;
 const TRASHSVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>';
 function openClean(p,pre){const list=p.sessions.filter(s=>s.status==='dormant'),sel=new Set(pre?[pre]:[]);let perm=false,armed=false;dlg.textContent='';
- const h=$('h2',0,'세션 삭제·정리');h.id='dt';const hd=$('div','dhead');const ic=$('span','ic2');ic.innerHTML=TRASHSVG;hd.append(ic,h);
- const stats=$('div','dstat');stats.append($('span',0,p.name),$('span',0,`휴면 ${list.length}개`));
- const note=$('p','dn',`${p.name} 프로젝트의 휴면 세션 ${list.length}개입니다. 기본은 선택한 세션의 기록(대화가 담긴 파일과 하위 폴더)을 휴지통 폴더로 옮기는 것이라 되돌릴 수 있습니다. 프로젝트 폴더의 코드와 파일은 건드리지 않습니다. 최근 30분 안에 쓴 세션은 삭제되지 않습니다.`);
- const rows=$('div','dr'),ok=$('button','btn danger'),cancel=$('button','btn','취소');
- const sw=$('button','dperm');sw.setAttribute('role','switch');sw.setAttribute('aria-checked','false');sw.append($('span','sw2'),$('span','tx2',''));sw.lastChild.append($('b',0,'휴지통 거치지 않고 바로 영구 삭제'),$('small',0,'켜면 되돌릴 수 없습니다. 삭제 전에 버튼을 두 번 누르게 합니다'));
- const upd=()=>{ok.textContent=armed?'한 번 더 누르면 영구 삭제됩니다':perm?`선택한 ${sel.size}개 영구 삭제`:`선택한 ${sel.size}개를 휴지통으로 이동`;ok.disabled=!sel.size;
+ const h=$('h2',0,tt('세션 삭제·정리'));h.id='dt';const hd=$('div','dhead');const ic=$('span','ic2');ic.innerHTML=TRASHSVG;hd.append(ic,h);
+ const stats=$('div','dstat');stats.append($('span',0,p.name),$('span',0,K(`휴면 ${list.length}개`,`${list.length} dormant`)));
+ const note=$('p','dn',K(`${p.name} 프로젝트의 휴면 세션 ${list.length}개입니다. 기본은 선택한 세션의 기록(대화가 담긴 파일과 하위 폴더)을 휴지통 폴더로 옮기는 것이라 되돌릴 수 있습니다. 프로젝트 폴더의 코드와 파일은 건드리지 않습니다. 최근 30분 안에 쓴 세션은 삭제되지 않습니다.`,`${list.length} dormant sessions in ${p.name}. By default the selected session records (the conversation file and its sub-folder) are moved to a trash folder, so you can restore them. Code and files in the project folder are never touched. Sessions used in the last 30 minutes are not deleted.`));
+ const rows=$('div','dr'),ok=$('button','btn danger'),cancel=$('button','btn',tt('취소'));
+ const sw=$('button','dperm');sw.setAttribute('role','switch');sw.setAttribute('aria-checked','false');sw.append($('span','sw2'),$('span','tx2',''));sw.lastChild.append($('b',0,tt('휴지통 거치지 않고 바로 영구 삭제')),$('small',0,tt('켜면 되돌릴 수 없습니다. 삭제 전에 버튼을 두 번 누르게 합니다')));
+ const upd=()=>{ok.textContent=armed?tt('한 번 더 누르면 영구 삭제됩니다'):perm?K(`선택한 ${sel.size}개 영구 삭제`,`Delete ${sel.size} selected permanently`):K(`선택한 ${sel.size}개를 휴지통으로 이동`,`Move ${sel.size} selected to trash`);ok.disabled=!sel.size;
   sw.setAttribute('aria-checked',String(perm));for(const r of rows.children)r.setAttribute('aria-checked',String(sel.has(r.dataset.sid)))};
  for(const s of list){const r=$('button','cr');r.dataset.sid=s.sid;r.setAttribute('role','checkbox');r.setAttribute('aria-checked','false');
-  const tx=$('span','tx');tx.append($('b',0,s.title),$('span','mt',[`마지막 활동 ${ago(s.lastTs)}`,fmtSize(s.size),`도구 ${s.nTools}회`].join('  ·  ')));if(isSmall(s))tx.append($('span','sm','작은 세션 (내용이 거의 없음)'));
+  const tx=$('span','tx');tx.append($('b',0,s.title),$('span','mt',[K(`마지막 활동 ${ago(s.lastTs)}`,`Last activity ${ago(s.lastTs)}`),fmtSize(s.size),K(`도구 ${s.nTools}회`,`${s.nTools} tool calls`)].join('  ·  ')));if(isSmall(s))tx.append($('span','sm',tt('작은 세션 (내용이 거의 없음)')));
   r.append($('span','box'),tx);r.onclick=()=>{armed=false;sel.has(s.sid)?sel.delete(s.sid):sel.add(s.sid);upd()};rows.append(r)}
  const q=$('div','dq');
- for(const [l,f] of [['작은 세션 선택',s=>isSmall(s)],['전체 선택',()=>true],['선택 해제',()=>false]]){const b=$('button','btn sm',l);b.onclick=()=>{armed=false;sel.clear();for(const s of list)if(f(s))sel.add(s.sid);upd()};q.append(b)}
+ for(const [l,f] of [[tt('작은 세션 선택'),s=>isSmall(s)],[tt('전체 선택'),()=>true],[tt('선택 해제'),()=>false]]){const b=$('button','btn sm',l);b.onclick=()=>{armed=false;sel.clear();for(const s of list)if(f(s))sel.add(s.sid);upd()};q.append(b)}
  sw.onclick=()=>{perm=!perm;armed=false;upd()};
  const foot=$('div','df');foot.append(cancel,ok);cancel.onclick=()=>dlg.close();
  ok.onclick=async()=>{if(perm&&!armed){armed=true;upd();return}
   ok.disabled=true;try{const r=await post('/api/trash',{dir:p.dir,sids:[...sel],permanent:perm});
-   toast(r.error?'처리하지 못했습니다':(perm?`${r.moved}개를 영구 삭제했습니다`:`${r.moved}개를 휴지통(${r.trash})으로 옮겼습니다`)+(r.skipped.length?`. ${r.skipped.length}개는 처리하지 못했습니다(최근 30분 안에 쓴 세션 등)`:''))}catch{toast('처리하지 못했습니다')}
+   toast(r.error?tt('처리하지 못했습니다'):(perm?K(`${r.moved}개를 영구 삭제했습니다`,`${r.moved} deleted permanently`):K(`${r.moved}개를 휴지통(${r.trash})으로 옮겼습니다`,`${r.moved} moved to trash (${r.trash})`))+(r.skipped.length?K(`. ${r.skipped.length}개는 처리하지 못했습니다(최근 30분 안에 쓴 세션 등)`,`. ${r.skipped.length} could not be handled (for example sessions used in the last 30 minutes)`):''))}catch{toast(tt('처리하지 못했습니다'))}
   dlg.close();view.expanded.delete('dormant');await pollState();psig='';drawProjects(true);refreshTrash();
   if(view.tab==='f'&&sel.has(view.sel&&view.sel.sid))location.hash=pHash()};
  const swr=$('div','dsw');swr.append(sw);
  dlg.append(hd,stats,note,q,rows,swr,foot);upd();dlg.showModal()}
-function openTrash(){if(!trashInfo)return;dlg.textContent='';const h=$('h2',0,'휴지통 비우기');h.id='dt';
- const ok=$('button','btn danger','영구 삭제'),cancel=$('button','btn','취소');
- dlg.append(h,$('p','dn',`휴지통 폴더(${trashInfo.dir})에 있는 세션 기록 ${trashInfo.count}개, ${fmtSize(trashInfo.bytes)}를 영구 삭제합니다. 되돌릴 수 없습니다.`));
+function openTrash(){if(!trashInfo)return;dlg.textContent='';const h=$('h2',0,tt('휴지통 비우기'));h.id='dt';
+ const ok=$('button','btn danger',tt('영구 삭제')),cancel=$('button','btn',tt('취소'));
+ dlg.append(h,$('p','dn',K(`휴지통 폴더(${trashInfo.dir})에 있는 세션 기록 ${trashInfo.count}개, ${fmtSize(trashInfo.bytes)}를 영구 삭제합니다. 되돌릴 수 없습니다.`,`Permanently deletes ${trashInfo.count} session records (${fmtSize(trashInfo.bytes)}) in the trash folder (${trashInfo.dir}). This cannot be undone.`)));
  const foot=$('div','df');foot.append(cancel,ok);dlg.append(foot);cancel.onclick=()=>dlg.close();
- ok.onclick=async()=>{ok.disabled=true;try{const r=await post('/api/trash/empty',{confirm:true});toast(r.ok?'휴지통을 비웠습니다':'비우지 못했습니다')}catch{toast('비우지 못했습니다')}dlg.close();refreshTrash()};
+ ok.onclick=async()=>{ok.disabled=true;try{const r=await post('/api/trash/empty',{confirm:true});toast(r.ok?tt('휴지통을 비웠습니다'):tt('비우지 못했습니다'))}catch{toast(tt('비우지 못했습니다'))}dlg.close();refreshTrash()};
  dlg.showModal()}
 el('trashb').onclick=openTrash;
 
 /* ---------- controls ---------- */
 const q=el('q');q.oninput=()=>{statusBar();drawProjects(true)};
 function seg(id,opts,key,after){const w=el(id);const draw=()=>{w.textContent='';for(const [v,l] of opts){const b=$('button',0,l);b.setAttribute('aria-pressed',String(view[key])===v);b.onclick=()=>{view[key]=v;store.set('agent-map-'+key,v);draw();after()};w.append(b)}};draw()}
-seg('sortf',[['act','최근 활동순'],['name','이름순']],'sort',()=>{statusBar();drawProjects(true)});
-seg('daysf',[['1','1일'],['3','3일'],['7','7일'],['30','30일']],'days',pollState);
+seg('sortf',[['act',tt('최근 활동순')],['name',tt('이름순')]],'sort',()=>{statusBar();drawProjects(true)});
+seg('daysf',[['1',tt('1일')],['3',tt('3일')],['7',tt('7일')],['30',tt('30일')]],'days',pollState);
 const sw=el('scr');const setSw=()=>sw.setAttribute('aria-checked',String(view.scr));sw.onclick=()=>{view.scr=!view.scr;setSw();statusBar();drawProjects(true)};setSw();
 el('t1').onclick=()=>{location.hash=pHash()};el('t2').onclick=()=>{if(view.sel)location.hash='f/'+encodeURIComponent(view.sel.dir)+'/'+encodeURIComponent(view.sel.sid)};
 el('t1').parentElement.addEventListener('keydown',e=>{if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;const t=view.tab==='p'?(view.sel?el('t2'):null):el('t1');if(t){e.preventDefault();t.click();t.focus()}});
 addEventListener('keydown',e=>{const tag=(document.activeElement||{}).tagName;
  if(e.key==='/'&&tag!=='INPUT'&&tag!=='SELECT'&&view.tab==='p'){e.preventDefault();q.focus()}
  else if(e.key==='Escape'){if(document.activeElement===q&&q.value){q.value='';statusBar();drawProjects(true)}else if(view.tab==='f')location.hash=pHash()}});
-const TH=['soft','light','dark'],THN={soft:'소프트',light:'라이트',dark:'다크'};let th=store.get('agent-map-theme');if(!TH.includes(th))th='soft';{const qt=new URLSearchParams(location.search).get('theme');if(TH.includes(qt))th=qt} /* ?theme=soft|light|dark, handy for screenshots */
-const thb=el('th');const setTheme=t=>{th=t;document.documentElement.dataset.theme=t;thb.textContent='화면 '+THN[t];store.set('agent-map-theme',t)};thb.onclick=()=>setTheme(TH[(TH.indexOf(th)+1)%TH.length]);
+const TH=['soft','light','dark'],THN={soft:tt('소프트'),light:tt('라이트'),dark:tt('다크')};let th=store.get('agent-map-theme');if(!TH.includes(th))th='soft';{const qt=new URLSearchParams(location.search).get('theme');if(TH.includes(qt))th=qt} /* ?theme=soft|light|dark, handy for screenshots */
+const thb=el('th');const setTheme=t=>{th=t;document.documentElement.dataset.theme=t;thb.textContent=tt('화면 ')+THN[t];store.set('agent-map-theme',t)};thb.onclick=()=>setTheme(TH[(TH.indexOf(th)+1)%TH.length]);
 let zoom=+(store.get('agent-map-zoom')||1);const setZoom=z=>{zoom=Math.min(1.5,Math.max(.8,Math.round(z*100)/100));document.documentElement.style.zoom=zoom;store.set('agent-map-zoom',zoom)};
 el('zi').onclick=()=>setZoom(zoom+.1);el('zo').onclick=()=>setZoom(zoom-.1);
-let roNote='';fetch('/api/mode').then(r=>r.json()).then(m=>{if(m.readonly){document.body.classList.add('ro');roNote=' · 읽기 전용 접속'}}).catch(()=>{});
+let roNote='';fetch('/api/mode').then(r=>r.json()).then(m=>{if(m.readonly){document.body.classList.add('ro');roNote=tt(' · 읽기 전용 접속')}}).catch(()=>{});
+function localize(){document.documentElement.lang='en';const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);for(let n;n=w.nextNode();){const t=n.nodeValue.trim();if(t&&EN[t])n.nodeValue=n.nodeValue.replace(t,EN[t])}for(const e of document.querySelectorAll('[title],[aria-label],[placeholder]'))for(const a of ['title','aria-label','placeholder']){const v=e.getAttribute(a);if(v&&EN[v])e.setAttribute(a,EN[v])}document.title=EN[document.title]||document.title}
+el('lg').textContent=LANG==='en'?'한국어':'English';el('lg').onclick=()=>{store.set('agent-map-lang',LANG==='en'?'ko':'en');location.reload()};
+if(LANG==='en')localize();
 setTheme(th);setZoom(zoom);legend();route();tick();refreshTrash();setInterval(refreshTrash,15000);
 </script></body></html>

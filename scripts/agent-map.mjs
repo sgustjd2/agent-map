@@ -27,6 +27,7 @@ function front(file) {
   return out;
 }
 
+const KO = /^ko/i.test(Intl.DateTimeFormat().resolvedOptions().locale || ''); // terminal output language; the page has its own switch
 const tilde = (p) => p.replace(HOME, '~').replace(/\\/g, '/'); // shown in the detail panel
 // Redaction: URLs -> scheme+host+path (no userinfo/query), commands -> executable basename only.
 const safeUrl = (u) => { try { const x = new URL(u); return x.origin + x.pathname; } catch { return ''; } };
@@ -100,6 +101,6 @@ fs.writeFileSync(out, html, { mode: 0o600 });
 const [cmd, args] = process.platform === 'win32' ? ['cmd', ['/c', 'start', '', out]] : process.platform === 'darwin' ? ['open', [out]] : ['xdg-open', [out]];
 if (!process.argv.includes('--no-open')) { try { spawn(cmd, args, { stdio: 'ignore', detached: true }).on('error', () => {}).unref(); } catch {} }
 
-console.log(`agent-map: ${groups.length}개 그룹 · ` + KINDS.map(k => `${k} ${totals[k]}`).join(' · '));
-for (const g of groups) console.log(`- [${g.kind}] ${g.name}${g.enabled === false ? ' (비활성)' : ''}: ` + KINDS.map(k => `${k[0]}${g[k].length}`).join(' '));
+console.log(`agent-map: ${groups.length}${KO ? '개 그룹' : ' groups'} · ` + KINDS.map(k => `${k} ${totals[k]}`).join(' · '));
+for (const g of groups) console.log(`- [${g.kind}] ${g.name}${g.enabled === false ? (KO ? ' (비활성)' : ' (inactive)') : ''}: ` + KINDS.map(k => `${k[0]}${g[k].length}`).join(' '));
 console.log('HTML: ' + out);

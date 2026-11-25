@@ -19,6 +19,8 @@ const PROJ = path.join(HOME, '.claude', 'projects');
 const BASE = +process.env.AGENT_MAP_PORT || 7788, PORTS = 10, TAIL = 512 * 1024, IDLE_EXIT = 30 * 60 * 1000, SIG = 'agent-map-live';
 const TRASH = path.join(HOME, '.claude', 'agent-map-trash'); // cleanup moves sessions here (recoverable), never deletes directly
 const FRESH_MS = 30 * 60 * 1000;                              // sessions used within 30 minutes are never touched
+const KO = /^ko/i.test(Intl.DateTimeFormat().resolvedOptions().locale || ''); // terminal and error messages
+const m = (ko, en) => (KO ? ko : en);
 const SAFE_ID = /^(?!\.+$)[\w.-]+$/; // no "." or ".." (path traversal); used for every id that becomes part of a path
 const inProjects = (p) => path.resolve(p).startsWith(PROJ + path.sep);
 const argv = process.argv.slice(2);
@@ -195,9 +197,9 @@ function openFolder(dir) { // the page sends only the project key; the folder co
   let cwd = (sessionsOf(dir, Date.now(), 36500, 3).find(s => s.i.cwd) || { i: {} }).i.cwd || '';
   if (!path.isAbsolute(cwd)) cwd = ''; // never hand a relative or option-like value to the file manager
   const target = cwd ? nearestExisting(cwd) : '';
-  if (!target) return { error: '폴더를 찾을 수 없습니다' };
+  if (!target) return { error: m('폴더를 찾을 수 없습니다', 'Folder not found') };
   const [cmd, a] = process.platform === 'win32' ? ['explorer.exe', [target]] : process.platform === 'darwin' ? ['open', [target]] : ['xdg-open', [target]];
-  try { spawn(cmd, a, { stdio: 'ignore', detached: true }).on('error', () => {}).unref(); } catch { return { error: '열지 못했습니다' }; }
+  try { spawn(cmd, a, { stdio: 'ignore', detached: true }).on('error', () => {}).unref(); } catch { return { error: m('열지 못했습니다', 'Could not open it') }; }
   return { ok: true, opened: target, fallback: target !== cwd };
 }
 
@@ -244,7 +246,7 @@ function trashStats() {
 
 function emptyTrash(confirmed) { // the only permanent delete, limited to the trash folder, needs an explicit confirm flag
   if (confirmed !== true) return { error: 'confirm required' };
-  try { fs.rmSync(TRASH, { recursive: true, force: true }); } catch { return { error: '비우지 못했습니다' }; }
+  try { fs.rmSync(TRASH, { recursive: true, force: true }); } catch { return { error: m('비우지 못했습니다', 'Could not empty it') }; }
   return { ok: true };
 }
 
@@ -298,7 +300,7 @@ function serve() {
     if (!hostOk) { res.writeHead(403).end(); return; } // DNS-rebinding guard
     const json = (o, code = 200) => { res.writeHead(code, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }); res.end(JSON.stringify(o)); };
     if (remote) { // anyone who is not on this computer
-      if (!LAN || !sameNet(req.socket.remoteAddress)) { res.writeHead(403, { 'content-type': 'text/plain; charset=utf-8' }).end('같은 네트워크에서만 접속할 수 있습니다'); return; }
+      if (!LAN || !sameNet(req.socket.remoteAddress)) { res.writeHead(403, { 'content-type': 'text/plain; charset=utf-8' }).end(m('같은 네트워크에서만 접속할 수 있습니다', 'Only available from the same network')); return; }
       if (NEED_TOKEN) {
       const ip = req.socket.remoteAddress, f = fails.get(ip) || { n: 0, t: Date.now() };
       if (fails.size > 500) fails.clear(); // bounded memory
@@ -307,12 +309,12 @@ function serve() {
       const qt = u.searchParams.get('t') || '', ck = /(?:^|;\s*)am_t=([0-9a-f]+)/.exec(req.headers.cookie || '');
       if (!tokenOk(qt || (ck ? ck[1] : ''))) {
         f.n++; fails.set(ip, f);
-        res.writeHead(401, { 'content-type': 'text/plain; charset=utf-8' }).end('접근 토큰이 필요합니다. live 서버를 실행한 컴퓨터에 표시된 주소(?t=...)로 접속하세요');
+        res.writeHead(401, { 'content-type': 'text/plain; charset=utf-8' }).end(m('접근 토큰이 필요합니다. live 서버를 실행한 컴퓨터에 표시된 주소(?t=...)로 접속하세요', 'An access token is required. Use the address (?t=...) shown on the computer running the live server'));
         return;
       }
       if (qt) { res.writeHead(302, { 'set-cookie': `am_t=${token}; HttpOnly; SameSite=Strict; Path=/`, location: u.pathname, 'cache-control': 'no-store' }).end(); return; }
       }
-      if (req.method !== 'GET') { json({ error: '읽기 전용 접속입니다' }, 403); return; }
+      if (req.method !== 'GET') { json({ error: m('읽기 전용 접속입니다', 'Read-only access') }, 403); return; }
     }
     if (req.method === 'POST') { // state-changing: needs a custom header, which another website cannot send without a preflight we never answer
       if (!req.headers['x-agent-map']) { res.writeHead(403).end(); return; }
@@ -332,11 +334,11 @@ function serve() {
       'content-security-policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" };
     if (u.pathname === '/') { res.writeHead(200, htmlHead); res.end(fs.readFileSync(page, 'utf8')); return; }
     if (u.pathname === '/map') { // config map (MCP addresses, hooks): this computer only; regenerated at most every 3 seconds so repeated requests cannot stall the server
-      if (remote) { res.writeHead(403, { 'content-type': 'text/plain; charset=utf-8' }).end('구성 지도는 이 컴퓨터에서만 볼 수 있습니다'); return; }
+      if (remote) { res.writeHead(403, { 'content-type': 'text/plain; charset=utf-8' }).end(m('구성 지도는 이 컴퓨터에서만 볼 수 있습니다', 'The config map is only available on this computer')); return; }
       try {
         if (Date.now() - lastMap > 3000) { execFileSync(process.execPath, [path.join(here, 'agent-map.mjs'), '--no-open'], { timeout: 15000, stdio: 'ignore' }); lastMap = Date.now(); }
         res.writeHead(200, htmlHead); res.end(fs.readFileSync(path.join(HOME, '.claude', 'agent-map', 'agent-map.html'), 'utf8'));
-      } catch { res.writeHead(500, { 'content-type': 'text/plain; charset=utf-8' }); res.end('구성 지도를 만들지 못했습니다'); }
+      } catch { res.writeHead(500, { 'content-type': 'text/plain; charset=utf-8' }); res.end(m('구성 지도를 만들지 못했습니다', 'Could not build the config map')); }
       return;
     }
     if (u.pathname === '/api/ping') return json({ sig: SIG, lan: LAN, tok: NEED_TOKEN });
@@ -378,8 +380,8 @@ if (argv.includes('--serve')) serve();
 else {
   let run = await findRunning();
   if (argv.includes('--stop')) {
-    if (!run) console.log('실행 중인 live 서버가 없습니다');
-    else { await stopServer(run.port); console.log('live 서버를 종료했습니다'); }
+    if (!run) console.log(m('실행 중인 live 서버가 없습니다', 'No live server is running'));
+    else { await stopServer(run.port); console.log(m('live 서버를 종료했습니다', 'Live server stopped')); }
     process.exit(0);
   }
   if (run && LAN && (!run.lan || run.tok !== NEED_TOKEN)) { await stopServer(run.port); await sleep(600); run = null; } // LAN requested, but the running one is local-only or has another token setting
@@ -387,22 +389,22 @@ else {
     spawn(process.execPath, [fileURLToPath(import.meta.url), '--serve', ...(LAN ? ['--lan'] : []), ...(NEED_TOKEN ? ['--token'] : [])], { detached: true, stdio: 'ignore', windowsHide: true }).unref();
     for (let n = 0; n < 25 && !run; n++) { await sleep(200); run = await findRunning(); }
   }
-  if (!run) { console.log('live 서버를 시작하지 못했습니다'); process.exit(1); }
+  if (!run) { console.log(m('live 서버를 시작하지 못했습니다', 'Could not start the live server')); process.exit(1); }
   const url = `http://127.0.0.1:${run.port}/`;
   if (!argv.includes('--no-open')) {
     const [cmd, a] = process.platform === 'win32' ? ['cmd', ['/c', 'start', '', url]] : process.platform === 'darwin' ? ['open', [url]] : ['xdg-open', [url]];
     try { spawn(cmd, a, { stdio: 'ignore', detached: true }).on('error', () => {}).unref(); } catch { /* ignore */ }
   }
-  console.log('agent-map live: ' + url + '  (종료: node live.mjs --stop, 30분 동안 접속이 없으면 자동 종료)');
+  console.log('agent-map live: ' + url + m('  (종료: node live.mjs --stop, 30분 동안 접속이 없으면 자동 종료)', '  (stop: node live.mjs --stop, stops by itself after 30 minutes without visitors)'));
   if (run.lan) {
     let s = null; try { s = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8')); } catch { /* no state file */ }
     if (!(s && s.port === run.port)) s = null;
     if (!run.tok) s = s || { token: '' }; // no token in use: the state file is not needed to print the addresses
     if (s) {
-      console.log(`LAN 접속 (읽기 전용, 같은 네트워크만${s.token ? ', 접근 토큰 필요' : ''}):`);
+      console.log(m(`LAN 접속 (읽기 전용, 같은 네트워크만${s.token ? ', 접근 토큰 필요' : ''}):`, `LAN access (read-only, same network only${s.token ? ', access token required' : ''}):`));
       for (const ip of lanIps()) console.log(`  http://${ip}:${run.port}/${s.token ? '?t=' + s.token : ''}`);
-      console.log('주의: 같은 네트워크에 있는 누구나' + (s.token ? '(주소를 아는 사람)' : '') + ' 프로젝트 경로와 세션 제목을 볼 수 있습니다. 믿을 수 있는 네트워크에서만 쓰고, 끝나면 node live.mjs --stop 으로 종료하세요. HTTPS가 아니라서 공용 와이파이에서는 쓰지 마세요.' + (s.token ? '' : ' 접근 토큰을 추가하려면 --lan --token 으로 실행하세요.'));
-    } else console.log('LAN 모드로 실행 중이지만 접근 토큰을 읽지 못했습니다. node live.mjs --stop 후 --lan 으로 다시 실행하세요');
-  } else console.log('이 컴퓨터에서만 접속됩니다. 같은 네트워크의 다른 기기에서 보려면 --lan 옵션으로 실행하세요');
+      console.log(m('주의: 같은 네트워크에 있는 누구나' + (s.token ? '(주소를 아는 사람)' : '') + ' 프로젝트 경로와 세션 제목을 볼 수 있습니다. 믿을 수 있는 네트워크에서만 쓰고, 끝나면 node live.mjs --stop 으로 종료하세요. HTTPS가 아니라서 공용 와이파이에서는 쓰지 마세요.' + (s.token ? '' : ' 접근 토큰을 추가하려면 --lan --token 으로 실행하세요.'), 'Note: anyone on the same network' + (s.token ? ' (who knows the address)' : '') + ' can see project paths and session titles. Use only on networks you trust and stop it with node live.mjs --stop when done. It is not HTTPS, so do not use it on public Wi-Fi.' + (s.token ? '' : ' To add an access token, run with --lan --token.')));
+    } else console.log(m('LAN 모드로 실행 중이지만 접근 토큰을 읽지 못했습니다. node live.mjs --stop 후 --lan 으로 다시 실행하세요', 'Running in LAN mode but could not read the access token. Run node live.mjs --stop, then start again with --lan'));
+  } else console.log(m('이 컴퓨터에서만 접속됩니다. 같은 네트워크의 다른 기기에서 보려면 --lan 옵션으로 실행하세요', 'Only reachable from this computer. To view from another device on the same network, run with --lan'));
   process.exit(0);
 }
