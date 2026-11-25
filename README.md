@@ -113,6 +113,4 @@ Releases are automatic: bump `version` in `.claude-plugin/plugin.json`, push to 
 
 [MIT](LICENSE)
 
-UI accessibility patterns follow the `ui-styling` skill. The visual design pass followed the [unslop](https://github.com/heydamir/unslop) skill by Damir Sokolovsky ([@heydamir](https://x.com/heydamir)), CC BY 4.0.
-
 If agent-map saves you a few minutes a day, a star on the repo helps others find it.

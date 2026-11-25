@@ -182,8 +182,3 @@ git push
 ## 라이선스
 
 [MIT](LICENSE)
-
-## 크레딧
-
-- 접근성 패턴(탭, `aria-pressed`, 상태 알림, 포커스 유지)은 `ui-styling` 스킬의 지침을 따랐습니다.
-- 화면 디자인은 Damir Sokolovsky([@heydamir](https://x.com/heydamir))의 [unslop](https://github.com/heydamir/unslop) 스킬(CC BY 4.0) 지침을 따라 다듬었습니다.
