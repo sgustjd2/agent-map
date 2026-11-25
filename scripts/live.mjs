@@ -35,6 +35,13 @@ const exeName = (c) => {
   return baseName(t).slice(0, 30);
 };
 const hostOf = (u) => { try { return new URL(u).hostname; } catch { return ''; } };
+const oneLine = (s, n) => String(s || '').replace(/\s+/g, ' ').trim().slice(0, n);
+// First real text of a user message; blocks that start with "<" are injected context (system reminders, command wrappers), not what the user typed.
+const promptText = (c) => {
+  const parts = typeof c === 'string' ? [c] : (Array.isArray(c) ? c.filter(b => b && b.type === 'text').map(b => b.text) : []);
+  const t = parts.find(s => typeof s === 'string' && s.trim() && !s.trimStart().startsWith('<'));
+  return t ? oneLine(t, 200) : '';
+};
 function target(name, input) {
   const i = input || {};
   if (FILE_TOOLS.has(name)) return baseName(i.file_path || i.notebook_path);
@@ -69,9 +76,9 @@ function analyze(lines) {
       if (r.message.stop_reason) stop = r.message.stop_reason;
       for (const c of r.message.content || []) {
         if (c.type === 'tool_use') {
-          const e = { k: (c.name === 'Agent' || c.name === 'Task') ? 'agent' : 'tool', id: c.id, name: c.name, target: target(c.name, c.input), t: r.timestamp, s: 'run', side: !!r.isSidechain };
+          const e = { k: (c.name === 'Agent' || c.name === 'Task') ? 'agent' : 'tool', id: c.id, name: c.name, target: target(c.name, c.input), d: oneLine((c.input || {}).description, 120), t: r.timestamp, s: 'run', side: !!r.isSidechain };
           ev.push(e); byId.set(c.id, e);
-        } else if (c.type === 'text' && c.text) ev.push({ k: 'text', name: '응답', target: '', t: r.timestamp, s: 'done', side: !!r.isSidechain });
+        } else if (c.type === 'text' && c.text) ev.push({ k: 'text', name: '응답', target: '', x: oneLine(c.text, 200), t: r.timestamp, s: 'done', side: !!r.isSidechain });
       }
     } else if (r.type === 'user' && r.message && !r.isMeta) {
       const c = r.message.content;
@@ -81,8 +88,8 @@ function analyze(lines) {
           if (b.type === 'tool_result') { const e = byId.get(b.tool_use_id); if (e) { e.s = b.is_error ? 'err' : 'done'; e.t2 = r.timestamp; } }
           else if (b.type === 'text') text = true;
         }
-        if (text && !r.isSidechain) ev.push({ k: 'prompt', name: '프롬프트', target: '', t: r.timestamp, s: 'done', side: false });
-      } else if (typeof c === 'string' && !r.isSidechain) ev.push({ k: 'prompt', name: '프롬프트', target: '', t: r.timestamp, s: 'done', side: false });
+        if (text && !r.isSidechain) ev.push({ k: 'prompt', name: '프롬프트', target: '', x: promptText(c), t: r.timestamp, s: 'done', side: false });
+      } else if (typeof c === 'string' && !r.isSidechain) ev.push({ k: 'prompt', name: '프롬프트', target: '', x: promptText(c), t: r.timestamp, s: 'done', side: false });
     }
   }
   const events = ev.slice(-150);
@@ -163,7 +170,7 @@ function state(days) {
   return { now, projects };
 }
 
-function flow(dir, sid) {
+function flow(dir, sid, withText) {
   const file = path.join(PROJ, dir, sid + '.jsonl');
   if (path.dirname(file) !== path.join(PROJ, dir) || !file.startsWith(PROJ + path.sep)) return null;
   let st; try { st = fs.statSync(file); } catch { return null; }
@@ -171,7 +178,7 @@ function flow(dir, sid) {
   const now = Date.now();
   return { sid, title: i.title || sid.slice(0, 8), branch: i.branch, model: i.model, cwd: i.cwd.replace(HOME, '~').replace(/\\/g, '/'),
     status: statusOf(i, st, now), lastTs: new Date(st.mtimeMs).toISOString(), nTools: i.nTools, agents: i.agents, ctx: i.ctx, stop: i.stop,
-    events: i.events.slice(-100).map(({ id, ...e }) => e) };
+    events: i.events.slice(-100).map(({ id, x, d, ...e }) => (withText ? { ...e, x, d } : e)) };
 }
 
 // ---------- actions (POST only, see the router) ----------
@@ -331,7 +338,7 @@ function serve() {
     if (u.pathname === '/api/flow') {
       const dir = u.searchParams.get('dir') || '', sid = u.searchParams.get('sid') || '';
       if (!SAFE.test(dir) || !SAFE.test(sid)) return json({ error: 'bad request' }, 400);
-      const f = flow(dir, sid); return f ? json(f) : json({ error: 'not found' }, 404);
+      const f = flow(dir, sid, !remote && u.searchParams.get('text') === '1'); return f ? json(f) : json({ error: 'not found' }, 404);
     }
     res.writeHead(404).end();
   };

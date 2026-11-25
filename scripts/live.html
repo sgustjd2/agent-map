@@ -102,7 +102,12 @@ main{overflow:auto;padding:24px;position:relative}
 .leg button{display:inline-flex;align-items:center;gap:6px}.leg i{display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--c)}
 #newb{position:sticky;bottom:0;display:flex;justify-content:center;margin-top:16px}
 #newb .btn{background:var(--accent);color:var(--onaccent);border-color:var(--accent);font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,.2)}
-.ro .pa,.ro .sg>.lnk,.ro #trashb,.ro .fa{display:none!important}
+.ro .pa,.ro .sg>.lnk,.ro .sg>.clean,.ro #trashb,.ro .fa,.ro #txtb{display:none!important}
+.sepw .sx{margin:0 12px 8px;padding:8px 12px;border-left:3px solid var(--accent);background:var(--bg);border-radius:0 8px 8px 0;font-size:14px;line-height:22px;color:var(--fg);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.sepw .sep:not(.pr)+.sx{border-left-color:var(--line);color:var(--sub)}
+.ds{color:var(--sub);font-size:13px;line-height:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.task{margin-top:12px;display:flex;flex-direction:column;gap:8px}.task div{font-size:14px;line-height:22px;color:var(--sub);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.task b{display:inline-block;min-width:84px;font:500 13px/22px var(--sans);color:var(--mut)}
 .pa{display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap}
 .gone{font-size:13px;color:var(--idle)}
 .dsw{margin:0 0 16px}
@@ -183,7 +188,7 @@ dialog h2{font:600 20px/28px var(--sans);margin:0 0 8px}
  <div class="bar" id="fbar" hidden>
   <button class="btn" id="back">← 프로젝트 목록</button><span class="bc" id="bc"></span><span class="sp"></span>
   <div class="seg leg" id="leg" role="group" aria-label="도구 종류 강조"></div>
-  <button class="btn" id="pause" aria-pressed="false">일시정지</button>
+  <button class="btn" id="txtb" aria-pressed="true" title="프롬프트와 응답의 첫 줄, 단계 설명을 보여줍니다. 이 컴퓨터에서만 볼 수 있습니다">작업 내용 표시</button><button class="btn" id="pause" aria-pressed="false">일시정지</button>
  </div>
  <main id="main" tabindex="-1"><div id="grid"></div><div id="fv" hidden></div><div id="newb" hidden><button class="btn" id="newbtn"></button></div></main>
 </div>
@@ -196,7 +201,7 @@ const ST={running:'작업 중',idle:'대기',dormant:'휴면'};
 const CAT=[['--c-read','읽기·검색'],['--c-write','수정·쓰기'],['--c-bash','명령 실행'],['--c-agent','서브에이전트'],['--c-mcp','MCP 도구'],['--c-other','기타']];
 const store={get:k=>{try{return localStorage.getItem(k)}catch{return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}}};
 const el=id=>document.getElementById(id);
-const view={tab:'p',sel:null,status:'all',expanded:new Set(),hl:null,paused:false,days:store.get('agent-map-days')||'3',sort:store.get('agent-map-sort')||'act',scr:false};
+const view={tab:'p',sel:null,status:'all',expanded:new Set(),hl:null,paused:false,txt:store.get('agent-map-txt')!=='0',days:store.get('agent-map-days')||'3',sort:store.get('agent-map-sort')||'act',scr:false};
 let data=null,fdata=null,ok=true,psig='',fsig='',seenT='',newCount=0;
 const ago=ts=>{const s=Math.max(0,(Date.now()-Date.parse(ts))/1000);if(s<10)return'방금';if(s<60)return Math.floor(s)+'초 전';if(s<3600)return Math.floor(s/60)+'분 전';if(s<86400)return Math.floor(s/3600)+'시간 전';return Math.floor(s/86400)+'일 전'};
 const hms=ts=>{if(!ts)return'';const d=new Date(ts),p=n=>String(n).padStart(2,'0');return p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds())};
@@ -273,6 +278,8 @@ function insights(f,rows,now){const box=$('div');
  else if(f.stop==='end_turn')txt=`응답을 마치고 입력을 기다리는 중 (${ago(f.lastTs)})`;
  else txt=`마지막 활동 ${ago(f.lastTs)}`;
  const nw=$('div','now'+(f.status==='running'?' run':''),txt);if(hint)nw.append($('small',0,hint));box.append(nw);
+ if(view.txt){const lp=[...ev].reverse().find(e=>e.k==='prompt'&&e.x),lr=[...ev].reverse().find(e=>e.k==='text'&&e.x);
+  if(lp||lr){const tb=$('div','task');for(const [lab,e] of [['최근 요청',lp],['마지막 응답',lr]]){if(!e)continue;const r=$('div');r.append($('b',0,lab),document.createTextNode(e.x));tb.append(r)}box.append(tb)}}
  const t0=ev.length?Date.parse(ev[0].t):0,span=Date.parse(f.lastTs)-t0,errs=work.filter(e=>e.s==='err'),turns=ev.filter(e=>e.k==='prompt').length;
  const kp=[['기록 구간',fmtDur(span)||'-'],['턴',String(turns)],['도구 호출',String(work.length)+(span>60000?` (분당 ${(work.length/(span/60000)).toFixed(1)})`:'')],['오류',String(errs.length)],['서브에이전트',String(f.agents)],['컨텍스트',f.ctx?fmtTok(f.ctx)+' 토큰':'-']];
  const k=$('div','kpis');for(const [a,b] of kp){const d=$('div','kpi');const v=$('b',0,b);if(a==='오류'&&errs.length)v.className='bad';d.append(v,$('span',0,a));k.append(d)}box.append(k);
@@ -296,13 +303,13 @@ function flowRows(events,now){const out=[];
  for(const e of events){
   if(e.k==='prompt'||e.k==='text'){out.push({sep:e});continue}
   const d=e.t2?Date.parse(e.t2)-Date.parse(e.t):e.s==='run'?now-Date.parse(e.t):0,p=out[out.length-1];
-  if(p&&!p.sep&&p.name===e.name&&p.target===e.target&&p.s!=='run'&&p.s!=='err'&&e.s!=='err'){p.n++;p.dur+=Math.max(0,d);p.s=e.s;continue}
-  out.push({k:e.k,name:e.name,target:e.target,t:e.t,n:1,dur:Math.max(0,d),s:e.s,first:e})}
+  if(p&&!p.sep&&p.name===e.name&&p.target===e.target&&p.desc===(e.d||'')&&p.s!=='run'&&p.s!=='err'&&e.s!=='err'){p.n++;p.dur+=Math.max(0,d);p.s=e.s;continue}
+  out.push({k:e.k,name:e.name,target:e.target,desc:e.d||'',t:e.t,n:1,dur:Math.max(0,d),s:e.s,first:e})}
  return out}
 function drawFlow(){const fv=el('fv'),mn=el('main');if(!view.sel)return;
  const f=fdata;el('bc').textContent='';el('bc').append(document.createTextNode('프로젝트 › '),$('b',0,view.sel.name||(f?f.cwd.split('/').pop():'')),document.createTextNode(' › '+((f&&f.title)||view.sel.title||'세션')));
  if(!f){fv.textContent='';fv.append($('div','none','불러오는 중'));return}
- const now=Date.now(),sig=JSON.stringify([f.status,f.events.length,f.events.length&&f.events[f.events.length-1].t,f.events.map(e=>e.s).join(''),view.hl,Math.floor(now/(f.status==='running'?2000:30000))]);
+ const now=Date.now(),sig=JSON.stringify([f.status,f.events.length,f.events.length&&f.events[f.events.length-1].t,f.events.map(e=>e.s).join(''),view.hl,view.txt,Math.floor(now/(f.status==='running'?2000:30000))]);
  if(sig===fsig)return;fsig=sig;
  const near=mn.scrollHeight-mn.scrollTop-mn.clientHeight<120;
  fv.textContent='';
@@ -319,15 +326,17 @@ function drawFlow(){const fv=el('fv'),mn=el('main');if(!view.sel)return;
  fv.append(h);
  const tr=$('div','trace');tr.setAttribute('role','list');tr.setAttribute('aria-label','작업 흐름');
  for(const r of rows){
-  if(r.sep){const s=$('div','sep'+(r.sep.k==='prompt'?' pr':''));s.setAttribute('role','separator');s.append($('b',0,r.sep.k==='prompt'?'프롬프트':'응답'),$('span',0,hms(r.sep.t)));tr.append(s);continue}
+  if(r.sep){const s=$('div','sep'+(r.sep.k==='prompt'?' pr':''));s.setAttribute('role','separator');s.append($('b',0,r.sep.k==='prompt'?'프롬프트':'응답'),$('span',0,hms(r.sep.t)));
+  if(view.txt&&r.sep.x){const w=$('div','sepw');w.append(s,$('div','sx',r.sep.x));tr.append(w)}else tr.append(s);continue}
   const c=cat(r.first),col=r.s==='run'?'var(--accent)':r.s==='err'?'var(--err)':'var('+c+')';
   const row=$('div','tr'+(r.s==='run'?' run':r.s==='err'?' err':'')+(view.hl&&view.hl!==c?' dim':''));row.setAttribute('role','listitem');
   const label=r.k==='agent'?'서브에이전트':r.name;
   row.append($('span','tm',hms(r.t)));
   const mk=$('span','mk'),i=$('i');i.style.setProperty('--c',col);mk.append(i);row.append(mk);
   const nm=$('span','nm');nm.append($('b',0,label));if(r.target)nm.append(document.createTextNode(' '),$('span','tg',r.target));if(r.n>1)nm.append($('span','x',' ×'+r.n));row.append(nm);
-  const bw=$('span','bw'),bar=$('span','bar');bar.style.width=(r.dur?Math.max(1,r.dur/max*84):0)+'%'; /* leave room for the duration label */bar.style.setProperty('--c',col);if(!r.dur)bar.style.display='none';
-  bw.append(bar,$('span','du',[fmtDur(r.dur),r.s==='run'?'진행 중':r.s==='err'?'오류':''].filter(Boolean).join('  ')));row.append(bw);
+  const bw=$('span','bw'),bar=$('span','bar');bar.style.width=(r.dur?Math.max(1,r.dur/max*(view.txt?52:84)):0)+'%'; /* leave room for the duration label */bar.style.setProperty('--c',col);if(!r.dur)bar.style.display='none';
+  bw.append(bar,$('span','du',[fmtDur(r.dur),r.s==='run'?'진행 중':r.s==='err'?'오류':''].filter(Boolean).join('  ')));
+  if(view.txt&&r.desc)bw.append($('span','ds',r.desc));row.append(bw);
   row.title=[label,r.target,r.n>1?r.n+'회':'',hms(r.t),fmtDur(r.dur)&&'소요 '+fmtDur(r.dur)].filter(Boolean).join(' · ');
   tr.append(row)}
  fv.append(tr);
@@ -338,12 +347,14 @@ el('newbtn').onclick=()=>{const mn=el('main');mn.scrollTop=mn.scrollHeight;seenT
 el('back').onclick=()=>{location.hash='p'};
 el('pause').onclick=()=>{view.paused=!view.paused;const b=el('pause');b.setAttribute('aria-pressed',view.paused);b.textContent=view.paused?'재개':'일시정지';say(view.paused?'실시간 갱신을 일시정지했습니다':'실시간 갱신을 재개했습니다');if(!view.paused)pollFlow()};
 
+const txtb=el('txtb');const syncTxt=()=>txtb.setAttribute('aria-pressed',String(view.txt));syncTxt();
+txtb.onclick=()=>{view.txt=!view.txt;store.set('agent-map-txt',view.txt?'1':'0');syncTxt();fsig='';pollFlow()};
 /* ---------- polling ---------- */
 async function pollState(){try{const r=await fetch('/api/state?days='+view.days);if(!r.ok)throw 0;data=await r.json();
   if(!ok){ok=true;say('서버에 다시 연결됐습니다')}el('live').classList.remove('off');el('lt').textContent='실시간 · 2초마다 갱신 · '+hms(new Date())+roNote}
  catch{if(ok){ok=false;say('서버 연결이 끊겼습니다')}el('live').classList.add('off');el('lt').textContent='연결 끊김. 서버가 종료됐다면 /agent-map:live 를 다시 실행하세요'}
  if(data){statusBar();if(view.tab==='p')drawProjects()}}
-async function pollFlow(){if(!view.sel||view.tab!=='f'||view.paused)return;try{const r=await fetch(`/api/flow?dir=${encodeURIComponent(view.sel.dir)}&sid=${encodeURIComponent(view.sel.sid)}`);if(r.ok)fdata=await r.json();else if(r.status===404){fdata=null;el('fv').textContent='';el('fv').append($('div','none','세션 기록을 찾을 수 없습니다'));return}}catch{}drawFlow()}
+async function pollFlow(){if(!view.sel||view.tab!=='f'||view.paused)return;try{const r=await fetch(`/api/flow?dir=${encodeURIComponent(view.sel.dir)}&sid=${encodeURIComponent(view.sel.sid)}&text=${view.txt?1:0}`);if(r.ok)fdata=await r.json();else if(r.status===404){fdata=null;el('fv').textContent='';el('fv').append($('div','none','세션 기록을 찾을 수 없습니다'));return}}catch{}drawFlow()}
 function tick(){if(document.hidden)return;pollState();pollFlow()}
 setInterval(tick,2000);document.addEventListener('visibilitychange',tick);
 
