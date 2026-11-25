@@ -123,7 +123,25 @@ main{overflow:auto;padding:24px;position:relative}
 .il{list-style:none;margin:0;padding:0}.il li{display:flex;justify-content:space-between;gap:12px;font:400 13px/24px var(--mono);color:var(--sub)}
 .il li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.il li em{font-style:normal;color:var(--mut);flex:none}
 .lnk{background:none;border:0;color:var(--accent);cursor:pointer;font-size:14px;padding:0 8px;height:28px;text-decoration:underline}
-.sg>.lnk{order:2}.sg::after{order:1}
+.sg>.clean{order:2;display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px 0 8px;margin-left:4px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--sub);font:500 13px/20px var(--sans);cursor:pointer;transition:background-color .15s var(--ease),border-color .15s var(--ease),color .15s var(--ease)}
+.sg>.clean:hover{background:var(--sel);border-color:var(--accent);color:var(--fg)}
+.sg>.clean svg{width:14px;height:14px;flex:none}
+.sg::after{order:1}
+.dhead{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}
+.dhead .ic{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--sel);color:var(--accent);flex:none}
+.dhead .ic svg{width:22px;height:22px}
+.dhead h2{margin:4px 0 0}
+.dstat{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+.dstat span{font:500 13px/20px var(--sans);padding:2px 10px;border-radius:999px;background:var(--bg);border:1px solid var(--line);color:var(--sub)}
+.dstat b{font:600 13px/20px var(--mono);color:var(--fg);margin-right:4px}
+.dperm{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--sub);cursor:pointer;margin-top:4px;transition:background-color .15s var(--ease),border-color .15s var(--ease)}
+.dperm .sw2{position:relative;flex:none;width:40px;height:24px;border-radius:12px;background:var(--raised);border:1px solid var(--line)}
+.dperm .sw2::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:8px;background:var(--sub);transition:transform .15s var(--ease)}
+.dperm .tx2{display:flex;flex-direction:column;min-width:0}.dperm .tx2 b{font:600 14px/20px var(--sans);color:var(--fg)}.dperm .tx2 small{font-size:13px;line-height:18px;color:var(--mut)}
+.dperm[aria-checked="true"]{border-color:var(--err);background:color-mix(in srgb,var(--err) 10%,transparent)}
+.dperm[aria-checked="true"] .sw2{background:var(--err);border-color:var(--err)}
+.dperm[aria-checked="true"] .sw2::after{transform:translateX(16px);background:var(--onaccent)}
+.dperm[aria-checked="true"] .tx2 b{color:var(--err)}
 .btn.danger{background:var(--err);border-color:var(--err);color:var(--onaccent);font-weight:600}
 .btn.danger:hover{background:var(--err);color:var(--onaccent);filter:brightness(1.08)}
 .btn:disabled{opacity:.5;cursor:default}
@@ -232,7 +250,7 @@ function drawProjects(force){const g=el('grid');if(!data)return;
    for(const s of sessions)by[s.status].push(s);
    for(const k of ['running','idle','dormant']){const arr=by[k];if(!arr.length)continue;
     const g=$('div','sg '+k,`${ST[k]} ${arr.length}`);g.setAttribute('role','heading');g.setAttribute('aria-level','4');
-    if(k==='dormant'){const cb=$('button','lnk','정리…');cb.dataset.k='c:'+p.dir;cb.setAttribute('aria-label',p.name+' 휴면 세션 정리');cb.onclick=()=>openClean(p);g.append(cb)}
+    if(k==='dormant'){const cb=$('button','clean');cb.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg><span>정리</span>';cb.dataset.k='c:'+p.dir;cb.setAttribute('aria-label',p.name+' 휴면 세션 정리');cb.onclick=()=>openClean(p);g.append(cb)}
     ss.append(g);
     const fold=k==='dormant'&&arr.length>2&&!open;
     for(const s of fold?arr.slice(0,2):arr)ss.append(sessionRow(p,s));
@@ -347,10 +365,11 @@ let trashInfo=null;
 async function refreshTrash(){try{const r=await fetch('/api/trash-info');if(!r.ok)return;trashInfo=await r.json();const b=el('trashb');b.hidden=!trashInfo.count;b.textContent=`휴지통 ${trashInfo.count}개 · ${fmtSize(trashInfo.bytes)} 비우기`}catch{}}
 const isSmall=s=>s.size<30720&&s.nTools<=2;
 function openClean(p,pre){const list=p.sessions.filter(s=>s.status==='dormant'),sel=new Set(pre?[pre]:[]);let perm=false,armed=false;dlg.textContent='';
- const h=$('h2',0,'세션 삭제·정리');h.id='dt';
+ const h=$('h2',0,'세션 삭제·정리');h.id='dt';const hd=$('div','dhead');const ic=$('span','ic');ic.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>';hd.append(ic,h);
+ const stats=$('div','dstat');stats.append($('span',0,p.name),$('span',0,`휴면 ${list.length}개`));
  const note=$('p','dn',`${p.name} 프로젝트의 휴면 세션 ${list.length}개입니다. 기본은 선택한 세션의 기록(대화가 담긴 파일과 하위 폴더)을 휴지통 폴더로 옮기는 것이라 되돌릴 수 있습니다. 프로젝트 폴더의 코드와 파일은 건드리지 않습니다. 최근 30분 안에 쓴 세션은 삭제되지 않습니다.`);
  const rows=$('div','dr'),ok=$('button','btn danger'),cancel=$('button','btn','취소');
- const sw=$('button','sw');sw.setAttribute('role','switch');sw.setAttribute('aria-checked','false');sw.append($('i'),$('span',0,'휴지통을 거치지 않고 바로 영구 삭제 (되돌릴 수 없음)'));
+ const sw=$('button','dperm');sw.setAttribute('role','switch');sw.setAttribute('aria-checked','false');sw.append($('span','sw2'),$('span','tx2',''));sw.lastChild.append($('b',0,'휴지통 거치지 않고 바로 영구 삭제'),$('small',0,'켜면 되돌릴 수 없습니다. 삭제 전에 버튼을 두 번 누르게 합니다'));
  const upd=()=>{ok.textContent=armed?'한 번 더 누르면 영구 삭제됩니다':perm?`선택한 ${sel.size}개 영구 삭제`:`선택한 ${sel.size}개를 휴지통으로 이동`;ok.disabled=!sel.size;
   sw.setAttribute('aria-checked',String(perm));for(const r of rows.children)r.setAttribute('aria-checked',String(sel.has(r.dataset.sid)))};
  for(const s of list){const r=$('button','cr');r.dataset.sid=s.sid;r.setAttribute('role','checkbox');r.setAttribute('aria-checked','false');
@@ -366,7 +385,7 @@ function openClean(p,pre){const list=p.sessions.filter(s=>s.status==='dormant'),
   dlg.close();view.expanded.delete(p.dir);await pollState();psig='';drawProjects(true);refreshTrash();
   if(view.tab==='f'&&sel.has(view.sel&&view.sel.sid))location.hash='p'};
  const swr=$('div','dsw');swr.append(sw);
- dlg.append(h,note,q,rows,swr,foot);upd();dlg.showModal()}
+ dlg.append(hd,stats,note,q,rows,swr,foot);upd();dlg.showModal()}
 function openTrash(){if(!trashInfo)return;dlg.textContent='';const h=$('h2',0,'휴지통 비우기');h.id='dt';
  const ok=$('button','btn danger','영구 삭제'),cancel=$('button','btn','취소');
  dlg.append(h,$('p','dn',`휴지통 폴더(${trashInfo.dir})에 있는 세션 기록 ${trashInfo.count}개, ${fmtSize(trashInfo.bytes)}를 영구 삭제합니다. 되돌릴 수 없습니다.`));

@@ -1,0 +1,64 @@
+# Automatic releases.
+# When a push to main changes the plugin version (.claude-plugin/plugin.json), this creates the tag v<version>
+# and a GitHub release with auto-generated notes and a zip of the plugin. Pushing the same version again does nothing.
+name: release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".claude-plugin/plugin.json"
+      - "commands/**"
+      - "scripts/**"
+      - "README.md"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read plugin version
+        id: ver
+        run: |
+          V=$(node -p "require('./.claude-plugin/plugin.json').version")
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          echo "tag=v$V" >> "$GITHUB_OUTPUT"
+
+      - name: Skip if this version is already released
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git ls-remote --tags origin "refs/tags/${{ steps.ver.outputs.tag }}" | grep -q .; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "${{ steps.ver.outputs.tag }} already exists. Bump the version in .claude-plugin/plugin.json to release."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build plugin zip (tracked files only, no .git)
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          git archive --format=zip --prefix=agent-map/ -o "agent-map-${{ steps.ver.outputs.version }}.zip" HEAD
+
+      - name: Create tag and release
+        if: steps.check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # notes cover the commits since the previous release (first release: all commits)
+          PREV=$(git describe --tags --abbrev=0 --match 'v*' "$GITHUB_SHA^" 2>/dev/null || true)
+          ARGS=(--target "$GITHUB_SHA" --title "agent-map ${{ steps.ver.outputs.tag }}" --generate-notes)
+          if [ -n "$PREV" ]; then ARGS+=(--notes-start-tag "$PREV"); fi
+          gh release create "${{ steps.ver.outputs.tag }}" "agent-map-${{ steps.ver.outputs.version }}.zip" "${ARGS[@]}"
