@@ -5,33 +5,43 @@
    status as icon + text + tinted row (not color dots), 6px radius, no shadows. Needs-attention rows (working, waiting for you)
    are tinted and bold in every theme, including the light ones. Accessibility patterns after the ui-styling skill.
    Original design pass after the unslop skill by Damir Sokolovsky (@heydamir), CC BY 4.0. */
-:root{--canvas:#e6e9ed;--surface:#f4f5f7;--subtle:#eaedf0;--line:#bcc5cf;--line2:#d5dce3;
+:root{--canvas:#e6e9ed;--side:#e6e9ed;--surface:#f4f5f7;--subtle:#eaedf0;--line:#bcc5cf;--line2:#d5dce3;
 --fg:#171d23;--sub:#36404b;--mut:#52606d;--accent:#0a5bc4;--onaccent:#fff;--sel:#d3e4fb;--hover:rgba(23,29,35,.06);
 --run:#11622a;--run-bg:#c7ecd2;--run-bar:#1a8a39;--wait:#744b00;--wait-bg:#fae09a;--wait-bar:#c78600;--err:#b3261e;--err-bg:#fbd3cf;--dorm:#52606d;--onicon:#fff;
 --r:6px;--ease:cubic-bezier(.22,1,.36,1);
 --sans:"Pretendard","Geist",system-ui,"Segoe UI","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
 --mono:"Geist Mono","JetBrains Mono","Cascadia Mono",ui-monospace,Consolas,monospace;
 --c-read:#2f7de1;--c-write:#d9822b;--c-bash:#2fa36b;--c-agent:#8a63d2;--c-mcp:#d9546b;--c-other:#7a8296}
-html[data-theme="light"]{--canvas:#ffffff;--surface:#ffffff;--subtle:#f6f8fa;--line:#d1d9e0;--line2:#e6eaef;
+html[data-theme="light"]{--canvas:#ffffff;--side:#f6f8fa;--surface:#ffffff;--subtle:#f6f8fa;--line:#d1d9e0;--line2:#e6eaef;
 --fg:#1f2328;--sub:#3d444d;--mut:#59636e;--accent:#0969da;--sel:#ddf4ff;--hover:rgba(31,35,40,.05);
 --run:#0f5e26;--run-bg:#d3f5dc;--run-bar:#1a7f37;--wait:#6f4400;--wait-bg:#ffeeaa;--wait-bar:#bf8700;--err:#cf222e;--err-bg:#ffe0dc;--dorm:#59636e}
-html[data-theme="dark"]{--canvas:#0d1117;--surface:#151b23;--subtle:#1b222c;--line:#30363d;--line2:#242b34;
+html[data-theme="dark"]{--canvas:#0d1117;--side:#0d1117;--surface:#151b23;--subtle:#1b222c;--line:#30363d;--line2:#242b34;
 --fg:#e6edf3;--sub:#b6c0cb;--mut:#8b95a1;--accent:#4493f8;--onaccent:#0d1117;--sel:#14304f;--hover:rgba(230,237,243,.06);
 --run:#3fb950;--run-bg:rgba(63,185,80,.14);--run-bar:#3fb950;--wait:#e3b341;--wait-bg:rgba(227,179,65,.15);--wait-bar:#e3b341;--err:#ff7b72;--err-bg:rgba(255,123,114,.14);--dorm:#8b95a1;--onicon:#0d1117}
 *{box-sizing:border-box}html,body{height:100%;margin:0}
 [hidden]{display:none!important}
-body{background:var(--canvas);color:var(--fg);font:400 15px/22px var(--sans);font-variant-numeric:tabular-nums;display:grid;grid-template-rows:auto minmax(0,1fr);overflow:hidden}
+body{background:var(--canvas);color:var(--fg);font:400 16px/24px var(--sans);font-variant-numeric:tabular-nums;display:grid;grid-template-rows:auto auto auto minmax(0,1fr);overflow:hidden}
 button,select,input{font:inherit;color:inherit}:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .ic{display:inline-flex;width:20px;height:20px;flex:none}.ic svg{width:20px;height:20px}.ic .m{stroke:var(--onicon)}
 .ic.running{color:var(--run)}.ic.idle{color:var(--wait)}.ic.dormant{color:var(--dorm)}
 /* header */
-header{background:var(--surface);border-bottom:1px solid var(--line);padding:10px 24px}
+header{background:var(--surface);border-bottom:1px solid var(--line);padding:16px 24px 0}
 .top{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.brand{font:600 16px/24px var(--sans);margin:0}
-.live{font:400 12px/18px var(--mono);color:var(--mut);display:flex;align-items:center;gap:8px}
+.brand{font:600 20px/28px var(--sans);margin:0}
+.live{font:400 13px/20px var(--mono);color:var(--mut);display:flex;align-items:center;gap:8px}
 .live i{width:8px;height:8px;border-radius:50%;background:var(--run-bar)}.live.off{color:var(--err)}.live.off i{background:var(--err)}
 .sp{flex:1}
+.top .btn{height:36px;padding:0 12px;font-size:14px}
+.tabs{display:flex;gap:4px;margin-top:12px;align-items:flex-end}
+.tab{height:40px;padding:0 16px;border:0;border-bottom:2px solid transparent;background:none;color:var(--sub);font-size:16px;text-decoration:none;display:inline-flex;align-items:center}
+.tab[aria-current="page"]{color:var(--fg);border-bottom-color:var(--accent);font-weight:600}
+a.tab{cursor:pointer}a.tab:hover{color:var(--fg)}
+.tb{display:flex;align-items:center;gap:12px 20px;flex-wrap:wrap;padding:12px 24px;background:var(--surface);border-bottom:1px solid var(--line)}
+.tb .sch{width:300px;max-width:100%}.tb input[type=search]{height:40px;padding-left:36px;font-size:15px;background:var(--canvas)}.tb .sch svg{top:13px;left:12px;width:15px;height:15px}
+.tb .seg button{height:34px;font-size:14px}.tb .sw{height:36px;font-size:14px}.tb .lnk{height:36px;font-size:14px}
+.tb .sbsum{margin-left:auto}
+.dist{display:flex;height:4px;background:var(--line2)}.dist i{display:block}
 a.btn{text-decoration:none;display:inline-flex;align-items:center}
 /* controls */
 .btn{height:32px;padding:0 12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);color:var(--fg);cursor:pointer;font:500 13.5px/1 var(--sans);transition:background-color .12s var(--ease)}
@@ -55,22 +65,13 @@ input[type=search]:focus{outline:2px solid var(--accent);outline-offset:-1px;bor
 /* master-detail: sessions grouped by state on the left (like Paseo's workspace list), the selected session on the right */
 .app{display:grid;grid-template-columns:320px minmax(0,1fr);min-height:0}
 .mainc{display:flex;flex-direction:column;min-height:0}
-.side{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line);background:var(--canvas)}
-.sbtop{position:relative;display:flex;flex-direction:column;gap:8px;padding:12px;border-bottom:1px solid var(--line)}
-.pick{display:flex;align-items:center;gap:8px;width:100%;height:34px;padding:0 10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);cursor:pointer;text-align:left;font:600 14px/1 var(--sans)}
-.pick:hover{background:var(--hover)}.pick .pn{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pick svg{width:14px;height:14px;color:var(--mut);flex:none}
-.pmenu{position:absolute;left:12px;right:12px;top:calc(100% - 8px);z-index:6;max-height:50vh;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:4px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
-.pi{display:flex;align-items:center;gap:8px;width:100%;min-height:32px;padding:0 8px;border:0;border-radius:4px;background:none;text-align:left;cursor:pointer;color:var(--sub);font:500 14px/20px var(--sans)}
-.pi:hover{background:var(--hover);color:var(--fg)}.pi.on{background:var(--sel);color:var(--fg);font-weight:600}
-.pi .sn{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.side{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line);background:var(--side)}
 .sc{display:inline-flex;gap:4px}.sc i{font:600 11.5px/18px var(--mono);font-style:normal;min-width:20px;text-align:center;padding:0 5px;border-radius:9px;color:#fff}
 .sc i.run{background:var(--run-bar)}.sc i.idle{background:var(--wait-bar)}
-.sbody{flex:1;overflow:auto;padding:4px 0 12px}
-.sbfoot{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;padding:10px 12px;border-top:1px solid var(--line);background:var(--surface)}
-.sbfoot .seg button{height:26px;padding:0 8px;font-size:12.5px}.sbfoot .sw{height:26px;font-size:12.5px}
+.sbody{flex:1;overflow:auto;padding:12px 12px 16px}
 .pm{flex:1;overflow:auto;padding:16px 24px 32px}
-.ovs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--line);border-radius:var(--r);background:var(--surface);margin-bottom:16px}
-.ovs div{padding:14px 18px;border-left:1px solid var(--line)}.ovs div:first-child{border-left:0}
+.ovs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:16px}
+.ovs div{padding:16px 20px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
 .ovs b{display:block;font:600 24px/32px var(--mono)}.ovs span{font:500 13px/20px var(--sans);color:var(--mut)}.ovs .run b{color:var(--run)}.ovs .wait b{color:var(--wait)}
 .phd{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 20px;margin-bottom:16px}
 .phn{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}.phn b{font:600 20px/28px var(--sans)}
@@ -83,29 +84,37 @@ input[type=search]:focus{outline:2px solid var(--accent);outline-offset:-1px;bor
 .ub{display:block;height:6px;border-radius:3px;background:var(--line2);overflow:hidden}.ub i{display:block;height:100%;background:var(--accent);border-radius:3px}
 .uc{font:400 12px/16px var(--mono);color:var(--mut);text-align:right}
 .tl{display:flex;gap:6px;flex-wrap:wrap}.tl span{font:400 12.5px/20px var(--mono);border:1px solid var(--line);border-radius:var(--r);padding:0 8px;color:var(--sub);background:var(--subtle)}
-.gr{display:flex;align-items:center;gap:8px;padding:12px 12px 6px;font:700 12.5px/20px var(--sans)}
-.gr .gc{font:600 12px/20px var(--mono);margin-left:2px}
-.gr.running{color:var(--run)}.gr.idle{color:var(--wait)}.gr.dormant{color:var(--dorm)}
-.gr .ic,.gr .ic svg{width:16px;height:16px}
-.sri{position:relative;border-left:3px solid transparent}
-.sim{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:0 10px;align-items:start;width:100%;padding:8px 12px 8px 9px;border:0;background:none;text-align:left;cursor:pointer;color:inherit}
-.sim .ic{margin-top:1px}
-.sri.running{background:var(--run-bg);border-left-color:var(--run-bar)}
-.sri.idle{background:var(--wait-bg);border-left-color:var(--wait-bar)}
-.sri:hover{filter:brightness(.97)}.sri.dormant:hover{filter:none;background:var(--hover)}
-.sri.sel{box-shadow:inset 0 0 0 2px var(--accent)}
-.rt{font:600 14px/20px var(--sans);color:var(--fg);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sri.dormant .rt{font-weight:500;color:var(--sub)}
+.sbsum{display:flex;gap:14px;flex-wrap:wrap;font:700 12.5px/20px var(--sans)}.sbsum:empty{display:none}
+.sbc{display:inline-flex;align-items:center;gap:6px}.sbc.run{color:var(--run)}.sbc.idle{color:var(--wait)}.sbc .ic,.sbc .ic svg{width:16px;height:16px}
+.pgh{display:flex;align-items:stretch}
+.pgt{flex:1;min-width:0;display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:0 8px;align-items:center;padding:8px 4px 8px 8px;border:0;border-radius:6px;background:none;text-align:left;cursor:pointer;color:var(--sub)}
+.pgt:hover,.pgi:hover{background:rgba(127,135,150,.14);color:var(--fg)}
+.chev{display:inline-flex;color:var(--mut);transition:transform .12s var(--ease)}.chev svg{width:14px;height:14px}.pg.open .chev{transform:rotate(90deg)}
+.pgn{display:block;font:500 15px/22px var(--sans);color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pgp{display:block;font:400 12px/16px var(--mono);color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.cur .pgn{color:var(--accent)}
+.pgi{width:32px;border:0;border-radius:6px;background:none;color:var(--mut);cursor:pointer;display:flex;align-items:center;justify-content:center}.pgi svg{width:16px;height:16px}.pg.cur .pgi{color:var(--accent)}
+.pgb{margin:2px 0 12px}
+.sri{position:relative;margin:2px 0;border-radius:6px}
+.sim{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:0 10px;align-items:start;width:100%;padding:9px 12px 9px 10px;border:0;border-radius:6px;background:none;text-align:left;cursor:pointer;color:inherit}
+.sim .ic{margin-top:2px}
+.sri:hover{background:rgba(127,135,150,.14)}
+.sri.running{background:color-mix(in srgb,var(--run-bg) 78%,var(--side))}
+.sri.idle{background:color-mix(in srgb,var(--wait-bg) 78%,var(--side))}
+.sri.running:hover,.sri.idle:hover{filter:brightness(.97)}
+.sri.sel{background:var(--surface);box-shadow:0 0 0 2px var(--accent)}
+.rt{font:500 15px/22px var(--sans);color:var(--fg);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sri.running .rt,.sri.idle .rt{font-weight:600}.sri.dormant .rt{font-weight:400;color:var(--sub)}
 .etag{font:700 12px/18px var(--sans);color:var(--err);margin-left:8px}
-.rmeta{font:400 12px/18px var(--mono);color:var(--sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+.rmeta{font:400 12.5px/18px var(--mono);color:var(--sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
 .sri.dormant .rmeta{color:var(--mut)}
-.rtm{font:400 12px/20px var(--sans);color:var(--sub);white-space:nowrap}
-.rx{position:absolute;right:8px;top:6px;opacity:0;width:26px;height:26px;padding:0;display:flex;align-items:center;justify-content:center}.rx svg{width:14px;height:14px}
+.rtm{font:400 12.5px/22px var(--sans);color:var(--sub);white-space:nowrap}
+.rx{position:absolute;right:8px;top:7px;opacity:0;width:26px;height:26px;padding:0;display:flex;align-items:center;justify-content:center}.rx svg{width:14px;height:14px}
 .sri:hover .rx,.rx:focus-visible{opacity:1}.sri.dormant:hover .rtm{visibility:hidden}
-.more{display:block;width:100%;padding:8px 12px 8px 41px;border:0;background:none;color:var(--accent);font:600 13px/20px var(--sans);text-align:left;cursor:pointer}
+.more{display:block;width:100%;padding:6px 12px 6px 38px;border-radius:6px;border:0;background:none;color:var(--accent);font:600 13px/20px var(--sans);text-align:left;cursor:pointer}
 .more:hover{background:var(--hover)}
 .none{padding:48px 24px;text-align:center;color:var(--sub)}.none p{margin:0 0 8px}.none p:first-child{font-size:16px;color:var(--fg);font-weight:600}
-.ro .pa .btn,.ro .rx,.ro .fa,.ro #trashb,.ro #txtb,.ro .cleanb,.ro #cfg{display:none!important}.ro .sri.dormant:hover .rtm{visibility:visible}
+.ro .pa .btn,.ro .rx,.ro .fa,.ro #trashb,.ro #txtb,.ro .cleanb,.ro #cfgtab{display:none!important}.ro .sri.dormant:hover .rtm{visibility:visible}
 /* flow */
 .fbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 24px;background:var(--surface);border-bottom:1px solid var(--line)}
 .bc{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;color:var(--sub)}.bc b{color:var(--fg);font-weight:600}
@@ -185,18 +194,19 @@ dialog h2{font:600 18px/26px var(--sans);margin:0 0 8px}
 </style></head><body>
 <header>
  <div class="top"><h1 class="brand">Agent Map</h1><span class="live" id="live"><i></i><span id="lt">연결 중</span></span><span class="sp"></span>
-  <a class="btn sm" id="cfg" href="/map">구성 지도</a><button class="btn sm" id="zo" aria-label="글자 작게" title="글자 작게">A-</button><button class="btn sm" id="zi" aria-label="글자 크게" title="글자 크게">A+</button><button class="btn sm" id="th" title="화면 모드 바꾸기"></button><button class="btn sm" id="lg"></button></div>
+  <button class="btn sm" id="zo" aria-label="글자 작게" title="글자 작게">A-</button><button class="btn sm" id="zi" aria-label="글자 크게" title="글자 크게">A+</button><button class="btn sm" id="th" title="화면 모드 바꾸기"></button><button class="btn sm" id="lg"></button></div>
+ <nav class="tabs" aria-label="보기"><span class="tab" aria-current="page">실시간</span><a class="tab" id="cfgtab" href="/map">구성 지도</a></nav>
 </header>
+<div class="tb" role="search">
+ <div class="sch"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/></svg><input type="search" id="q" placeholder="세션, 브랜치, 도구 검색 (/)" aria-label="세션 검색"></div>
+ <div class="seg" id="daysf" role="group" aria-label="기간"></div>
+ <button class="sw" id="scr" role="switch" aria-checked="false"><i></i><span>임시 작업 폴더 포함</span></button>
+ <button class="lnk" id="trashb" hidden></button>
+ <div class="sbsum" id="sbsum"></div>
+</div>
+<div class="dist" id="dist" aria-hidden="true"></div>
 <div class="app">
- <aside class="side" aria-label="세션">
-  <div class="sbtop" role="search">
-   <div class="sch"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/></svg><input type="search" id="q" placeholder="세션, 브랜치, 도구 검색 (/)" aria-label="세션 검색"></div>
-   <button class="pick" id="pick" aria-haspopup="listbox" aria-expanded="false" aria-label="프로젝트 선택"><span class="pn" id="pn"></span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></button>
-   <div class="pmenu" id="pmenu" role="listbox" hidden></div>
-  </div>
-  <nav class="sbody" id="sbody" aria-label="세션 목록"></nav>
-  <div class="sbfoot"><div class="seg" id="daysf" role="group" aria-label="기간"></div><button class="sw" id="scr" role="switch" aria-checked="false"><i></i><span>임시 작업 폴더 포함</span></button><button class="lnk" id="trashb" hidden></button></div>
- </aside>
+ <aside class="side" aria-label="세션"><nav class="sbody" id="sbody" aria-label="세션 목록"></nav></aside>
  <div class="mainc">
   <div class="fbar" id="fbar" hidden>
    <button class="btn" id="back">← 개요</button><span class="bc" id="bc"></span><span class="sp"></span>
@@ -212,7 +222,7 @@ dialog h2{font:600 18px/26px var(--sans);margin:0 0 8px}
 <div class="sr" role="status" aria-live="polite" id="sr"></div>
 <script>
 const LANG=(()=>{try{const q=new URLSearchParams(location.search).get('lang');if(q==='ko'||q==='en')return q;const v=localStorage.getItem('agent-map-lang');if(v==='ko'||v==='en')return v}catch{}return /^ko/i.test(navigator.language||'')?'ko':'en'})();
-const EN={"Agent Map 실시간":"Agent Map Live","연결 중":"Connecting","글자 작게":"Smaller text","글자 크게":"Larger text","화면 모드 바꾸기":"Change theme","보기":"View","프로젝트":"Projects","프로젝트 탭에서 세션을 선택하세요":"Pick a session on the Projects tab","실시간 흐름":"Live flow","구성 지도":"Config map","← 목록":"← List","도구 종류 강조":"Highlight tool type","프롬프트와 응답의 첫 줄, 단계 설명을 보여줍니다. 이 컴퓨터에서만 볼 수 있습니다":"Shows the first line of prompts and replies and step descriptions. Visible on this computer only","작업 내용 표시":"Show content","일시정지":"Pause","세션, 브랜치, 도구 검색 (/)":"Search sessions, branches, tools (/)","세션 검색":"Search sessions","상태":"Status","정렬":"Sort","기간":"Period","임시 작업 폴더 포함":"Include temp folders","작업 중":"Working","작업 중 ":"Working ","대기 ":"Waiting ","대기":"Waiting","휴면":"Dormant","Claude가 작업하고 있습니다":"Claude is working","응답을 마치고 내 입력을 기다리는 중입니다":"Finished replying and waiting for your input","30분 넘게 활동이 없습니다":"No activity for over 30 minutes","읽기·검색":"Read/search","수정·쓰기":"Edit/write","명령 실행":"Commands","서브에이전트":"Subagent","MCP 도구":"MCP tools","기타":"Other","방금":"just now","초 전":" s ago","분 전":" min ago","시간 전":" h ago","일 전":" d ago","초":"s","분 ":"m ","전체":"All","전체 프로젝트":"All projects","오류 ":"Errors ",", 오류 ":", errors ","건":"","삭제…":"Delete…"," 삭제":" delete","휴면 세션 정리…":"Clean up dormant sessions…","많이 쓴 도구 (최근 호출 횟수)":"Most used tools (recent calls)","사용한 스킬":"Skills used","세션":"Sessions","조건에 맞는 세션이 없습니다":"No sessions match","검색어, 상태, 기간을 바꾸거나 임시 작업 폴더를 포함해 보세요":"Change the search, status or period, or include temp folders","접기":"Collapse","프로젝트 › ":"Projects › ","서브에이전트 ":"Subagent ","응답이 없으면 권한 승인을 기다리는 중일 수 있습니다. Claude Code 창을 확인해 보세요":"If nothing happens, it may be waiting for a permission approval. Check the Claude Code window","지금: Claude가 다음 단계를 생각하는 중":"Now: Claude is thinking about the next step","최근 요청":"Last request","마지막 응답":"Last reply","기록 구간":"Time span","턴":"Turns","도구 호출":"Tool calls","오류":"Errors","컨텍스트":"Context"," 토큰":" tokens","수정·작성한 파일":"Files edited","회":"x","읽은 파일":"Files read","오래 걸린 단계":"Slowest steps","실행한 명령":"Commands run","사용한 MCP 서버":"MCP servers used","오류가 난 단계":"Steps with errors","불러오는 중":"Loading","브랜치":"Branch","모델":"Model","이 세션 삭제…":"Delete this session…","프로젝트 목록에서 이 세션을 찾을 수 없습니다. 기간을 늘려 보세요":"Session not found in the project list. Try a longer period","시간 배분 (최근 ":"Time split (last ","단계, 도구 실행 시간 기준)":" steps, by tool run time)","작업 흐름":"Flow","프롬프트":"Prompt","응답":"Reply","진행 중":"running","소요 ":"took ","새 단계 ":"New steps ","개 · 최신으로 ↓":" · jump to latest ↓","재개":"Resume","실시간 갱신을 일시정지했습니다":"Live updates paused","실시간 갱신을 재개했습니다":"Live updates resumed","서버에 다시 연결됐습니다":"Reconnected to the server","실시간 · 2초마다 갱신 · ":"Live · refreshes every 2s · ","서버 연결이 끊겼습니다":"Lost connection to the server","연결 끊김. 서버가 종료됐다면 /agent-map:live 를 다시 실행하세요":"Disconnected. If the server stopped, run /agent-map:live again","세션 기록을 찾을 수 없습니다":"Session record not found","폴더 열기":"Open folder","상위 폴더 열기":"Open parent folder"," 폴더 열기":": open folder"," 폴더가 없어 상위 폴더 열기":": folder is gone, open parent","이 폴더는 삭제되어 없습니다. 남아 있는 가장 가까운 상위 폴더를 엽니다":"This folder was deleted. Opens the nearest parent that still exists","원래 폴더가 없어 상위 폴더를 열었습니다: ":"The folder is gone, opened its parent: ","폴더를 열었습니다: ":"Opened folder: ",". 창이 보이지 않으면 작업 표시줄을 확인하세요":". If no window appears, check the taskbar","열지 못했습니다":"Could not open it","경로 복사":"Copy path"," 경로 복사":": copy path","경로를 복사했습니다":"Path copied","복사하지 못했습니다":"Could not copy","폴더가 삭제됨":"Folder deleted","세션 삭제·정리":"Delete / clean up sessions","취소":"Cancel","휴지통 거치지 않고 바로 영구 삭제":"Delete permanently, skip the trash","켜면 되돌릴 수 없습니다. 삭제 전에 버튼을 두 번 누르게 합니다":"Cannot be undone. Asks you to press the button twice","한 번 더 누르면 영구 삭제됩니다":"Press once more to delete permanently","작은 세션 (내용이 거의 없음)":"Small session (almost no content)","작은 세션 선택":"Select small sessions","전체 선택":"Select all","선택 해제":"Clear selection","처리하지 못했습니다":"Could not complete it","휴지통 비우기":"Empty trash","영구 삭제":"Delete permanently","휴지통을 비웠습니다":"Trash emptied","비우지 못했습니다":"Could not empty it","최근 활동순":"Recent first","이름순":"By name","1일":"1 day","3일":"3 days","7일":"7 days","30일":"30 days","소프트":"Soft","라이트":"Light","다크":"Dark","화면 ":"Theme "," · 읽기 전용 접속":" · read-only access","폴더를 찾을 수 없습니다":"Folder not found","읽기 전용 접속입니다":"Read-only access","구성 지도는 이 컴퓨터에서만 볼 수 있습니다":"The config map is only available on this computer","마지막 활동":"Last activity","작업 흐름 보기":"view flow","프로젝트 선택":"Choose project","세션 목록":"Session list","← 개요":"← Overview"};
+const EN={"Agent Map 실시간":"Agent Map Live","연결 중":"Connecting","글자 작게":"Smaller text","글자 크게":"Larger text","화면 모드 바꾸기":"Change theme","보기":"View","프로젝트":"Projects","프로젝트 탭에서 세션을 선택하세요":"Pick a session on the Projects tab","실시간 흐름":"Live flow","구성 지도":"Config map","← 목록":"← List","도구 종류 강조":"Highlight tool type","프롬프트와 응답의 첫 줄, 단계 설명을 보여줍니다. 이 컴퓨터에서만 볼 수 있습니다":"Shows the first line of prompts and replies and step descriptions. Visible on this computer only","작업 내용 표시":"Show content","일시정지":"Pause","세션, 브랜치, 도구 검색 (/)":"Search sessions, branches, tools (/)","세션 검색":"Search sessions","상태":"Status","정렬":"Sort","기간":"Period","임시 작업 폴더 포함":"Include temp folders","작업 중":"Working","작업 중 ":"Working ","대기 ":"Waiting ","대기":"Waiting","휴면":"Dormant","Claude가 작업하고 있습니다":"Claude is working","응답을 마치고 내 입력을 기다리는 중입니다":"Finished replying and waiting for your input","30분 넘게 활동이 없습니다":"No activity for over 30 minutes","읽기·검색":"Read/search","수정·쓰기":"Edit/write","명령 실행":"Commands","서브에이전트":"Subagent","MCP 도구":"MCP tools","기타":"Other","방금":"just now","초 전":" s ago","분 전":" min ago","시간 전":" h ago","일 전":" d ago","초":"s","분 ":"m ","전체":"All","전체 프로젝트":"All projects","오류 ":"Errors ",", 오류 ":", errors ","건":"","삭제…":"Delete…"," 삭제":" delete","휴면 세션 정리…":"Clean up dormant sessions…","많이 쓴 도구 (최근 호출 횟수)":"Most used tools (recent calls)","사용한 스킬":"Skills used","세션":"Sessions","조건에 맞는 세션이 없습니다":"No sessions match","검색어, 상태, 기간을 바꾸거나 임시 작업 폴더를 포함해 보세요":"Change the search, status or period, or include temp folders","접기":"Collapse","프로젝트 › ":"Projects › ","서브에이전트 ":"Subagent ","응답이 없으면 권한 승인을 기다리는 중일 수 있습니다. Claude Code 창을 확인해 보세요":"If nothing happens, it may be waiting for a permission approval. Check the Claude Code window","지금: Claude가 다음 단계를 생각하는 중":"Now: Claude is thinking about the next step","최근 요청":"Last request","마지막 응답":"Last reply","기록 구간":"Time span","턴":"Turns","도구 호출":"Tool calls","오류":"Errors","컨텍스트":"Context"," 토큰":" tokens","수정·작성한 파일":"Files edited","회":"x","읽은 파일":"Files read","오래 걸린 단계":"Slowest steps","실행한 명령":"Commands run","사용한 MCP 서버":"MCP servers used","오류가 난 단계":"Steps with errors","불러오는 중":"Loading","브랜치":"Branch","모델":"Model","이 세션 삭제…":"Delete this session…","프로젝트 목록에서 이 세션을 찾을 수 없습니다. 기간을 늘려 보세요":"Session not found in the project list. Try a longer period","시간 배분 (최근 ":"Time split (last ","단계, 도구 실행 시간 기준)":" steps, by tool run time)","작업 흐름":"Flow","프롬프트":"Prompt","응답":"Reply","진행 중":"running","소요 ":"took ","새 단계 ":"New steps ","개 · 최신으로 ↓":" · jump to latest ↓","재개":"Resume","실시간 갱신을 일시정지했습니다":"Live updates paused","실시간 갱신을 재개했습니다":"Live updates resumed","서버에 다시 연결됐습니다":"Reconnected to the server","실시간 · 2초마다 갱신 · ":"Live · refreshes every 2s · ","서버 연결이 끊겼습니다":"Lost connection to the server","연결 끊김. 서버가 종료됐다면 /agent-map:live 를 다시 실행하세요":"Disconnected. If the server stopped, run /agent-map:live again","세션 기록을 찾을 수 없습니다":"Session record not found","폴더 열기":"Open folder","상위 폴더 열기":"Open parent folder"," 폴더 열기":": open folder"," 폴더가 없어 상위 폴더 열기":": folder is gone, open parent","이 폴더는 삭제되어 없습니다. 남아 있는 가장 가까운 상위 폴더를 엽니다":"This folder was deleted. Opens the nearest parent that still exists","원래 폴더가 없어 상위 폴더를 열었습니다: ":"The folder is gone, opened its parent: ","폴더를 열었습니다: ":"Opened folder: ",". 창이 보이지 않으면 작업 표시줄을 확인하세요":". If no window appears, check the taskbar","열지 못했습니다":"Could not open it","경로 복사":"Copy path"," 경로 복사":": copy path","경로를 복사했습니다":"Path copied","복사하지 못했습니다":"Could not copy","폴더가 삭제됨":"Folder deleted","세션 삭제·정리":"Delete / clean up sessions","취소":"Cancel","휴지통 거치지 않고 바로 영구 삭제":"Delete permanently, skip the trash","켜면 되돌릴 수 없습니다. 삭제 전에 버튼을 두 번 누르게 합니다":"Cannot be undone. Asks you to press the button twice","한 번 더 누르면 영구 삭제됩니다":"Press once more to delete permanently","작은 세션 (내용이 거의 없음)":"Small session (almost no content)","작은 세션 선택":"Select small sessions","전체 선택":"Select all","선택 해제":"Clear selection","처리하지 못했습니다":"Could not complete it","휴지통 비우기":"Empty trash","영구 삭제":"Delete permanently","휴지통을 비웠습니다":"Trash emptied","비우지 못했습니다":"Could not empty it","최근 활동순":"Recent first","이름순":"By name","1일":"1 day","3일":"3 days","7일":"7 days","30일":"30 days","소프트":"Soft","라이트":"Light","다크":"Dark","화면 ":"Theme "," · 읽기 전용 접속":" · read-only access","폴더를 찾을 수 없습니다":"Folder not found","읽기 전용 접속입니다":"Read-only access","구성 지도는 이 컴퓨터에서만 볼 수 있습니다":"The config map is only available on this computer","마지막 활동":"Last activity","작업 흐름 보기":"view flow","프로젝트 선택":"Choose project","세션 목록":"Session list","← 개요":"← Overview","프로젝트 정보":"Project info","실시간":"Live"};
 const tt=s=>LANG==='en'&&EN[s]!==undefined?EN[s]:s;
 const K=(ko,en)=>LANG==='en'?en:ko;
 const $=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
@@ -227,10 +237,13 @@ const IC={
  ok:'<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7.2" fill="currentColor"/><path class="m" d="m4.8 8.2 2.2 2.2 4.2-4.4" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
  err:'<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7.2" fill="currentColor"/><path class="m" d="m5.6 5.6 4.8 4.8M10.4 5.6l-4.8 4.8" fill="none" stroke-width="1.8" stroke-linecap="round"/></svg>',
  run2:'<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.7" opacity=".3"/><path d="M8 1.7a6.3 6.3 0 0 1 6.3 6.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'};
+const CHEV='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5"/></svg>';
+const INFO='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.2"/><path d="M8 7.2v3.6M8 5v.1"/></svg>';
+const shortPath=p=>{p=String(p||'').replace(/\\/g,'/');return p.length>40?p.slice(0,14)+'…'+p.slice(-24):p};
 const icon=(k,cls)=>{const s=$('span',cls||'ic '+k);s.innerHTML=IC[k];return s};
 const store={get:k=>{try{return localStorage.getItem(k)}catch{return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}}};
 const el=id=>document.getElementById(id);
-const view={tab:'p',sel:null,proj:null,status:'all',expanded:new Set(),hl:null,paused:false,txt:store.get('agent-map-txt')!=='0',days:store.get('agent-map-days')||'3',sort:store.get('agent-map-sort')||'act',scr:false};
+const view={tab:'p',sel:null,proj:null,open:{},status:'all',expanded:new Set(),hl:null,paused:false,txt:store.get('agent-map-txt')!=='0',days:store.get('agent-map-days')||'3',sort:store.get('agent-map-sort')||'act',scr:false};
 let data=null,fdata=null,ok=true,psig='',fsig='',seenT='',newCount=0;
 const ago=ts=>{const s=Math.max(0,(Date.now()-Date.parse(ts))/1000);if(s<10)return tt('방금');if(s<60)return Math.floor(s)+tt('초 전');if(s<3600)return Math.floor(s/60)+tt('분 전');if(s<86400)return Math.floor(s/3600)+tt('시간 전');return Math.floor(s/86400)+tt('일 전')};
 const hms=ts=>{if(!ts)return'';const d=new Date(ts),p=n=>String(n).padStart(2,'0');return p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds())};
@@ -247,7 +260,7 @@ function route(){const h=location.hash.slice(1).split('/');
  if(h[0]==='f'&&h[1]&&h[2]){const n=decodeURIComponent(h[1]),s=decodeURIComponent(h[2]);if(!view.sel||view.sel.sid!==s){view.sel={dir:n,sid:s};fdata=null;fsig='';seenT='';newCount=0}view.tab='f'}
  else{view.tab='p';if(h[0]==='p'&&h[1])view.proj=decodeURIComponent(h[1])}
  el('fbar').hidden=view.tab!=='f';el('pm').hidden=view.tab!=='p';el('main').hidden=view.tab!=='f';el('newb').hidden=true;
- psig='';fsig='';statusBar();if(data)drawProjects(true);if(view.tab==='f'){drawFlow();pollFlow()}}
+ psig='';fsig='';if(data)drawProjects(true);if(view.tab==='f'){drawFlow();pollFlow()}}
 const openFlow=(p,s)=>{view.sel={dir:p.dir,sid:s.sid,name:p.name,title:s.title};location.hash='f/'+encodeURIComponent(p.dir)+'/'+encodeURIComponent(s.sid)};
 addEventListener('hashchange',route);
 
@@ -255,22 +268,8 @@ addEventListener('hashchange',route);
 const matchS=(p,s,q)=>!q||(p.name+' '+s.title+' '+(s.branch||'')+' '+lastText(s.last)+' '+p.skills.join(' ')).toLowerCase().includes(q);
 const ORD={running:0,idle:1,dormant:2};
 function baseRows(){if(!data)return[];const q=el('q').value.trim().toLowerCase(),out=[];
- for(const p of data.projects){if(!view.scr&&p.scratch)continue;if(view.proj&&p.dir!==view.proj)continue;for(const s of p.sessions)if(matchS(p,s,q))out.push({p,s})}
+ for(const p of data.projects){if(!view.scr&&p.scratch)continue;for(const s of p.sessions)if(matchS(p,s,q))out.push({p,s})}
  return out}
-function statusBar(){const p=view.proj&&data&&data.projects.find(x=>x.dir===view.proj);el('pn').textContent=p?p.name:tt('전체 프로젝트')}
-/* project picker: a menu instead of a long project list, so the sidebar can be all about sessions */
-const pick=el('pick'),pmenu=el('pmenu');
-function drawMenu(){pmenu.textContent='';const ps=data?data.projects.filter(p=>view.scr||!p.scratch):[];
- const mk=(name,dir,run,idle)=>{const b=$('button','pi'+(view.proj===dir?' on':''));b.setAttribute('role','option');b.setAttribute('aria-selected',String(view.proj===dir));b.append($('span','sn',name));
-  const c=$('span','sc');if(run){const i=$('i','run',String(run));i.title=tt('작업 중 ')+run;c.append(i)}if(idle){const i=$('i','idle',String(idle));i.title=tt('대기 ')+idle;c.append(i)}b.append(c);
-  b.onclick=()=>{closeMenu();setProj(dir)};return b};
- const n=(p,k)=>p.sessions.filter(s=>s.status===k).length;
- pmenu.append(mk(tt('전체 프로젝트'),null,ps.reduce((a,p)=>a+n(p,'running'),0),ps.reduce((a,p)=>a+n(p,'idle'),0)));
- for(const p of [...ps].sort((a,b)=>(b.running-a.running)||(Date.parse(b.lastTs)-Date.parse(a.lastTs))))pmenu.append(mk(p.name,p.dir,n(p,'running'),n(p,'idle')))}
-const closeMenu=()=>{pmenu.hidden=true;pick.setAttribute('aria-expanded','false')};
-pick.onclick=()=>{if(pmenu.hidden){drawMenu();pmenu.hidden=false;pick.setAttribute('aria-expanded','true')}else closeMenu()};
-document.addEventListener('click',e=>{if(!pmenu.hidden&&!pmenu.contains(e.target)&&!pick.contains(e.target))closeMenu()});
-function setProj(dir){view.proj=dir;psig='';statusBar();drawProjects(true);if(view.tab==='p')location.hash=pHash()}
 function sessionRow(p,s,showProj){const sel=!!(view.sel&&view.sel.sid===s.sid),r=$('div','sri '+s.status+(sel?' sel':'')),b=$('button','sim');b.dataset.k='s:'+s.sid;
  const mid=$('span');const t=$('span','rt',s.title);if(s.errs)t.append($('span','etag',tt('오류 ')+s.errs));
  mid.append(t,$('span','rmeta',[showProj?p.name:'',s.branch&&s.branch!=='HEAD'?s.branch:'',lastText(s.last)].filter(Boolean).join('  ·  ')));
@@ -289,21 +288,41 @@ function drawProjects(force){if(!data)return;
  if(view.proj&&!data.projects.some(p=>p.dir===view.proj))view.proj=null;
  const running=data.projects.reduce((n,p)=>n+p.running,0);document.title=(running?`(${running}) `:'')+tt('Agent Map 실시간');
  const rows=baseRows();rows.sort((a,b)=>ORD[a.s.status]-ORD[b.s.status]||Date.parse(b.s.lastTs)-Date.parse(a.s.lastTs));
- const sig=JSON.stringify([rows.map(r=>[r.p.dir,r.s.sid,r.s.status,r.s.lastTs,r.s.errs,r.s.last&&r.s.last.name]),view.proj,view.sel&&view.sel.sid,[...view.expanded],data.projects.length,Math.floor(Date.now()/30000)]);
+ const sig=JSON.stringify([rows.map(r=>[r.p.dir,r.s.sid,r.s.status,r.s.lastTs,r.s.errs,r.s.last&&r.s.last.name]),view.proj,view.tab,view.sel&&view.sel.sid,view.open,[...view.expanded],data.projects.length,Math.floor(Date.now()/30000)]);
  if(sig===psig&&!force)return;psig=sig;
  keepFocus(()=>{drawSessions(rows);drawOverview(rows)})}
+/* sidebar: projects (with their folder) as collapsible groups, sessions nested under them, like the Claude desktop app */
 function drawSessions(rows){const sb=el('sbody');sb.textContent='';
- if(!rows.length){const n=$('div','none');n.append($('p',0,tt('조건에 맞는 세션이 없습니다')),$('p',0,tt('검색어, 상태, 기간을 바꾸거나 임시 작업 폴더를 포함해 보세요')));sb.append(n);return}
- for(const k of ['running','idle','dormant']){const arr=rows.filter(r=>r.s.status===k);if(!arr.length)continue;
-  const h=$('div','gr '+k);h.append(icon(k),$('span',0,ST[k]),$('span','gc',String(arr.length)));if(k==='idle')h.title=STT.idle;sb.append(h);
-  const fold=k==='dormant'&&arr.length>4&&!view.expanded.has('dormant');
-  for(const r of fold?arr.slice(0,4):arr)sb.append(sessionRow(r.p,r.s,!view.proj));
-  if(k==='dormant'&&arr.length>4){const m=$('button','more',fold?K(`휴면 ${arr.length-4}개 더 보기`,`Show ${arr.length-4} more dormant`):tt('접기'));m.dataset.k='m:dormant';m.setAttribute('aria-expanded',String(!fold));m.onclick=()=>{fold?view.expanded.add('dormant'):view.expanded.delete('dormant');drawProjects(true)};sb.append(m)}}}
+ const n=(arr,k)=>arr.filter(r=>r.s.status===k).length,sm=el('sbsum');sm.textContent='';
+ const di=el('dist');di.textContent='';for(const [k,v] of [['running','--run-bar'],['idle','--wait-bar'],['dormant','--line']]){const c=n(rows,k);if(c){const i=$('i');i.style.flex=String(c);i.style.background='var('+v+')';di.append(i)}}
+ for(const [k,cls] of [['running','run'],['idle','idle']]){const c=n(rows,k);if(c){const b=$('span','sbc '+cls);b.append(icon(k),document.createTextNode(c+' '+ST[k]));sm.append(b)}}
+ if(!rows.length){const e=$('div','none');e.append($('p',0,tt('조건에 맞는 세션이 없습니다')),$('p',0,tt('검색어, 상태, 기간을 바꾸거나 임시 작업 폴더를 포함해 보세요')));sb.append(e);return}
+ const by=new Map();for(const r of rows){if(!by.has(r.p.dir))by.set(r.p.dir,{p:r.p,arr:[]});by.get(r.p.dir).arr.push(r)}
+ const groups=[...by.values()].sort((a,b)=>n(b.arr,'running')-n(a.arr,'running')||n(b.arr,'idle')-n(a.arr,'idle')||Date.parse(b.p.lastTs)-Date.parse(a.p.lastTs));
+ const searching=!!el('q').value.trim();
+ for(const {p,arr} of groups){
+  const hasSel=!!(view.sel&&arr.some(r=>r.s.sid===view.sel.sid));
+  const open=searching||(view.open[p.dir]!==undefined?view.open[p.dir]:(hasSel||arr.some(r=>r.s.status!=='dormant')));
+  const g=$('div','pg'+(open?' open':'')+(view.proj===p.dir?' cur':'')),h=$('div','pgh'),t=$('button','pgt');
+  t.dataset.k='g:'+p.dir;t.setAttribute('aria-expanded',String(open));
+  const ch=$('span','chev');ch.innerHTML=CHEV;
+  const nm=$('span');nm.append($('span','pgn',p.name),$('span','pgp',shortPath(p.cwd||p.dir)));nm.title=p.cwd||p.dir;
+  const bc=$('span','sc'),run=n(arr,'running'),idl=n(arr,'idle');
+  if(run){const i=$('i','run',String(run));i.title=tt('작업 중 ')+run;bc.append(i)}if(idl){const i=$('i','idle',String(idl));i.title=tt('대기 ')+idl;bc.append(i)}
+  t.append(ch,nm,bc);t.onclick=()=>{view.open[p.dir]=!open;drawProjects(true)};
+  const inf=$('button','pgi');inf.innerHTML=INFO;inf.title=tt('프로젝트 정보');inf.setAttribute('aria-label',p.name+': '+tt('프로젝트 정보'));inf.dataset.k='i:'+p.dir;
+  inf.onclick=()=>{const same=view.proj===p.dir&&view.tab==='p';view.proj=same?null:p.dir;if(location.hash==='#'+pHash())route();else location.hash=pHash()};
+  h.append(t,inf);g.append(h);
+  if(open){const b=$('div','pgb'),dorm=arr.filter(r=>r.s.status==='dormant'),key='d:'+p.dir,fold=dorm.length>3&&!view.expanded.has(key);let shown=0;
+   for(const r of arr){if(r.s.status==='dormant'&&fold&&shown>=3)continue;if(r.s.status==='dormant')shown++;b.append(sessionRow(r.p,r.s,false))}
+   if(dorm.length>3){const m=$('button','more',fold?K(`휴면 ${dorm.length-3}개 더 보기`,`Show ${dorm.length-3} more dormant`):tt('접기'));m.dataset.k='m:'+p.dir;m.setAttribute('aria-expanded',String(!fold));m.onclick=()=>{fold?view.expanded.add(key):view.expanded.delete(key);drawProjects(true)};b.append(m)}
+   g.append(b)}
+  sb.append(g)}}
 function drawOverview(rows){const g=el('grid');g.textContent='';
  const cur=view.proj&&data.projects.find(p=>p.dir===view.proj);if(cur)g.append(projHeader(cur));
- const c={running:0,idle:0,dormant:0};for(const r of rows)c[r.s.status]++;
+ const sc=cur?rows.filter(r=>r.p.dir===cur.dir):rows,c={running:0,idle:0,dormant:0};for(const r of sc)c[r.s.status]++;
  const o=$('div','ovs');for(const [k,cls] of [['running','run'],['idle','wait'],['dormant','']]){const d=$('div',cls);d.append($('b',0,String(c[k])),$('span',0,ST[k]));o.append(d)}g.append(o);
- const n=$('div','none');n.append($('p',0,K('왼쪽에서 세션을 고르면 작업 흐름을 볼 수 있습니다','Pick a session on the left to see its flow')));g.append(n)}
+ const e=$('div','none');e.append($('p',0,K('왼쪽에서 세션을 고르면 작업 흐름을 볼 수 있습니다','Pick a session on the left to see its flow')));g.append(e)}
 
 /* ---------- flow ---------- */
 function legend(){const lg=el('leg');lg.textContent='';for(const [v,n] of CAT){const b=$('button');const i=$('i');i.style.setProperty('--c',`var(${v})`);b.append(i,document.createTextNode(n));b.setAttribute('aria-pressed',view.hl===v);b.onclick=()=>{view.hl=view.hl===v?null:v;legend();fsig='';drawFlow()};lg.append(b)}}
@@ -397,7 +416,7 @@ txtb.onclick=()=>{view.txt=!view.txt;store.set('agent-map-txt',view.txt?'1':'0')
 async function pollState(){try{const r=await fetch('/api/state?days='+view.days);if(!r.ok)throw 0;data=await r.json();
   if(!ok){ok=true;say(tt('서버에 다시 연결됐습니다'))}el('live').classList.remove('off');el('lt').textContent=tt('실시간 · 2초마다 갱신 · ')+hms(new Date())+roNote}
  catch{if(ok){ok=false;say(tt('서버 연결이 끊겼습니다'))}el('live').classList.add('off');el('lt').textContent=tt('연결 끊김. 서버가 종료됐다면 /agent-map:live 를 다시 실행하세요')}
- if(data){statusBar();drawProjects()}}
+ if(data){drawProjects()}}
 async function pollFlow(){if(!view.sel||view.tab!=='f'||view.paused)return;try{const r=await fetch(`/api/flow?dir=${encodeURIComponent(view.sel.dir)}&sid=${encodeURIComponent(view.sel.sid)}&text=${view.txt?1:0}`);if(r.ok)fdata=await r.json();else if(r.status===404){fdata=null;el('fv').textContent='';el('fv').append($('div','none',tt('세션 기록을 찾을 수 없습니다')));return}}catch{}drawFlow()}
 function tick(){if(document.hidden)return;pollState();pollFlow()}
 setInterval(tick,2000);document.addEventListener('visibilitychange',tick);
@@ -451,13 +470,13 @@ function openTrash(){if(!trashInfo)return;dlg.textContent='';const h=$('h2',0,tt
 el('trashb').onclick=openTrash;
 
 /* ---------- controls ---------- */
-const q=el('q');q.oninput=()=>{statusBar();drawProjects(true)};
+const q=el('q');q.oninput=()=>{drawProjects(true)};
 function seg(id,opts,key,after){const w=el(id);const draw=()=>{w.textContent='';for(const [v,l] of opts){const b=$('button',0,l);b.setAttribute('aria-pressed',String(view[key])===v);b.onclick=()=>{view[key]=v;store.set('agent-map-'+key,v);draw();after()};w.append(b)}};draw()}
 seg('daysf',[['1',tt('1일')],['3',tt('3일')],['7',tt('7일')],['30',tt('30일')]],'days',pollState);
-const sw=el('scr');const setSw=()=>sw.setAttribute('aria-checked',String(view.scr));sw.onclick=()=>{view.scr=!view.scr;setSw();statusBar();drawProjects(true)};setSw();
+const sw=el('scr');const setSw=()=>sw.setAttribute('aria-checked',String(view.scr));sw.onclick=()=>{view.scr=!view.scr;setSw();drawProjects(true)};setSw();
 addEventListener('keydown',e=>{const tag=(document.activeElement||{}).tagName;
  if(e.key==='/'&&tag!=='INPUT'&&tag!=='SELECT'&&view.tab==='p'){e.preventDefault();q.focus()}
- else if(e.key==='Escape'){if(!pmenu.hidden){closeMenu();pick.focus()}else if(document.activeElement===q&&q.value){q.value='';statusBar();drawProjects(true)}else if(view.tab==='f')location.hash=pHash()}});
+ else if(e.key==='Escape'){if(document.activeElement===q&&q.value){q.value='';drawProjects(true)}else if(view.tab==='f')location.hash=pHash()}});
 const TH=['soft','light','dark'],THN={soft:tt('소프트'),light:tt('라이트'),dark:tt('다크')};let th=store.get('agent-map-theme');if(!TH.includes(th))th='soft';{const qt=new URLSearchParams(location.search).get('theme');if(TH.includes(qt))th=qt} /* ?theme=soft|light|dark, handy for screenshots */
 const thb=el('th');const setTheme=t=>{th=t;document.documentElement.dataset.theme=t;thb.textContent=tt('화면 ')+THN[t];store.set('agent-map-theme',t)};thb.onclick=()=>setTheme(TH[(TH.indexOf(th)+1)%TH.length]);
 let zoom=+(store.get('agent-map-zoom')||1);const setZoom=z=>{zoom=Math.min(1.5,Math.max(.8,Math.round(z*100)/100));document.documentElement.style.zoom=zoom;store.set('agent-map-zoom',zoom)};

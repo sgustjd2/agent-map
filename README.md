@@ -58,10 +58,10 @@ Dark theme:
 ## Features
 
 **Live dashboard (`/agent-map:live`)**
-- A sidebar of sessions grouped as working, waiting for input, or dormant (no activity for 30 minutes). Click one and its flow opens on the right. Status is shown by icon shape and text, not color alone
+- A sidebar like the Claude desktop app: collapsible project groups with their folder path (so equal names are never confused), sessions nested below. Each session is working, waiting for input, or dormant (no activity for 30 minutes). Click one and its flow opens on the right. Status is shown by icon shape and text, not color alone
 - Error count per session, last tool used, branch, time since last activity
 - Flow view: one row per step with a duration bar, grouped repeats (`x3`), a "now" banner, KPI strip (span, turns, tool calls, errors, subagents, context tokens), most-edited files, slowest steps, commands, MCP servers
-- Project picker, search, 1 to 30 day window; open a project folder or copy its path
+- Search, 1 to 30 day window, a bar with the share of working, waiting and dormant sessions; the info button of a project opens its folder, tool usage and cleanup
 - English and Korean UI. It follows your browser language; switch with the button in the header
 - Three themes, text zoom, keyboard shortcuts (`/` search, `Esc` back)
 

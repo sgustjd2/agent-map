@@ -49,12 +49,12 @@ await shot('flow-top', 2400);
 // 3. the step trace: an error row and the step that is running now
 await js(`document.getElementById('main').scrollTop=document.getElementById('main').scrollHeight`); await sleep(400);
 await shot('flow-trace', 2800);
-// 4. the project picker narrows the sidebar; the open session stays on the right
-await click('#pick'); await sleep(400);
-await shot('picker', 2200);
-await click('.pi', 2); await sleep(700);
-await shot('project', 2200);
-// 5. same view in the dark theme
+// 4. collapse one project group and open another project's overview (folder, tools used)
+await click('.pgt', 0); await sleep(600);
+await click('.pgi', 1); await until(`!!document.querySelector('.phd')`); await sleep(500);
+await shot('project', 2800);
+// 5. back to a working session, in the dark theme
+await click('.sri.running .sim'); await until(`document.querySelectorAll('.tr').length>3`); await sleep(500);
 await js(`document.getElementById('th').click()`); await sleep(700);
 await shot('dark', 2600);
 
