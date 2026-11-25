@@ -57,7 +57,7 @@ function analyze(lines) {
   const recs = [];
   for (const l of lines) { try { recs.push(JSON.parse(l)); } catch { /* partial line */ } }
   const ev = [], byId = new Map();
-  let cwd = '', branch = '', model = '', title = '', agentName = '';
+  let cwd = '', branch = '', model = '', title = '', agentName = '', usage = null, stop = '';
   for (const r of recs) {
     if (r.cwd) cwd = r.cwd;
     if (r.gitBranch) branch = r.gitBranch;
@@ -65,6 +65,8 @@ function analyze(lines) {
     if (r.type === 'agent-name' && r.agentName) agentName = String(r.agentName).slice(0, 60);
     if (r.type === 'assistant' && r.message) {
       if (r.message.model) model = r.message.model;
+      if (r.message.usage) usage = r.message.usage;
+      if (r.message.stop_reason) stop = r.message.stop_reason;
       for (const c of r.message.content || []) {
         if (c.type === 'tool_use') {
           const e = { k: (c.name === 'Agent' || c.name === 'Task') ? 'agent' : 'tool', id: c.id, name: c.name, target: target(c.name, c.input), t: r.timestamp, s: 'run', side: !!r.isSidechain };
@@ -99,6 +101,8 @@ function analyze(lines) {
     last: last ? { name: last.name, target: last.target, s: last.s } : null,
     lastTs: (recs.filter(r => r.timestamp).pop() || {}).timestamp || '',
     lastKind: lastRec ? lastRec.type : '',
+    ctx: usage ? (usage.input_tokens || 0) + (usage.cache_read_input_tokens || 0) + (usage.cache_creation_input_tokens || 0) : 0, // prompt size of the latest call = how full the context is
+    stop,
   };
 }
 
@@ -150,7 +154,7 @@ function state(days) {
     const tools = new Map(), skills = new Set();
     for (const s of sessions) { for (const [n, c] of s.top) tools.set(n, (tools.get(n) || 0) + c); s.skills.forEach(x => skills.add(x)); }
     projects.push({
-      dir, full: cwd, cwd: cwd.replace(HOME, '~').replace(/\\/g, '/'), name: path.basename(cwd.replace(/\\/g, '/')) || dir,
+      dir, full: cwd, exists: !!cwd && fs.existsSync(cwd), cwd: cwd.replace(HOME, '~').replace(/\\/g, '/'), name: path.basename(cwd.replace(/\\/g, '/')) || dir,
       scratch: SCRATCH.test(cwd || dir), lastTs: sessions[0].lastTs, running: sessions.filter(s => s.status === 'running').length,
       sessions, top: [...tools.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6), skills: [...skills].slice(0, 8),
     });
@@ -166,22 +170,30 @@ function flow(dir, sid) {
   const i = info(file, st); if (!i) return null;
   const now = Date.now();
   return { sid, title: i.title || sid.slice(0, 8), branch: i.branch, model: i.model, cwd: i.cwd.replace(HOME, '~').replace(/\\/g, '/'),
-    status: statusOf(i, st, now), lastTs: new Date(st.mtimeMs).toISOString(), nTools: i.nTools, agents: i.agents,
+    status: statusOf(i, st, now), lastTs: new Date(st.mtimeMs).toISOString(), nTools: i.nTools, agents: i.agents, ctx: i.ctx, stop: i.stop,
     events: i.events.slice(-100).map(({ id, ...e }) => e) };
 }
 
 // ---------- actions (POST only, see the router) ----------
+function nearestExisting(p) {
+  for (let d = p, n = 0; d && n < 12; n++) {
+    try { if (fs.statSync(d).isDirectory()) return d; } catch { /* gone, try the parent */ }
+    const up = path.dirname(d); if (up === d) return '';
+    d = up;
+  }
+  return '';
+}
 function openFolder(dir) { // the page sends only the project key; the folder comes from the session records, never from the request
   if (!SAFE_ID.test(dir)) return { error: 'bad request' };
   const cwd = (sessionsOf(dir, Date.now(), 36500, 3).find(s => s.i.cwd) || { i: {} }).i.cwd || '';
-  let ok = false; try { ok = !!cwd && fs.statSync(cwd).isDirectory(); } catch { /* folder is gone */ }
-  if (!ok) return { error: '폴더를 찾을 수 없습니다' };
-  const [cmd, a] = process.platform === 'win32' ? ['explorer.exe', [cwd]] : process.platform === 'darwin' ? ['open', [cwd]] : ['xdg-open', [cwd]];
+  const target = cwd ? nearestExisting(cwd) : '';
+  if (!target) return { error: '폴더를 찾을 수 없습니다' };
+  const [cmd, a] = process.platform === 'win32' ? ['explorer.exe', [target]] : process.platform === 'darwin' ? ['open', [target]] : ['xdg-open', [target]];
   try { spawn(cmd, a, { stdio: 'ignore', detached: true }).on('error', () => {}).unref(); } catch { return { error: '열지 못했습니다' }; }
-  return { ok: true };
+  return { ok: true, opened: target, fallback: target !== cwd };
 }
 
-function trashSessions(dir, sids) { // moves <sid>.jsonl and its <sid>/ folder; nothing is deleted
+function trashSessions(dir, sids, permanent) { // moves <sid>.jsonl and its <sid>/ folder; nothing is deleted
   if (!SAFE_ID.test(dir) || !sids.length) return { error: 'bad request' };
   const now = Date.now(), dest = path.join(TRASH, new Date(now).toISOString().replace(/[:.]/g, '-'), dir);
   let moved = 0; const skipped = [];
@@ -192,14 +204,20 @@ function trashSessions(dir, sids) { // moves <sid>.jsonl and its <sid>/ folder; 
     let st; try { st = fs.statSync(f); } catch { skipped.push({ sid, reason: 'missing' }); continue; }
     if (now - st.mtimeMs < FRESH_MS) { skipped.push({ sid, reason: 'active' }); continue; }
     try {
-      fs.mkdirSync(dest, { recursive: true });
-      fs.renameSync(f, path.join(dest, sid + '.jsonl'));
       const side = path.join(PROJ, dir, sid);
-      if (fs.existsSync(side) && fs.statSync(side).isDirectory()) fs.renameSync(side, path.join(dest, sid));
+      if (permanent) { // explicit "delete for good": only these two paths, both verified to be inside the projects folder
+        if (!inProjects(side)) { skipped.push({ sid, reason: 'bad id' }); continue; }
+        fs.rmSync(f, { force: true });
+        if (fs.existsSync(side) && fs.statSync(side).isDirectory()) fs.rmSync(side, { recursive: true, force: true });
+      } else {
+        fs.mkdirSync(dest, { recursive: true });
+        fs.renameSync(f, path.join(dest, sid + '.jsonl'));
+        if (fs.existsSync(side) && fs.statSync(side).isDirectory()) fs.renameSync(side, path.join(dest, sid));
+      }
       cache.delete(f); moved++;
     } catch { skipped.push({ sid, reason: 'error' }); }
   }
-  return { moved, skipped, trash: TRASH.replace(HOME, '~').replace(/\\/g, '/') };
+  return { moved, skipped, permanent: !!permanent, trash: TRASH.replace(HOME, '~').replace(/\\/g, '/') };
 }
 
 function trashStats() {
@@ -235,6 +253,8 @@ function readBody(req) {
 const LAN = argv.includes('--lan');
 const STATE_FILE = path.join(HOME, '.claude', 'agent-map', 'live.json'); // port + access token of a running LAN server
 const isLoopback = (a) => a === '127.0.0.1' || a === '::1' || a === '::ffff:127.0.0.1';
+// A connection from one of this computer's own addresses is this computer (another device cannot fake that source address).
+const isOwnAddr = (a) => { const x = String(a || '').replace(/^::ffff:/, ''); return isLoopback(a) || Object.values(os.networkInterfaces()).flat().some(n => n && n.address === x); };
 const lanIps = () => Object.values(os.networkInterfaces()).flat().filter(n => n && n.family === 'IPv4' && !n.internal).map(n => n.address);
 const NEED_TOKEN = LAN && argv.includes('--token'); // optional extra: a random access token on top of "same network only"
 // "Same network": a private address that sits in the same subnet as one of this computer's own network interfaces.
@@ -261,7 +281,7 @@ function serve() {
   const handle = (req, res) => {
     bump();
     const u = new URL(req.url, 'http://x');
-    const remote = !isLoopback(req.socket.remoteAddress || '');
+    const remote = !isOwnAddr(req.socket.remoteAddress);
     const host = (req.headers.host || '').replace(/:\d+$/, '').toLowerCase();
     const hostOk = host === '127.0.0.1' || host === 'localhost' || (LAN && (lanIps().includes(host) || host === os.hostname().toLowerCase()));
     if (!hostOk) { res.writeHead(403).end(); return; } // DNS-rebinding guard
@@ -287,7 +307,7 @@ function serve() {
       if (u.pathname === '/api/stop') { json({ ok: true }); setTimeout(() => process.exit(0), 50); return; }
       readBody(req).then((b) => {
         if (u.pathname === '/api/open') return json(openFolder(String(b.dir || '')));
-        if (u.pathname === '/api/trash') return json(trashSessions(String(b.dir || ''), Array.isArray(b.sids) ? b.sids.slice(0, 200).map(String) : []));
+        if (u.pathname === '/api/trash') return json(trashSessions(String(b.dir || ''), Array.isArray(b.sids) ? b.sids.slice(0, 200).map(String) : [], b.permanent === true));
         if (u.pathname === '/api/trash/empty') return json(emptyTrash(b.confirm));
         json({ error: 'not found' }, 404);
       }).catch(() => json({ error: 'bad request' }, 400));

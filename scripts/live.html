@@ -102,8 +102,26 @@ main{overflow:auto;padding:24px;position:relative}
 .leg button{display:inline-flex;align-items:center;gap:6px}.leg i{display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--c)}
 #newb{position:sticky;bottom:0;display:flex;justify-content:center;margin-top:16px}
 #newb .btn{background:var(--accent);color:var(--onaccent);border-color:var(--accent);font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,.2)}
-.ro .pa,.ro .sg>.lnk,.ro #trashb{display:none!important}
-.pa{display:flex;gap:8px;margin-top:8px}
+.ro .pa,.ro .sg>.lnk,.ro #trashb,.ro .fa{display:none!important}
+.pa{display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap}
+.gone{font-size:13px;color:var(--idle)}
+.dsw{margin:0 0 16px}
+.use{margin-top:16px}
+.ul{font:500 13px/20px var(--sans);color:var(--mut);margin-bottom:8px}
+.ur{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(40px,1fr) 32px;gap:8px;align-items:center;min-height:24px}
+.un{font:400 13px/20px var(--mono);color:var(--sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ub{display:block;height:6px;border-radius:3px;background:var(--raised);overflow:hidden}.ub i{display:block;height:100%;background:var(--accent);opacity:.7;border-radius:3px}
+.uc{font:400 12px/16px var(--mono);color:var(--mut);text-align:right}
+.fa{display:flex;gap:8px;margin-top:16px}
+.now{margin-top:16px;padding:12px 16px;border-radius:8px;background:var(--bg);border:1px solid var(--line);font-size:15px;line-height:24px}
+.now.run{background:color-mix(in srgb,var(--run) 10%,transparent);border-color:var(--run)}
+.now small{display:block;color:var(--idle);margin-top:4px;font-size:13px;line-height:20px}
+.kpis{display:flex;gap:32px;flex-wrap:wrap;margin-top:16px}
+.kpi b{display:block;font:600 20px/28px var(--mono)}.kpi b.bad{color:var(--err)}.kpi span{font-size:13px;color:var(--mut)}
+.ins{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px 24px;margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+.ib h5{font:500 13px/20px var(--sans);color:var(--mut);margin:0 0 8px}
+.il{list-style:none;margin:0;padding:0}.il li{display:flex;justify-content:space-between;gap:12px;font:400 13px/24px var(--mono);color:var(--sub)}
+.il li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.il li em{font-style:normal;color:var(--mut);flex:none}
 .lnk{background:none;border:0;color:var(--accent);cursor:pointer;font-size:14px;padding:0 8px;height:28px;text-decoration:underline}
 .sg>.lnk{order:2}.sg::after{order:1}
 .btn.danger{background:var(--err);border-color:var(--err);color:var(--onaccent);font-weight:600}
@@ -206,8 +224,9 @@ function drawProjects(force){const g=el('grid');if(!data)return;
    const top=p.running?'running':(Date.now()-Date.parse(p.lastTs)<30*60e3?'idle':'dormant');
    const h=$('div','ph');h.append($('b',0,p.name));const st=$('span','st '+top);st.append($('i'),document.createTextNode(ST[top]));h.append(st);c.append(h,$('p','path',p.cwd||p.dir),folderBtns(p));
    const stat=$('div','stat');stat.append($('span',0,`세션 ${p.sessions.length}`),$('span',p.running?'run':0,`작업 중 ${p.running}`),$('span',0,`마지막 활동 ${ago(p.lastTs)}`));c.append(stat);
-   if(p.top.length){const tl=$('div','tl');for(const [n,k] of p.top)tl.append($('span',0,`${n} ${k}`));c.append(tl)}
-   if(p.skills.length){const tl=$('div','tl');for(const n of p.skills)tl.append($('span',0,'skill '+n));c.append(tl)}
+   if(p.top.length){const mx=Math.max(...p.top.map(t=>t[1])),u=$('div','use');u.append($('div','ul','많이 쓴 도구 (최근 호출 횟수)'));
+    for(const [n,k] of p.top){const r=$('div','ur'),b=$('span','ub'),i=$('i');i.style.width=Math.max(4,k/mx*100)+'%';b.append(i);r.append($('span','un',toolLabel(n)),b,$('span','uc',String(k)));r.title=n;u.append(r)}c.append(u)}
+   if(p.skills.length){const u=$('div','use');u.append($('div','ul','사용한 스킬'));const tl=$('div','tl');for(const n of p.skills)tl.append($('span',0,n));u.append(tl);c.append(u)}
    /* sessions grouped by state: working first, dormant last and collapsed to 2 */
    const ss=$('div','ss'),open=view.expanded.has(p.dir),by={running:[],idle:[],dormant:[]};
    for(const s of sessions)by[s.status].push(s);
@@ -222,6 +241,39 @@ function drawProjects(force){const g=el('grid');if(!data)return;
 
 /* ---------- flow ---------- */
 function legend(){const lg=el('leg');lg.textContent='';for(const [v,n] of CAT){const b=$('button');const i=$('i');i.style.setProperty('--c',`var(${v})`);b.append(i,document.createTextNode(n));b.setAttribute('aria-pressed',view.hl===v);b.onclick=()=>{view.hl=view.hl===v?null:v;legend();fsig='';drawFlow()};lg.append(b)}}
+const toolLabel=n=>n.startsWith('mcp__')?n.split('__').slice(1).join(' › '):n;
+const fmtTok=n=>n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?Math.round(n/1e3)+'k':String(n);
+const topN=(o,n)=>Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,n);
+/* what is useful to know about a session at a glance: current state, size of the work, files touched, slow steps, errors */
+function insights(f,rows,now){const box=$('div');
+ const ev=f.events,work=ev.filter(e=>e.k==='tool'||e.k==='agent');
+ const pend=[...work].reverse().find(e=>e.s==='run'),lbl=e=>e.k==='agent'?'서브에이전트 '+e.target:e.name+(e.target?' '+e.target:'');
+ let txt,hint='';
+ if(f.status==='running'&&pend){const sec=Math.round((now-Date.parse(pend.t))/1000);txt=`지금: ${toolLabel(lbl(pend))} 실행 중 (${fmtDur(sec*1000)||sec+'초'}째)`;
+  if(sec>25&&pend.name!=='Bash'&&pend.name!=='PowerShell'&&pend.k!=='agent')hint='응답이 없으면 권한 승인을 기다리는 중일 수 있습니다. Claude Code 창을 확인해 보세요'}
+ else if(f.status==='running')txt='지금: Claude가 다음 단계를 생각하는 중';
+ else if(f.stop==='end_turn')txt=`응답을 마치고 입력을 기다리는 중 (${ago(f.lastTs)})`;
+ else txt=`마지막 활동 ${ago(f.lastTs)}`;
+ const nw=$('div','now'+(f.status==='running'?' run':''),txt);if(hint)nw.append($('small',0,hint));box.append(nw);
+ const t0=ev.length?Date.parse(ev[0].t):0,span=Date.parse(f.lastTs)-t0,errs=work.filter(e=>e.s==='err'),turns=ev.filter(e=>e.k==='prompt').length;
+ const kp=[['기록 구간',fmtDur(span)||'-'],['턴',String(turns)],['도구 호출',String(work.length)+(span>60000?` (분당 ${(work.length/(span/60000)).toFixed(1)})`:'')],['오류',String(errs.length)],['서브에이전트',String(f.agents)],['컨텍스트',f.ctx?fmtTok(f.ctx)+' 토큰':'-']];
+ const k=$('div','kpis');for(const [a,b] of kp){const d=$('div','kpi');const v=$('b',0,b);if(a==='오류'&&errs.length)v.className='bad';d.append(v,$('span',0,a));k.append(d)}box.append(k);
+ const edits={},reads={},cmds={},mcps={};
+ for(const e of work){if(e.name==='Skill')continue;
+  if(/^(Edit|Write|MultiEdit|NotebookEdit)$/.test(e.name)&&e.target)edits[e.target]=(edits[e.target]||0)+1;
+  else if(e.name==='Read'&&e.target)reads[e.target]=(reads[e.target]||0)+1;
+  else if(/^(Bash|PowerShell)$/.test(e.name)&&e.target)cmds[e.target]=(cmds[e.target]||0)+1;
+  else if(e.name.startsWith('mcp__')){const s=e.name.split('__')[1];mcps[s]=(mcps[s]||0)+1}}
+ const slow=rows.filter(r=>!r.sep&&r.dur>=1000).sort((a,b)=>b.dur-a.dur).slice(0,4);
+ const panels=[['수정·작성한 파일',topN(edits,6).map(([n,c])=>[n,c+'회'])],['읽은 파일',topN(reads,5).map(([n,c])=>[n,c+'회'])],
+  ['오래 걸린 단계',slow.map(r=>[toolLabel(r.k==='agent'?'서브에이전트 '+r.target:r.name+(r.target?' '+r.target:'')),fmtDur(r.dur)])],
+  ['실행한 명령',topN(cmds,5).map(([n,c])=>[n,c+'회'])],['사용한 MCP 서버',topN(mcps,4).map(([n,c])=>[n,c+'회'])],
+  ['오류가 난 단계',errs.slice(-5).reverse().map(e=>[toolLabel(lbl(e)),hms(e.t)])]];
+ const g=$('div','ins');
+ for(const [title,items] of panels){if(!items.length)continue;const b=$('div','ib');b.append($('h5',0,title));const ul=$('ul','il');
+  for(const [a,c] of items){const li=$('li');const s1=$('span',0,a);s1.title=a;li.append(s1,$('em',0,c));ul.append(li)}b.append(ul);g.append(b)}
+ if(g.children.length)box.append(g);
+ return box}
 function flowRows(events,now){const out=[];
  for(const e of events){
   if(e.k==='prompt'||e.k==='text'){out.push({sep:e});continue}
@@ -238,7 +290,8 @@ function drawFlow(){const fv=el('fv'),mn=el('main');if(!view.sel)return;
  fv.textContent='';
  const rows=flowRows(f.events,now),work=rows.filter(r=>!r.sep),max=Math.max(1000,...work.map(r=>r.dur));
  const h=$('div','fh'),t=$('h2',0,f.title);const st=$('span','st '+f.status);st.append($('i'),document.createTextNode(ST[f.status]));t.append(st);h.append(t,$('p','path',f.cwd));
- const kv=$('div','kv');for(const [a,b] of [['브랜치',f.branch&&f.branch!=='HEAD'?f.branch:''],['모델',f.model],['도구 호출',String(f.nTools)],['서브에이전트',String(f.agents)],['마지막 활동',ago(f.lastTs)]].filter(x=>x[1])){const s=$('span');s.append($('b',0,a),document.createTextNode(b));kv.append(s)}h.append(kv);
+ const kv=$('div','kv');for(const [a,b] of [['브랜치',f.branch&&f.branch!=='HEAD'?f.branch:''],['모델',f.model]].filter(x=>x[1])){const s=$('span');s.append($('b',0,a),document.createTextNode(b));kv.append(s)}h.append(kv,insights(f,rows,now));
+ if(f.status==='dormant'){const fa=$('div','fa'),db=$('button','btn sm','이 세션 삭제…');db.onclick=()=>{const p=data&&data.projects.find(x=>x.dir===view.sel.dir);if(p&&p.sessions.some(s=>s.sid===view.sel.sid))openClean(p,view.sel.sid);else toast('프로젝트 목록에서 이 세션을 찾을 수 없습니다. 기간을 늘려 보세요')};fa.append(db);h.append(fa)}
  const tot={};for(const r of work){const c=cat(r.first);tot[c]=(tot[c]||0)+r.dur}
  const sum=Object.values(tot).reduce((a,b)=>a+b,0);
  if(sum>0){const bar=$('div','dist'),lab=$('div','dl');
@@ -278,34 +331,42 @@ setInterval(tick,2000);document.addEventListener('visibilitychange',tick);
 
 /* ---------- open folder, cleanup (moves to a trash folder), empty trash ---------- */
 const post=(u,o)=>fetch(u,{method:'POST',headers:{'x-agent-map':'1','content-type':'application/json'},body:JSON.stringify(o)}).then(r=>r.json());
-let toastT;const toast=m=>{const t=el('toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>{t.hidden=true},8000)};
+let toastT;const toast=m=>{const t=el('toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>{t.hidden=true},10000)};
 const fmtSize=b=>b<1024?b+' B':b<1048576?Math.round(b/1024)+' KB':(b/1048576).toFixed(1)+' MB';
 async function copyText(x){try{await navigator.clipboard.writeText(x);return true}catch{const a=document.createElement('textarea');a.value=x;document.body.append(a);a.select();let ok=false;try{ok=document.execCommand('copy')}catch{}a.remove();return ok}}
 function folderBtns(p){const d=$('div','pa');
- const o=$('button','btn sm','폴더 열기');o.setAttribute('aria-label',p.name+' 폴더 열기');
- o.onclick=async()=>{try{const r=await post('/api/open',{dir:p.dir});toast(r.ok?'폴더를 열었습니다':(r.error||'열지 못했습니다'))}catch{toast('열지 못했습니다')}};
+ const o=$('button','btn sm',p.exists?'폴더 열기':'상위 폴더 열기');o.setAttribute('aria-label',p.name+(p.exists?' 폴더 열기':' 폴더가 없어 상위 폴더 열기'));
+ if(!p.exists)o.title='이 폴더는 삭제되어 없습니다. 남아 있는 가장 가까운 상위 폴더를 엽니다';
+ o.onclick=async()=>{try{const r=await post('/api/open',{dir:p.dir});
+  toast(r.ok?(r.fallback?'원래 폴더가 없어 상위 폴더를 열었습니다: ':'폴더를 열었습니다: ')+r.opened+'. 창이 보이지 않으면 작업 표시줄을 확인하세요':(r.error||'열지 못했습니다'))}catch{toast('열지 못했습니다')}};
  const c=$('button','btn sm','경로 복사');c.setAttribute('aria-label',p.name+' 경로 복사');
  c.onclick=async()=>toast(await copyText(p.full||p.cwd)?'경로를 복사했습니다':'복사하지 못했습니다');
- d.append(o,c);return d}
+ d.append(o,c);if(!p.exists)d.append($('span','gone','폴더가 삭제됨'));return d}
 const dlg=el('dlg');dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close()});
 let trashInfo=null;
 async function refreshTrash(){try{const r=await fetch('/api/trash-info');if(!r.ok)return;trashInfo=await r.json();const b=el('trashb');b.hidden=!trashInfo.count;b.textContent=`휴지통 ${trashInfo.count}개 · ${fmtSize(trashInfo.bytes)} 비우기`}catch{}}
 const isSmall=s=>s.size<30720&&s.nTools<=2;
-function openClean(p){const list=p.sessions.filter(s=>s.status==='dormant'),sel=new Set();dlg.textContent='';
- const h=$('h2',0,'휴면 세션 정리');h.id='dt';
- const note=$('p','dn',`${p.name} 프로젝트의 휴면 세션 ${list.length}개입니다. 선택한 세션의 기록(대화가 담긴 파일과 하위 폴더)을 휴지통 폴더로 옮깁니다. 프로젝트 폴더의 코드와 파일은 건드리지 않고, 휴지통 폴더에서 되돌릴 수 있습니다. 최근 30분 안에 쓴 세션은 옮겨지지 않습니다.`);
+function openClean(p,pre){const list=p.sessions.filter(s=>s.status==='dormant'),sel=new Set(pre?[pre]:[]);let perm=false,armed=false;dlg.textContent='';
+ const h=$('h2',0,'세션 삭제·정리');h.id='dt';
+ const note=$('p','dn',`${p.name} 프로젝트의 휴면 세션 ${list.length}개입니다. 기본은 선택한 세션의 기록(대화가 담긴 파일과 하위 폴더)을 휴지통 폴더로 옮기는 것이라 되돌릴 수 있습니다. 프로젝트 폴더의 코드와 파일은 건드리지 않습니다. 최근 30분 안에 쓴 세션은 삭제되지 않습니다.`);
  const rows=$('div','dr'),ok=$('button','btn danger'),cancel=$('button','btn','취소');
- const upd=()=>{ok.textContent=`선택한 ${sel.size}개를 휴지통으로 이동`;ok.disabled=!sel.size;for(const r of rows.children)r.setAttribute('aria-checked',String(sel.has(r.dataset.sid)))};
+ const sw=$('button','sw');sw.setAttribute('role','switch');sw.setAttribute('aria-checked','false');sw.append($('i'),$('span',0,'휴지통을 거치지 않고 바로 영구 삭제 (되돌릴 수 없음)'));
+ const upd=()=>{ok.textContent=armed?'한 번 더 누르면 영구 삭제됩니다':perm?`선택한 ${sel.size}개 영구 삭제`:`선택한 ${sel.size}개를 휴지통으로 이동`;ok.disabled=!sel.size;
+  sw.setAttribute('aria-checked',String(perm));for(const r of rows.children)r.setAttribute('aria-checked',String(sel.has(r.dataset.sid)))};
  for(const s of list){const r=$('button','cr');r.dataset.sid=s.sid;r.setAttribute('role','checkbox');r.setAttribute('aria-checked','false');
   const tx=$('span','tx');tx.append($('b',0,s.title),$('span','mt',[`마지막 활동 ${ago(s.lastTs)}`,fmtSize(s.size),`도구 ${s.nTools}회`].join('  ·  ')));if(isSmall(s))tx.append($('span','sm','작은 세션 (내용이 거의 없음)'));
-  r.append($('span','box'),tx);r.onclick=()=>{sel.has(s.sid)?sel.delete(s.sid):sel.add(s.sid);upd()};rows.append(r)}
+  r.append($('span','box'),tx);r.onclick=()=>{armed=false;sel.has(s.sid)?sel.delete(s.sid):sel.add(s.sid);upd()};rows.append(r)}
  const q=$('div','dq');
- for(const [l,f] of [['작은 세션 선택',s=>isSmall(s)],['전체 선택',()=>true],['선택 해제',()=>false]]){const b=$('button','btn sm',l);b.onclick=()=>{sel.clear();for(const s of list)if(f(s))sel.add(s.sid);upd()};q.append(b)}
+ for(const [l,f] of [['작은 세션 선택',s=>isSmall(s)],['전체 선택',()=>true],['선택 해제',()=>false]]){const b=$('button','btn sm',l);b.onclick=()=>{armed=false;sel.clear();for(const s of list)if(f(s))sel.add(s.sid);upd()};q.append(b)}
+ sw.onclick=()=>{perm=!perm;armed=false;upd()};
  const foot=$('div','df');foot.append(cancel,ok);cancel.onclick=()=>dlg.close();
- ok.onclick=async()=>{ok.disabled=true;try{const r=await post('/api/trash',{dir:p.dir,sids:[...sel]});
-   toast(r.error?'옮기지 못했습니다':`${r.moved}개를 휴지통(${r.trash})으로 옮겼습니다${r.skipped.length?`. ${r.skipped.length}개는 옮기지 못했습니다`:''}`)}catch{toast('옮기지 못했습니다')}
-  dlg.close();await pollState();psig='';drawProjects(true);refreshTrash()};
- dlg.append(h,note,q,rows,foot);upd();dlg.showModal()}
+ ok.onclick=async()=>{if(perm&&!armed){armed=true;upd();return}
+  ok.disabled=true;try{const r=await post('/api/trash',{dir:p.dir,sids:[...sel],permanent:perm});
+   toast(r.error?'처리하지 못했습니다':(perm?`${r.moved}개를 영구 삭제했습니다`:`${r.moved}개를 휴지통(${r.trash})으로 옮겼습니다`)+(r.skipped.length?`. ${r.skipped.length}개는 처리하지 못했습니다(최근 30분 안에 쓴 세션 등)`:''))}catch{toast('처리하지 못했습니다')}
+  dlg.close();view.expanded.delete(p.dir);await pollState();psig='';drawProjects(true);refreshTrash();
+  if(view.tab==='f'&&sel.has(view.sel&&view.sel.sid))location.hash='p'};
+ const swr=$('div','dsw');swr.append(sw);
+ dlg.append(h,note,q,rows,swr,foot);upd();dlg.showModal()}
 function openTrash(){if(!trashInfo)return;dlg.textContent='';const h=$('h2',0,'휴지통 비우기');h.id='dt';
  const ok=$('button','btn danger','영구 삭제'),cancel=$('button','btn','취소');
  dlg.append(h,$('p','dn',`휴지통 폴더(${trashInfo.dir})에 있는 세션 기록 ${trashInfo.count}개, ${fmtSize(trashInfo.bytes)}를 영구 삭제합니다. 되돌릴 수 없습니다.`));
