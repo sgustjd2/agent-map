@@ -6,8 +6,8 @@
 
 English · [한국어](README.ko.md)
 
-[![release](https://img.shields.io/github/v/release/sgustjd2/agetn-map)](https://github.com/sgustjd2/agetn-map/releases)
-[![license](https://img.shields.io/github/license/sgustjd2/agetn-map)](LICENSE)
+[![release](https://img.shields.io/github/v/release/sgustjd2/agent-map)](https://github.com/sgustjd2/agent-map/releases)
+[![license](https://img.shields.io/github/license/sgustjd2/agent-map)](LICENSE)
 ![node](https://img.shields.io/badge/node-%E2%89%A518-3c873a)
 ![deps](https://img.shields.io/badge/dependencies-0-brightgreen)
 
@@ -24,7 +24,7 @@ Run several Claude Code sessions at once and you lose track: which terminal is s
 In Claude Code:
 
 ```
-/plugin marketplace add sgustjd2/agetn-map
+/plugin marketplace add sgustjd2/agent-map
 /plugin install agent-map@agent-map
 ```
 
@@ -102,8 +102,6 @@ Status rules: **working** means the log changed in the last 30 seconds or a tool
 **Does it work with the Claude desktop app?** The plugin installs and runs from Claude Code. It shows whatever session logs exist in `~/.claude/projects`. I have not verified every way of starting a session, so tell me if something is missing.
 
 **Windows, macOS, Linux?** Developed and tested on Windows 11. The code uses only portable Node APIs; "open folder" uses the platform's default file manager.
-
-**Why is the repo called agetn-map?** A typo that stuck. The plugin name is `agent-map`.
 
 ## Contributing
 

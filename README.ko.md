@@ -6,8 +6,8 @@
 
 [English](README.md) · 한국어
 
-[![release](https://img.shields.io/github/v/release/sgustjd2/agetn-map)](https://github.com/sgustjd2/agetn-map/releases)
-[![license](https://img.shields.io/github/license/sgustjd2/agetn-map)](LICENSE)
+[![release](https://img.shields.io/github/v/release/sgustjd2/agent-map)](https://github.com/sgustjd2/agent-map/releases)
+[![license](https://img.shields.io/github/license/sgustjd2/agent-map)](LICENSE)
 ![node](https://img.shields.io/badge/node-%E2%89%A518-3c873a)
 ![deps](https://img.shields.io/badge/dependencies-0-brightgreen)
 
@@ -29,7 +29,7 @@
 팀원 각자 Claude Code에서 아래 두 줄을 실행합니다.
 
 ```
-/plugin marketplace add sgustjd2/agetn-map
+/plugin marketplace add sgustjd2/agent-map
 /plugin install agent-map@agent-map
 ```
 
@@ -42,7 +42,7 @@
 
 설치 후 Claude Code를 재시작해야 새 명령이 보입니다. Node 18 이상이 필요합니다.
 
-버전 목록과 변경 내용은 [릴리스 페이지](https://github.com/sgustjd2/agetn-map/releases)에서 볼 수 있습니다.
+버전 목록과 변경 내용은 [릴리스 페이지](https://github.com/sgustjd2/agent-map/releases)에서 볼 수 있습니다.
 
 ---
 
