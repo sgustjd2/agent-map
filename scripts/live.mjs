@@ -252,9 +252,13 @@ function serve() {
   let timer; const bump = () => { clearTimeout(timer); timer = setTimeout(() => process.exit(0), IDLE_EXIT); }; bump();
   const SAFE = SAFE_ID;
   const token = NEED_TOKEN ? crypto.randomBytes(16).toString('hex') : '';
-  const tokenOk = (g) => NEED_TOKEN && g.length === token.length && crypto.timingSafeEqual(Buffer.from(g), Buffer.from(token));
+  const tokenOk = (g) => { // compare bytes, not characters: multibyte input has the same length in characters but more bytes, and timingSafeEqual throws on that
+    if (!NEED_TOKEN) return false;
+    const a = Buffer.from(g), b = Buffer.from(token);
+    return a.length === b.length && crypto.timingSafeEqual(a, b);
+  };
   const fails = new Map(); // remote ip -> { n, t }: slows down token guessing
-  const server = http.createServer((req, res) => {
+  const handle = (req, res) => {
     bump();
     const u = new URL(req.url, 'http://x');
     const remote = !isLoopback(req.socket.remoteAddress || '');
@@ -310,8 +314,10 @@ function serve() {
       const f = flow(dir, sid); return f ? json(f) : json({ error: 'not found' }, 404);
     }
     res.writeHead(404).end();
-  });
-  const bind = LAN ? '0.0.0.0' : '127.0.0.1';
+  };
+  // one bad request must never take the server down
+  const server = http.createServer((req, res) => { try { handle(req, res); } catch { try { res.writeHead(500).end(); } catch { /* socket already gone */ } } });
+  const bind =LAN ? '0.0.0.0' : '127.0.0.1';
   let port = BASE;
   server.on('error', (e) => { if (e.code === 'EADDRINUSE' && port < BASE + PORTS - 1) server.listen(++port, bind); else process.exit(1); });
   server.on('listening', () => {
@@ -357,7 +363,9 @@ else {
   console.log('agent-map live: ' + url + '  (종료: node live.mjs --stop, 30분 동안 접속이 없으면 자동 종료)');
   if (run.lan) {
     let s = null; try { s = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8')); } catch { /* no state file */ }
-    if (s && s.port === run.port) {
+    if (!(s && s.port === run.port)) s = null;
+    if (!run.tok) s = s || { token: '' }; // no token in use: the state file is not needed to print the addresses
+    if (s) {
       console.log(`LAN 접속 (읽기 전용, 같은 네트워크만${s.token ? ', 접근 토큰 필요' : ''}):`);
       for (const ip of lanIps()) console.log(`  http://${ip}:${run.port}/${s.token ? '?t=' + s.token : ''}`);
       console.log('주의: 같은 네트워크에 있는 누구나' + (s.token ? '(주소를 아는 사람)' : '') + ' 프로젝트 경로와 세션 제목을 볼 수 있습니다. 믿을 수 있는 네트워크에서만 쓰고, 끝나면 node live.mjs --stop 으로 종료하세요. HTTPS가 아니라서 공용 와이파이에서는 쓰지 마세요.' + (s.token ? '' : ' 접근 토큰을 추가하려면 --lan --token 으로 실행하세요.'));
